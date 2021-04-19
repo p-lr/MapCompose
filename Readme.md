@@ -11,7 +11,7 @@ everything goes well, it should be done in a few weeks.
 
 * Core library
   * [x] Implement the equivalent of ZoomPanLayout in compose
-  * [ ] Implement a first minimal version (tiles loading only)
+  * [x] Implement a first minimal version (tiles loading only)
   * [ ] Markers support
   * [ ] Paths support
 

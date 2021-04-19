@@ -26,7 +26,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     val tileStreamProvider = object : TileStreamProvider {
         override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
             return try {
-                appContext.assets?.open("tiles/esp/$zoomLvl/$row/$col.jpg")
+                appContext.assets?.open("tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
             } catch (e: Exception) {
                 null
             }
@@ -34,7 +34,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val state: MapState by mutableStateOf(
-        MapState(5, 8192, 8192, tileStreamProvider).also {
+        MapState(4, 4096, 4096, tileStreamProvider).also {
             it.shouldLoopScale = true
         }
     )
