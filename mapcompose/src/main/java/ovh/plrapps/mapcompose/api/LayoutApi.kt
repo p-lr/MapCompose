@@ -1,8 +1,8 @@
 package ovh.plrapps.mapcompose.api
 
-import ovh.plrapps.mapcompose.ui.state.MapComposeState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
-var MapComposeState.shouldLoopScale
+var MapState.shouldLoopScale
     get() = zoomPanRotateState.shouldLoopScale
     set(value) {
         zoomPanRotateState.shouldLoopScale = value

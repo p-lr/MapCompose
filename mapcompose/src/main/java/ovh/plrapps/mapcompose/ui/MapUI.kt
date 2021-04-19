@@ -11,12 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import ovh.plrapps.mapcompose.ui.layout.ZoomPanRotate
-import ovh.plrapps.mapcompose.ui.state.MapComposeState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 @Composable
-fun MapCompose(
+fun MapUI(
     modifier: Modifier = Modifier,
-    state: MapComposeState
+    state: MapState
 ) {
     val zoomPRState = state.zoomPanRotateState
 

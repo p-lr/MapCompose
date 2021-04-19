@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import ovh.plrapps.mapview.compose.ui.state.ZoomPanRotateState
 
-class MapComposeState(fullWidth: Int, fullHeight: Int) {
+class MapState(fullWidth: Int, fullHeight: Int) {
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight)
 
     internal val childComposables = mutableStateMapOf<Int, @Composable () -> Unit>()

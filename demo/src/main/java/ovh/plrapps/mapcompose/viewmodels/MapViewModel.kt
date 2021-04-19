@@ -11,16 +11,16 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.shouldLoopScale
-import ovh.plrapps.mapcompose.ui.state.MapComposeState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
-class MapComposeViewModel() : ViewModel() {
-    val state: MapComposeState by mutableStateOf(
-        MapComposeState(25856, 13056).also {
+class MapViewModel : ViewModel() {
+    val state: MapState by mutableStateOf(
+        MapState(25856, 13056).also {
             it.shouldLoopScale = true
         }
     )
 
-    // Simulate adding and removing a custom composable into the ZoomPanRotate layout
+    // Simulate adding and removing a custom composable into the MapUI
     init {
         viewModelScope.launch {
             delay(3000)
