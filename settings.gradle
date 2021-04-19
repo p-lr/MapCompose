@@ -7,5 +7,5 @@ dependencyResolutionManagement {
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
 }
-rootProject.name = "MapView-Compose"
-include ':demo', ':mapview'
+rootProject.name = "MapCompose"
+include ':demo', ':mapcompose'

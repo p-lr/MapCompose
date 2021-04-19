@@ -1,8 +1,8 @@
-# MapView-Compose
+# MapCompose
 
-MapView-Compose is a port of [MapView](https://github.com/peterLaurence/MapView) using Jetpack Compose.
+MapCompose is a port of [MapView](https://github.com/peterLaurence/MapView) using Jetpack Compose.
 
-**🚧 Work in process.**
+**🚧 Work in progress 🚧**
 
 Right now, the foundations have shown promising results. However, there's still a lot to do. If
 everything goes well, it should be done in a few weeks.
@@ -21,4 +21,4 @@ everything goes well, it should be done in a few weeks.
   * [ ] Map with paths
 
 * Publication
-  * [ ] Publish on maven central, under `ovh.plrapps.mapview.compose`, artifact id `mapview`
+  * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`

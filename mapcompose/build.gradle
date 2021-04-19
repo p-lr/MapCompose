@@ -1,7 +1,6 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-parcelize'
 }
 
 android {
@@ -9,11 +8,10 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "ovh.plrapps.mapcompose.demo"
         minSdk 24
         targetSdk 30
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -52,11 +50,10 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation "androidx.navigation:navigation-compose:1.0.0-alpha10"
-    implementation 'androidx.activity:activity-compose:1.3.0-alpha06'
+    implementation "androidx.compose.ui:ui-util:$compose_version"
+    implementation "androidx.compose.ui:ui-unit:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha04'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
-    implementation project(':mapcompose')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
