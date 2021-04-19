@@ -1,7 +1,11 @@
 package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
+import android.graphics.ColorFilter
 import android.graphics.Paint
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 /**
  * A [Tile] is defined by its coordinates in the "pyramid". But a [Tile] is sub-sampled when the
@@ -12,7 +16,8 @@ import android.graphics.Paint
  */
 data class Tile(val zoom: Int, val row: Int, val col: Int, val subSample: Int) {
     lateinit var bitmap: Bitmap
-    var paint: Paint? = null
+    var alpha: Float by mutableStateOf(0f)
+    var colorFilter: ColorFilter? = null
 }
 
 data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)

@@ -33,7 +33,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     private val singleThreadDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(
             parentScope.coroutineContext + singleThreadDispatcher)
-    private val tilesToRenderFlow = MutableStateFlow<List<Tile>>(listOf())
+    internal val tilesToRenderFlow = MutableStateFlow<List<Tile>>(listOf())
     private val renderTask = scope.throttle(wait = 34) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others, and make a defensive copy. */
@@ -44,7 +44,6 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     private val bitmapPool = Pool<Bitmap>()
-    private val paintPool = Pool<Paint>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
     private val visibleTilesFlow = MutableStateFlow<VisibleTiles?>(null)
@@ -187,7 +186,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
             if (lastVisible.contains(tile) && !tilesToRender.contains(tile)) {
-                tile.setPaint()
+                tile.prepare()
                 tilesToRender.add(tile)
                 idleDebounced.offer(Unit)
                 renderThrottled()
@@ -198,14 +197,12 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     /**
-     * Pick a [Paint] from the [paintPool], or create a new one. The the alpha needs to be set to 0,
-     * to produce a fade-in effect. Color filter is also set.
+     * The the alpha needs to be set to 0, to produce a fade-in effect.
+     * Color filter is also set.
      */
-    private fun Tile.setPaint() {
-        paint = (paintPool.get() ?: Paint()).also {
-            it.alpha = 0
-            it.colorFilter = tileOptionsProvider.getColorFilter(row, col, zoom)
-        }
+    private fun Tile.prepare() {
+        alpha = 0f
+        colorFilter = tileOptionsProvider.getColorFilter(row, col, zoom)
     }
 
     private fun VisibleTiles.contains(tile: Tile): Boolean {
@@ -351,12 +348,8 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         if (bitmap.isMutable) {
             bitmapPool.put(bitmap)
         }
-        paint?.let {
-            paint = null
-            it.alpha = 0
-            it.colorFilter = null
-            paintPool.put(it)
-        }
+        alpha = 0f
+        colorFilter = null
     }
 
     private fun Int.minAtGreaterLevel(n: Int): Int {

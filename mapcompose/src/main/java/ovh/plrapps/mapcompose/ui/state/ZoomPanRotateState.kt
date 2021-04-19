@@ -1,4 +1,4 @@
-package ovh.plrapps.mapview.compose.ui.state
+package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
@@ -21,7 +21,8 @@ import kotlin.math.*
 
 internal class ZoomPanRotateState(
     val fullWidth: Int,
-    val fullHeight: Int
+    val fullHeight: Int,
+    val stateChangeListener: ZoomPanRotateStateListener
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
 
@@ -35,7 +36,7 @@ internal class ZoomPanRotateState(
     internal var centroidX: Double by mutableStateOf(0.0)
     internal var centroidY: Double by mutableStateOf(0.0)
 
-    private var layoutSize by mutableStateOf(IntSize(0, 0))
+    internal var layoutSize by mutableStateOf(IntSize(0, 0))
     var minScale = 0f
         set(value) {
             field = value
@@ -65,6 +66,7 @@ internal class ZoomPanRotateState(
         this.scale = constrainScale(scale)
         updatePadding()
         updateCentroid()
+        stateChangeListener.onStateChanged()
     }
 
     @Suppress("unused")
@@ -72,6 +74,7 @@ internal class ZoomPanRotateState(
         this.scrollX = constrainScrollX(scrollX)
         this.scrollY = constrainScrollY(scrollY)
         updateCentroid()
+        stateChangeListener.onStateChanged()
     }
 
     /**
@@ -180,7 +183,7 @@ internal class ZoomPanRotateState(
     override fun onRotationDelta(rotationDelta: Float) {
         rotation = (rotation + rotationDelta).modulo()
         updateCentroid()
-//        println("rotation : $rotation")
+        stateChangeListener.onStateChanged()
     }
 
     override fun onScrollDelta(scrollDelta: Offset) {
@@ -255,26 +258,11 @@ internal class ZoomPanRotateState(
     }
 
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
-        println("layout changed: $size")
         scope = composableScope
         layoutSize = size
         recalculateMinScale()
         setScale(scale)
-
-//        scope?.launch {
-//            delay(3000)
-//            smoothScaleTo(0f)
-//            delay(1000)
-//            smoothScaleWithFocalPoint(25f, 25f, 2f)
-//        }
     }
-
-//    /**
-//     * TODO: Should we take pixel coordinates, or relative coordinates?
-//     */
-//    fun smoothScrollTo(offset: Offset) = scope.launch {
-//        transformableState.animatePanBy(offset)
-//    }
 
     private fun constrainScrollX(scrollX: Float): Float {
         return scrollX.coerceIn(0f, max(0f, fullWidth * scale - layoutSize.width))
@@ -322,4 +310,8 @@ internal class ZoomPanRotateState(
             layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
         }
     }
+}
+
+interface ZoomPanRotateStateListener {
+    fun onStateChanged()
 }
