@@ -25,7 +25,9 @@ class MapState(
 ) : ZoomPanRotateStateListener {
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
-    internal val visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize)
+    internal val visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize) {
+        zoomPanRotateState.scale
+    }
     internal val tileCanvasState = TileCanvasState(
         scope,
         tileSize,
@@ -57,7 +59,6 @@ class MapState(
     }
 
     override fun onStateChanged() {
-        visibleTilesResolver.setScale(zoomPanRotateState.scale)
         renderVisibleTilesThrottled()
     }
 

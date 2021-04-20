@@ -109,7 +109,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
 
     fun setViewport(viewport: Viewport) {
         /* Thread-confine the tileResolver to the main thread. */
-        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
+        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport, )
 
         scope.launch {
             /* It's important to set the idle flag to false before launching computations, so that
