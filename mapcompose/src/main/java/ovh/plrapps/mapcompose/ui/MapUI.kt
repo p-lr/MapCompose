@@ -25,7 +25,7 @@ fun MapUI(
             zoomPRState = zoomPRState,
             visibleTilesResolver = state.visibleTilesResolver,
             tileSize = state.tileSize,
-            visibleTilesFlow = state.tileCanvasState.tilesToRenderFlow
+            tilesToRender = state.tileCanvasState.tilesToRender
         )
 
         for (c in state.childComposables.values) {

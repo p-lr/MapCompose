@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -13,7 +12,6 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
@@ -24,10 +22,8 @@ internal fun TileCanvas(
     zoomPRState: ZoomPanRotateState,
     visibleTilesResolver: VisibleTilesResolver,
     tileSize: Int,
-    visibleTilesFlow: Flow<List<Tile>>
+    tilesToRender: List<Tile>
 ) {
-    val tilesToRender = visibleTilesFlow.collectAsState(initial = listOf())
-
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -45,7 +41,7 @@ internal fun TileCanvas(
             )
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
-            for (tile in tilesToRender.value) {
+            for (tile in tilesToRender) {
                 val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                     ?: continue
                 val tileScaled = (tileSize / scaleForLevel).toInt()

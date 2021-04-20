@@ -2,6 +2,10 @@ package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Bitmap
 import android.graphics.Paint
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
@@ -20,7 +24,9 @@ import kotlin.math.pow
  * It defers [Tile] loading to the [TileCollector].
  * All internal data manipulation are thread-confined to a single background thread. This is
  * guarantied by the [scope] and its custom dispatcher.
- *
+ * Ultimately, it exposes the list of tiles to render ([tilesToRender]) which is backed by a
+ * [MutableState]. A composable using [tilesToRender] will be automatically recomposed when this
+ * list changes.
  * @author peterLaurence on 04/06/2019
  */
 internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
@@ -33,14 +39,14 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     private val singleThreadDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(
             parentScope.coroutineContext + singleThreadDispatcher)
-    internal val tilesToRenderFlow = MutableStateFlow<List<Tile>>(listOf())
+    internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
     private val renderTask = scope.throttle(wait = 34) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others, and make a defensive copy. */
-        val tilesToRenderCopy = tilesToRender.sortedBy {
+        val tilesToRenderCopy = tilesCollected.sortedBy {
             it.zoom == lastVisible.level && it.subSample == lastVisible.subSample
         }
-        tilesToRenderFlow.value = tilesToRenderCopy
+        tilesToRender = tilesToRenderCopy
     }
 
     private val bitmapPool = Pool<Bitmap>()
@@ -80,7 +86,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         evictTiles(lastVisible)
     }
 
-    private var tilesToRender = mutableListOf<Tile>()
+    private var tilesCollected = mutableListOf<Tile>()
 
     init {
         /* Collect visible tiles and send specs to the TileCollector */
@@ -97,10 +103,6 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         scope.launch {
             consumeTiles(tilesOutput)
         }
-    }
-
-    fun getTilesToRender(): StateFlow<List<Tile>> {
-        return tilesToRenderFlow
     }
 
     fun getAlphaTick(): Float {
@@ -135,7 +137,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     fun clearVisibleTiles() = scope.launch {
-        tilesToRender.clear()
+        tilesCollected.clear()
 
         /**
          * Reset the [visibleTilesFlow] state so that any new [VisibleTiles] value will trigger and
@@ -163,7 +165,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
                     val row = e.key
                     val colRange = e.value
                     for (col in colRange) {
-                        val alreadyProcessed = tilesToRender.any { tile ->
+                        val alreadyProcessed = tilesCollected.any { tile ->
                             tile.sameSpecAs(visibleTiles.level, row, col, visibleTiles.subSample)
                         }
                         /* Only emit specs which haven't already been processed by the collector
@@ -179,15 +181,14 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     /**
-     * For each [Tile] received, add it to the list of tiles to render if it's visible. Otherwise,
-     * add the corresponding Bitmap to the [bitmapPool], and assign a [Paint] object to this tile.
-     * The TileCanvasView manages the alpha, but the view-model takes care of recycling those objects.
+     * For each [Tile] received, add it to the list of collected tiles if it's visible. Otherwise,
+     * recycle the tile.
      */
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
-            if (lastVisible.contains(tile) && !tilesToRender.contains(tile)) {
+            if (lastVisible.contains(tile) && !tilesCollected.contains(tile)) {
                 tile.prepare()
-                tilesToRender.add(tile)
+                tilesCollected.add(tile)
                 idleDebounced.offer(Unit)
                 renderThrottled()
             } else {
@@ -243,7 +244,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     /**
-     * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
+     * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
     private fun evictTiles(visibleTiles: VisibleTiles) {
@@ -251,7 +252,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         val currentSubSample = visibleTiles.subSample
 
         /* Always remove tiles that aren't visible at current level */
-        val iterator = tilesToRender.iterator()
+        val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
             if (tile.zoom == currentLevel && tile.subSample == visibleTiles.subSample && !visibleTiles.contains(tile)) {
@@ -274,7 +275,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         val currentLevel = visibleTiles.level
 
         /* First, deal with tiles of other levels */
-        val otherTilesNotSubSampled = tilesToRender.filter {
+        val otherTilesNotSubSampled = tilesCollected.filter {
             it.zoom != currentLevel
         }
         val evictList = mutableListOf<Tile>()
@@ -287,7 +288,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         }
 
         for (tile in evictList) {
-            tilesToRender.remove(tile)
+            tilesCollected.remove(tile)
             tile.recycle()
         }
     }
@@ -300,22 +301,22 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
          * If not all tiles at current level (or also current sub-sample) are fetched, don't go
          * further.
          */
-        val nTilesAtCurrentLevel = tilesToRender.count {
+        val nTilesAtCurrentLevel = tilesCollected.count {
             it.zoom == currentLevel && it.subSample == currentSubSample
         }
         if (nTilesAtCurrentLevel < lastVisibleCount) {
             return
         }
 
-        val otherTilesNotSubSampled = tilesToRender.filter {
+        val otherTilesNotSubSampled = tilesCollected.filter {
             it.zoom != currentLevel && it.subSample == 0
         }
 
-        val subSampledTiles = tilesToRender.filter {
+        val subSampledTiles = tilesCollected.filter {
             it.zoom == 0 && it.subSample != currentSubSample
         }
 
-        val iterator = tilesToRender.iterator()
+        val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
             val found = otherTilesNotSubSampled.any {
