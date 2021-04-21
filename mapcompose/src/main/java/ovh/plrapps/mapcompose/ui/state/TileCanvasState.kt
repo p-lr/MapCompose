@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Bitmap
-import android.graphics.Paint
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -40,7 +39,15 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     private val scope = CoroutineScope(
             parentScope.coroutineContext + singleThreadDispatcher)
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
+    private var hashOfPreviousRender: Int = 0
     private val renderTask = scope.throttle(wait = 34) {
+        /* Quick comparison in order to avoid unnecessarily sorting the list of collected tiles.
+         * Since Tile is a data class, a hash code of a List<Tile> is an ordered hash code made from
+         * each tile hash code. */
+        val newHash = tilesCollected.hashCode()
+        if (newHash == hashOfPreviousRender) return@throttle
+        hashOfPreviousRender = newHash
+
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others, and make a defensive copy. */
         val tilesToRenderCopy = tilesCollected.sortedBy {
@@ -86,7 +93,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         evictTiles(lastVisible)
     }
 
-    private var tilesCollected = mutableListOf<Tile>()
+    private val tilesCollected = mutableListOf<Tile>()
 
     init {
         /* Collect visible tiles and send specs to the TileCollector */
