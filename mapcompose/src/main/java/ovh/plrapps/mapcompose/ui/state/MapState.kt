@@ -58,6 +58,16 @@ class MapState(
         return childComposables.remove(id) != null
     }
 
+    /**
+     * Public API to programmatically trigger a redraw of the tiles.
+     */
+    @Suppress("unused")
+    fun redrawTiles() {
+        tileCanvasState.clearVisibleTiles().invokeOnCompletion {
+            renderVisibleTiles()
+        }
+    }
+
     override fun onStateChanged() {
         renderVisibleTilesThrottled()
     }
