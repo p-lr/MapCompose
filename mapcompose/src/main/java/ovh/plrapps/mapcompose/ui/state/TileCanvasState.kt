@@ -60,6 +60,10 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
     private val visibleTilesFlow = MutableStateFlow<VisibleTiles?>(null)
+    internal var alphaTick = 0.07f
+        set(value) {
+            field = value.coerceIn(0.01f, 1f)
+        }
 
     /**
      * A [Flow] of [Bitmap] that first collects from the [bitmapPool] on this view-model's
@@ -88,7 +92,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     /**
      * So long as this debounced channel is offered a message, the lambda isn't called.
      */
-    private val idleDebounced = scope.debounce<Unit>(300) {
+    private val idleDebounced = scope.debounce<Unit>(400) {
         idle = true
         evictTiles(lastVisible)
     }
@@ -110,10 +114,6 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         scope.launch {
             consumeTiles(tilesOutput)
         }
-    }
-
-    fun getAlphaTick(): Float {
-        return tileOptionsProvider.alphaTick
     }
 
     fun setViewport(viewport: Viewport) {
@@ -205,11 +205,12 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     }
 
     /**
-     * The the alpha needs to be set to 0, to produce a fade-in effect.
+     * The the alpha needs to be set to [alphaTick], to produce a fade-in effect. If [alphaTick] is
+     * 1f, the alpha won't be updated and there won't be any fade-in effect.
      * Color filter is also set.
      */
     private fun Tile.prepare() {
-        alpha = 0f
+        alpha = alphaTick
         colorFilter = tileOptionsProvider.getColorFilter(row, col, zoom)
     }
 

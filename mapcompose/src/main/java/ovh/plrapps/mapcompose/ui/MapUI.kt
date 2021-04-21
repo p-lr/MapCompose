@@ -25,6 +25,7 @@ fun MapUI(
             zoomPRState = zoomPRState,
             visibleTilesResolver = state.visibleTilesResolver,
             tileSize = state.tileSize,
+            alphaTick = state.tileCanvasState.alphaTick,
             tilesToRender = state.tileCanvasState.tilesToRender
         )
 

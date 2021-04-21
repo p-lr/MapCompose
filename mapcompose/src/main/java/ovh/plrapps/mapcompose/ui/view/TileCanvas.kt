@@ -22,6 +22,7 @@ internal fun TileCanvas(
     zoomPRState: ZoomPanRotateState,
     visibleTilesResolver: VisibleTilesResolver,
     tileSize: Int,
+    alphaTick: Float,
     tilesToRender: List<Tile>
 ) {
     Canvas(
@@ -57,8 +58,8 @@ internal fun TileCanvas(
                 )
 
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
-                if (tile.alpha >= 0f && tile.alpha < 1f) {
-                    tile.alpha = (tile.alpha + 0.07f).coerceAtMost(1f)
+                if (tile.alpha < 1f) {
+                    tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
                 }
             }
         }
