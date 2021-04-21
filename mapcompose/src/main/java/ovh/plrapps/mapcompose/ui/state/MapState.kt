@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.SendChannel
-import ovh.plrapps.mapcompose.core.TileOptionsProvider
+import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
@@ -33,8 +33,6 @@ class MapState(
         tileSize,
         visibleTilesResolver,
         tileStreamProvider,
-        object : TileOptionsProvider {
-        },
         workerCount = Runtime.getRuntime().availableProcessors() - 1,
         highFidelityColors = true
     )

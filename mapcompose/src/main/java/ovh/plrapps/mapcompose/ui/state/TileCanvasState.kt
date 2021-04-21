@@ -31,7 +31,6 @@ import kotlin.math.pow
 internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
                                private val visibleTilesResolver: VisibleTilesResolver,
                                tileStreamProvider: TileStreamProvider,
-                               private val tileOptionsProvider: TileOptionsProvider,
                                workerCount: Int, highFidelityColors: Boolean) {
 
     /* This view-model uses a background thread for its computations */
@@ -64,6 +63,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         set(value) {
             field = value.coerceIn(0.01f, 1f)
         }
+    internal var colorFilterProvider: ColorFilterProvider? by mutableStateOf(null)
 
     /**
      * A [Flow] of [Bitmap] that first collects from the [bitmapPool] on this view-model's
@@ -207,11 +207,9 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     /**
      * The the alpha needs to be set to [alphaTick], to produce a fade-in effect. If [alphaTick] is
      * 1f, the alpha won't be updated and there won't be any fade-in effect.
-     * Color filter is also set.
      */
     private fun Tile.prepare() {
         alpha = alphaTick
-        colorFilter = tileOptionsProvider.getColorFilter(row, col, zoom)
     }
 
     private fun VisibleTiles.contains(tile: Tile): Boolean {
@@ -358,7 +356,6 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
             bitmapPool.put(bitmap)
         }
         alpha = 0f
-        colorFilter = null
     }
 
     private fun Int.minAtGreaterLevel(n: Int): Int {

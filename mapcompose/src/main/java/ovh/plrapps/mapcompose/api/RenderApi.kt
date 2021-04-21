@@ -1,5 +1,7 @@
 package ovh.plrapps.mapcompose.api
 
+import ovh.plrapps.mapcompose.core.ColorFilterProvider
+import androidx.compose.ui.graphics.ColorFilter
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -9,4 +11,13 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  */
 fun MapState.setFadeInSpeed(speed: Float) {
     tileCanvasState.alphaTick = speed
+}
+
+/**
+ * Applies a [ColorFilter] for each tile. A different [ColorFilter] can be applied depending on the
+ * coordinate of tiles.
+ * This change triggers a re-composition (effects are immediately visible).
+ */
+fun MapState.setColorFilterProvider(provider: ColorFilterProvider) {
+    tileCanvasState.colorFilterProvider = provider
 }

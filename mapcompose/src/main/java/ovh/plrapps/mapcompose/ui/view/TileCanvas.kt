@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
@@ -23,6 +24,7 @@ internal fun TileCanvas(
     visibleTilesResolver: VisibleTilesResolver,
     tileSize: Int,
     alphaTick: Float,
+    colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>
 ) {
     Canvas(
@@ -52,9 +54,11 @@ internal fun TileCanvas(
                 val destOffset = IntOffset(l, t)
                 val destSize = IntSize(tileScaled, tileScaled)
 
+                val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
+
                 drawImage(
                     tile.bitmap.asImageBitmap(), dstOffset = destOffset, dstSize = destSize,
-                    alpha = tile.alpha
+                    alpha = tile.alpha, colorFilter = colorFilter
                 )
 
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */

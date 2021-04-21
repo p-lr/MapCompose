@@ -1,8 +1,6 @@
 package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
-import android.graphics.ColorFilter
-import android.graphics.Paint
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -17,7 +15,6 @@ import androidx.compose.runtime.setValue
 data class Tile(val zoom: Int, val row: Int, val col: Int, val subSample: Int) {
     lateinit var bitmap: Bitmap
     var alpha: Float by mutableStateOf(0f)
-    var colorFilter: ColorFilter? = null
 }
 
 data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
