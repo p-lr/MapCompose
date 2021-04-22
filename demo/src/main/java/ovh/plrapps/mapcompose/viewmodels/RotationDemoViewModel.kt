@@ -5,7 +5,9 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.api.shouldLoopScale
+import ovh.plrapps.mapcompose.api.smoothRotateTo
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.InputStream
@@ -14,7 +16,7 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
     val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }
-    val tileStreamProvider = object : TileStreamProvider {
+    private val tileStreamProvider = object : TileStreamProvider {
         override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
             return try {
                 appContext.assets?.open("tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
@@ -29,4 +31,8 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
             it.shouldLoopScale = true
         }
     )
+
+    fun onRotate() {
+        state.smoothRotateTo(state.rotation + 90f)
+    }
 }

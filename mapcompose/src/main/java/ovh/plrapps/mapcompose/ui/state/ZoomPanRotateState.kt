@@ -106,10 +106,9 @@ internal class ZoomPanRotateState(
         }
     }
 
-    @Suppress("unused")
     fun smoothRotateTo(
         angle: AngleDegree,
-        animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+        animationSpec: AnimationSpec<Float>
     ) {
         scope?.launch {
             val currRotation = this@ZoomPanRotateState.rotation

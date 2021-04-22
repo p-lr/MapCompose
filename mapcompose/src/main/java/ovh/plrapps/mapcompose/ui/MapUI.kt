@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import ovh.plrapps.mapcompose.ui.layout.ZoomPanRotate
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.view.TileCanvas
@@ -14,7 +15,7 @@ fun MapUI(
     val zoomPRState = state.zoomPanRotateState
 
     ZoomPanRotate(
-        modifier = modifier,
+        modifier = modifier.clipToBounds(),
         gestureListener = zoomPRState,
         layoutSizeChangeListener = zoomPRState,
         paddingX = zoomPRState.paddingX,

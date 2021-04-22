@@ -14,7 +14,7 @@ class SimpleDemoViewModel(application: Application) : AndroidViewModel(applicati
     val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }
-    val tileStreamProvider = object : TileStreamProvider {
+    private val tileStreamProvider = object : TileStreamProvider {
         override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
             return try {
                 appContext.assets?.open("tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
