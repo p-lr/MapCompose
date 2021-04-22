@@ -28,6 +28,7 @@ internal class ZoomPanRotateState(
 
     private val minimumScaleMode: MinimumScaleMode = Fit
 
+    /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(1f)
     internal var rotation: AngleDegree by mutableStateOf(0f)
     internal var scrollX by mutableStateOf(0f)
@@ -77,6 +78,13 @@ internal class ZoomPanRotateState(
         stateChangeListener.onStateChanged()
     }
 
+    @Suppress("unused")
+    fun setRotation(angle: AngleDegree) {
+        this.rotation = angle.modulo()
+        updateCentroid()
+        stateChangeListener.onStateChanged()
+    }
+
     /**
      * Scales the layout with animated scale, without maintaining scroll position.
      *
@@ -94,6 +102,19 @@ internal class ZoomPanRotateState(
                 Animatable(0f).animateTo(1f, animationSpec) {
                     setScale(lerp(currScale, scale, value))
                 }
+            }
+        }
+    }
+
+    @Suppress("unused")
+    fun smoothRotateTo(
+        angle: AngleDegree,
+        animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+    ) {
+        scope?.launch {
+            val currRotation = this@ZoomPanRotateState.rotation
+            Animatable(0f).animateTo(1f, animationSpec) {
+                setRotation(lerp(currRotation, angle, value))
             }
         }
     }
@@ -141,6 +162,7 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
+    @Suppress("unused")
     fun smoothScaleWithFocalPoint(
         focusX: Float,
         focusY: Float,
@@ -181,9 +203,7 @@ internal class ZoomPanRotateState(
     }
 
     override fun onRotationDelta(rotationDelta: Float) {
-        rotation = (rotation + rotationDelta).modulo()
-        updateCentroid()
-        stateChangeListener.onStateChanged()
+        setRotation(rotation + rotationDelta)
     }
 
     override fun onScrollDelta(scrollDelta: Offset) {
