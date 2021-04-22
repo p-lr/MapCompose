@@ -279,6 +279,14 @@ internal class ZoomPanRotateState(
 
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
         scope = composableScope
+
+        /* When the size changes, typically on device rotation, the scroll needs to be adapted so
+         * that we keep the same location at the center of the screen. */
+        setScroll(
+            scrollX = scrollX + (layoutSize.width - size.width) / 2,
+            scrollY = scrollY + (layoutSize.height - size.height) / 2
+        )
+
         layoutSize = size
         recalculateMinScale()
         setScale(scale)
