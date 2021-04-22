@@ -10,7 +10,7 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.InputStream
 
-class MapViewModel(application: Application) : AndroidViewModel(application) {
+class RotationDemoViewModel(application: Application) : AndroidViewModel(application) {
     val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }

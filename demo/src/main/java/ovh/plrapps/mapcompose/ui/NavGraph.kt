@@ -1,17 +1,10 @@
 package ovh.plrapps.mapcompose.ui
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-sealed class Screens : Parcelable {
-    @Parcelize
-    object Home : Screens()
+const val HOME = "home"
 
-    @Parcelize
-    data class Demo(val name: String) : Screens()
-}
-
-enum class MainDestinations {
-    HOME,
-    MAP_ALONE
+enum class MainDestinations(val title: String) {
+    MAP_ALONE("Simple map"),
+    MAP_WITH_ROTATION_CONTROLS("Map with rotation controls")
 }

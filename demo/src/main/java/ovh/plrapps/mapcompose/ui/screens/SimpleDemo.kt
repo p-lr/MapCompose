@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ovh.plrapps.mapcompose.ui.MapUI
-import ovh.plrapps.mapcompose.viewmodels.MapViewModel
+import ovh.plrapps.mapcompose.viewmodels.SimpleDemoViewModel
 
 
 @Composable
-fun MapDemo(modifier: Modifier = Modifier) {
-    val viewModel: MapViewModel = viewModel()
+fun MapDemoSimple(
+    modifier: Modifier = Modifier, viewModel: SimpleDemoViewModel
+) {
     MapUI(
         modifier
             .fillMaxSize()
