@@ -252,10 +252,10 @@ internal class ZoomPanRotateState(
     }
 
     override fun onDoubleTap(offSet: Offset) {
-        val destScale = constrainScale(
+        val destScale = (
             2.0.pow(floor(ln((scale * 2).toDouble()) / ln(2.0))).toFloat()
         ).let {
-            if (shouldLoopScale && it >= maxScale) minScale else it
+            if (shouldLoopScale && it > maxScale) minScale else it
         }
 
         val angleRad = -rotation.toRad()
