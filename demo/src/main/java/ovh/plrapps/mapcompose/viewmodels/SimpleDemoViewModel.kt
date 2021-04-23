@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -25,8 +26,9 @@ class SimpleDemoViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).also {
-            it.shouldLoopScale = true
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
+            shouldLoopScale = true
+            enableRotation()
         }
     )
 }

@@ -27,8 +27,8 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
     }
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).also {
-            it.shouldLoopScale = true
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
+            shouldLoopScale = true
         }
     )
 

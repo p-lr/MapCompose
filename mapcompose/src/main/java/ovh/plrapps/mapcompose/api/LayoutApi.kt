@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import androidx.compose.animation.core.AnimationSpec
@@ -16,11 +18,29 @@ var MapState.rotation: AngleDegree
         zoomPanRotateState.setRotation(value)
     }
 
+/**
+ * On double-tap, and if the scale is already at its maximum value, circle-back to the minimum scale.
+ */
 var MapState.shouldLoopScale
     get() = zoomPanRotateState.shouldLoopScale
     set(value) {
         zoomPanRotateState.shouldLoopScale = value
     }
+
+/**
+ * Enable the rotation by user gestures.
+ */
+fun MapState.enableRotation() {
+    zoomPanRotateState.isRotationEnabled = true
+}
+
+/**
+ * Discard rotation gestures. The map can still be programmatically rotated using APIs such as
+ * [smoothRotateTo].
+ */
+fun MapState.disableRotation() {
+    zoomPanRotateState.isRotationEnabled = false
+}
 
 /**
  * Animates the rotation of the map to the specified [angle] in decimal degrees.

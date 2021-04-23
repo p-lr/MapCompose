@@ -27,6 +27,7 @@ internal class ZoomPanRotateState(
     private var scope: CoroutineScope? = null
 
     private val minimumScaleMode: MinimumScaleMode = Fit
+    internal var isRotationEnabled = false
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(1f)
@@ -202,7 +203,9 @@ internal class ZoomPanRotateState(
     }
 
     override fun onRotationDelta(rotationDelta: Float) {
-        setRotation(rotation + rotationDelta)
+        if (isRotationEnabled) {
+            setRotation(rotation + rotationDelta)
+        }
     }
 
     override fun onScrollDelta(scrollDelta: Offset) {
