@@ -3,12 +3,15 @@ package ovh.plrapps.mapcompose.viewmodels
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +42,13 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
             addMarker("red", 0.5, 0.5) {
                 Box(modifier = Modifier
                     .background(Color.Red)
-                    .size(25.dp)
+                    .size(50.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consumeAllChanges()
+                            state.dragMarker("red", dragAmount)
+                        }
+                    }
                 )
             }
         }
@@ -49,10 +58,10 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
         state.smoothRotateTo(state.rotation + 90f)
     }
 
-    init {
-        viewModelScope.launch {
-            delay(5000)
-            state.moveMarker("red", 0.6, 0.2)
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            delay(5000)
+//            state.moveMarker("red", 0.6, 0.2)
+//        }
+//    }
 }

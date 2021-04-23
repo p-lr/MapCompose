@@ -25,6 +25,16 @@ internal class MarkerState {
         }
     }
 
+    /**
+     * Drags a marker with the provided delta (normalized) coordinates.
+     */
+    fun dragMarker(id: String, deltaX: Double, deltaY: Double) {
+        markers[id]?.apply {
+            x += deltaX
+            y += deltaY
+        }
+    }
+
     internal fun onMarkerClick(data: MarkerData) {
         println("marker click $data")
     }

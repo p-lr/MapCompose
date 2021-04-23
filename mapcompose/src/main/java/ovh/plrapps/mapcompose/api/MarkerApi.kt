@@ -22,3 +22,14 @@ fun MapState.removeMarker(id: String): Boolean {
 fun MapState.moveMarker(id: String, x: Double, y: Double) {
     markerState.moveMarker(id, x, y)
 }
+
+/**
+ * @param dragAmount The drag amount in pixels
+ */
+fun MapState.dragMarker(id: String, dragAmount: Offset) {
+    markerState.dragMarker(
+        id,
+        dragAmount.x.toDouble() / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
+        dragAmount.y.toDouble() / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
+    )
+}
