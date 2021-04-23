@@ -1,9 +1,12 @@
 package ovh.plrapps.mapcompose.ui
 
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.ui.layout.ZoomPanRotate
+import ovh.plrapps.mapcompose.ui.markers.MarkerLayout
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.view.TileCanvas
 
@@ -13,6 +16,7 @@ fun MapUI(
     state: MapState
 ) {
     val zoomPRState = state.zoomPanRotateState
+    val markerState = state.markerState
 
     ZoomPanRotate(
         modifier = modifier.clipToBounds(),
@@ -22,7 +26,7 @@ fun MapUI(
         paddingY = zoomPRState.paddingY,
     ) {
         TileCanvas(
-            modifier = modifier,
+            modifier = Modifier,
             zoomPRState = zoomPRState,
             visibleTilesResolver = state.visibleTilesResolver,
             tileSize = state.tileSize,
@@ -30,6 +34,17 @@ fun MapUI(
             colorFilterProvider = state.tileCanvasState.colorFilterProvider,
             tilesToRender = state.tileCanvasState.tilesToRender
         )
+
+        MarkerLayout(
+            modifier = Modifier,
+            zoomPRState = zoomPRState,
+        ) {
+            for (data in markerState.markers.values) {
+                Surface(Modifier.layoutId(data)) {
+                    data.c()
+                }
+            }
+        }
 
         for (c in state.childComposables.values) {
             c()

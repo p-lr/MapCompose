@@ -2,9 +2,16 @@ package ovh.plrapps.mapcompose.viewmodels
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
+import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.api.smoothRotateTo
@@ -29,6 +36,9 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
+            addMarker("red", 0.5, 0.5) {
+                Box(modifier = Modifier.background(Color.Red).size(25.dp))
+            }
         }
     )
 
