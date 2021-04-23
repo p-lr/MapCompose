@@ -14,3 +14,11 @@ fun MapState.addMarker(
 ) {
     markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, c)
 }
+
+fun MapState.removeMarker(id: String): Boolean {
+    return markerState.removeMarker(id)
+}
+
+fun MapState.moveMarker(id: String, x: Double, y: Double) {
+    markerState.moveMarker(id, x, y)
+}

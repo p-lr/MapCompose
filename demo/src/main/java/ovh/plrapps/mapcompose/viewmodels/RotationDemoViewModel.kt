@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.rotation
-import ovh.plrapps.mapcompose.api.shouldLoopScale
-import ovh.plrapps.mapcompose.api.smoothRotateTo
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.InputStream
@@ -37,12 +37,22 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             addMarker("red", 0.5, 0.5) {
-                Box(modifier = Modifier.background(Color.Red).size(25.dp))
+                Box(modifier = Modifier
+                    .background(Color.Red)
+                    .size(25.dp)
+                )
             }
         }
     )
 
     fun onRotate() {
         state.smoothRotateTo(state.rotation + 90f)
+    }
+
+    init {
+        viewModelScope.launch {
+            delay(5000)
+            state.moveMarker("red", 0.6, 0.2)
+        }
     }
 }

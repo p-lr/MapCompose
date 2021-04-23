@@ -1,5 +1,6 @@
 package ovh.plrapps.mapcompose.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,7 +41,12 @@ fun MapUI(
             zoomPRState = zoomPRState,
         ) {
             for (data in markerState.markers.values) {
-                Surface(Modifier.layoutId(data)) {
+                Surface(Modifier
+                    .layoutId(data)
+                    .clickable(
+                        onClick = { markerState.onMarkerClick(data) }
+                    )
+                ) {
                     data.c()
                 }
             }
