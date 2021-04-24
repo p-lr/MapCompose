@@ -14,9 +14,6 @@ import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -46,7 +43,7 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consumeAllChanges()
-                            state.dragMarker("red", dragAmount)
+                            state.moveMarkerBy("red", dragAmount)
                         }
                     }
                 )

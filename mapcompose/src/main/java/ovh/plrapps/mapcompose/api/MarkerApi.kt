@@ -20,16 +20,16 @@ fun MapState.removeMarker(id: String): Boolean {
 }
 
 fun MapState.moveMarker(id: String, x: Double, y: Double) {
-    markerState.moveMarker(id, x, y)
+    markerState.moveMarkerTo(id, x, y)
 }
 
 /**
- * @param dragAmount The drag amount in pixels
+ * @param deltaPx The displacement amount in pixels
  */
-fun MapState.dragMarker(id: String, dragAmount: Offset) {
-    markerState.dragMarker(
+fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
+    markerState.moveMarkerBy(
         id,
-        dragAmount.x.toDouble() / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
-        dragAmount.y.toDouble() / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
+        deltaPx.x.toDouble() / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
+        deltaPx.y.toDouble() / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
     )
 }

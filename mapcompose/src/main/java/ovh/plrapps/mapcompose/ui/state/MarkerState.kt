@@ -18,7 +18,7 @@ internal class MarkerState {
         return markers.remove(id) != null
     }
 
-    fun moveMarker(id: String, x: Double, y: Double) {
+    fun moveMarkerTo(id: String, x: Double, y: Double) {
         markers[id]?.apply {
             this.x = x
             this.y = y
@@ -26,9 +26,9 @@ internal class MarkerState {
     }
 
     /**
-     * Drags a marker with the provided delta (normalized) coordinates.
+     * Move a marker by the provided delta (normalized) coordinates.
      */
-    fun dragMarker(id: String, deltaX: Double, deltaY: Double) {
+    fun moveMarkerBy(id: String, deltaX: Double, deltaY: Double) {
         markers[id]?.apply {
             x += deltaX
             y += deltaY
