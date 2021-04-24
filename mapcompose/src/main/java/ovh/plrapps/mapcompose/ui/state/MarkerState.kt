@@ -8,6 +8,8 @@ import androidx.compose.ui.geometry.Offset
 
 internal class MarkerState {
     internal val markers = mutableStateMapOf<String, MarkerData>()
+    internal var markerMoveCb: MarkerMoveCb? = null
+    internal var markerClickCb: MarkerClickCb? = null
 
     fun addMarker(id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
                   c: @Composable () -> Unit) {
@@ -19,9 +21,13 @@ internal class MarkerState {
     }
 
     fun moveMarkerTo(id: String, x: Double, y: Double) {
-        markers[id]?.apply {
-            this.x = x
-            this.y = y
+        val marker = markers[id] ?: return
+        with(marker) {
+            val prevX = x
+            val prevY = y
+            this.x = x.coerceIn(0.0, 1.0)
+            this.y = y.coerceIn(0.0, 1.0)
+            onMarkerMove(this, this.x - prevX, this.y - prevY)
         }
     }
 
@@ -30,13 +36,26 @@ internal class MarkerState {
      */
     fun moveMarkerBy(id: String, deltaX: Double, deltaY: Double) {
         markers[id]?.apply {
-            x += deltaX
-            y += deltaY
+            x = (x + deltaX).coerceIn(0.0, 1.0)
+            y = (y + deltaY).coerceIn(0.0, 1.0)
+        }.also {
+            if (it != null) onMarkerMove(it, deltaX, deltaY)
         }
     }
 
+    /**
+     * If set, drag gestures will be handled for the marker identifiable by the [id].
+     */
+    fun setDraggable(id: String, draggable: Boolean) {
+        markers[id]?.isDraggable = draggable
+    }
+
+    private fun onMarkerMove(data: MarkerData, dx: Double, dy: Double) {
+        markerMoveCb?.invoke(data.id, data.x, data.y, dx, dy)
+    }
+
     internal fun onMarkerClick(data: MarkerData) {
-        println("marker click $data")
+        markerClickCb?.invoke(data.id, data.x, data.y)
     }
 }
 
@@ -49,6 +68,7 @@ internal class MarkerData(
 ) {
     var x: Double by mutableStateOf(x)
     var y: Double by mutableStateOf(y)
+    var isDraggable by mutableStateOf(false)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -70,3 +90,6 @@ internal class MarkerData(
         return result
     }
 }
+
+internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit

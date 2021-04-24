@@ -23,6 +23,24 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
     markerState.moveMarkerTo(id, x, y)
 }
 
+fun MapState.enableMarkerDrag(id: String) {
+    markerState.setDraggable(id, true)
+}
+
+fun MapState.disableMarkerDrag(id: String) {
+    markerState.setDraggable(id, false)
+}
+
+fun MapState.onMarkerMove(
+    cb : (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+) {
+    markerState.markerMoveCb = cb
+}
+
+fun MapState.onMarkerClick(cb : (id: String, x: Double, y: Double) -> Unit) {
+    markerState.markerClickCb = cb
+}
+
 /**
  * @param deltaPx The displacement amount in pixels
  */
