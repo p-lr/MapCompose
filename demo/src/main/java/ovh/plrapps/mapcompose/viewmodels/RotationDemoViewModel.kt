@@ -5,7 +5,9 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.rotation
+import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.smoothRotateTo
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -26,7 +28,10 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
     }
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
+            enableRotation()
+            scale = 0f
+        }
     )
 
     fun onRotate() {
