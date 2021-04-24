@@ -3,6 +3,9 @@ package ovh.plrapps.mapcompose.api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.rotateX
+import ovh.plrapps.mapcompose.utils.rotateY
+import ovh.plrapps.mapcompose.utils.toRad
 
 fun MapState.addMarker(
     id: String,
@@ -32,22 +35,30 @@ fun MapState.disableMarkerDrag(id: String) {
 }
 
 fun MapState.onMarkerMove(
-    cb : (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+    cb: (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
 ) {
     markerState.markerMoveCb = cb
 }
 
-fun MapState.onMarkerClick(cb : (id: String, x: Double, y: Double) -> Unit) {
+fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb
 }
 
 /**
+ * Move a marker, given a displacement in pixels. This is typically useful when programmatically
+ * simulating a drag gesture.
+ * This API is internally used when enabling drag gestures on a marker using [enableMarkerDrag].
+ *
+ * @param id The id of the marker
  * @param deltaPx The displacement amount in pixels
  */
 fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
+    val angle = -zoomPanRotateState.rotation.toRad()
+    val dx = rotateX(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
+    val dy = rotateY(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
     markerState.moveMarkerBy(
         id,
-        deltaPx.x.toDouble() / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
-        deltaPx.y.toDouble() / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
+        dx / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
+        dy / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
     )
 }
