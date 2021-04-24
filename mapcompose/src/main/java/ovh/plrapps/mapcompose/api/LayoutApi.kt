@@ -9,6 +9,15 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
 /**
+ * The scale of the map. By convention, the scale at full dimension is 1f.
+ */
+var MapState.scale: Float
+    get() = zoomPanRotateState.scale
+    set(value) {
+        zoomPanRotateState.setScale(value)
+    }
+
+/**
  * The [rotation] property is the angle (in decimal degrees) of rotation,
  * using the center of the view as the pivot point.
  */

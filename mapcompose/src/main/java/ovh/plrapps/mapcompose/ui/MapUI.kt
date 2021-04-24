@@ -2,10 +2,13 @@ package ovh.plrapps.mapcompose.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -47,9 +50,11 @@ fun MapUI(
             for (data in markerState.markers.values) {
                 Surface(Modifier
                     .layoutId(data)
+                    .clip(CircleShape)
                     .clickable(
-                        onClick = { markerState.onMarkerClick(data) }
-                    ).then (
+                        onClick = { markerState.onMarkerClick(data) },
+                    )
+                    .then(
                         if (data.isDraggable) {
                             Modifier.pointerInput(Unit) {
                                 detectDragGestures { change, dragAmount ->
@@ -58,7 +63,8 @@ fun MapUI(
                                 }
                             }
                         } else Modifier
-                    )
+                    ),
+                    color = Color.Transparent
                 ) {
                     data.c()
                 }

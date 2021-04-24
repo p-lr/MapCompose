@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onMarkerMove
+import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.InputStream
@@ -38,6 +39,7 @@ class MarkerDemoViewModel(application: Application) : AndroidViewModel(applicati
                 println("tap $id $x $y")
             }
             enableRotation()
+            scale = 0f // zoom-out to minimum scale
         }
     )
 

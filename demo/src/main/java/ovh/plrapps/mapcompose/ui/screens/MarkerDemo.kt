@@ -1,19 +1,20 @@
 package ovh.plrapps.mapcompose.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import ovh.plrapps.mapcompose.R
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
-import ovh.plrapps.mapcompose.api.onMarkerClick
-import ovh.plrapps.mapcompose.api.onMarkerMove
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.viewmodels.MarkerDemoViewModel
 
@@ -29,10 +30,11 @@ fun MarkerDemo(modifier: Modifier = Modifier, viewModel: MarkerDemoViewModel) {
         Button(onClick = {
             with(viewModel.state) {
                 addMarker("marker$markerCount", 0.5, 0.5) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color.Red)
-                            .size(50.dp)
+                    Icon(
+                        painter = painterResource(id = R.drawable.map_marker),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp),
+                        tint = Color(0xCC2196F3)
                     )
                 }
                 enableMarkerDrag("marker$markerCount")
