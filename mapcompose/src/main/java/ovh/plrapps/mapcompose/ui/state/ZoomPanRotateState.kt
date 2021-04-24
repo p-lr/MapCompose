@@ -22,7 +22,7 @@ import kotlin.math.*
 internal class ZoomPanRotateState(
     val fullWidth: Int,
     val fullHeight: Int,
-    val stateChangeListener: ZoomPanRotateStateListener
+    private val stateChangeListener: ZoomPanRotateStateListener
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
 
@@ -120,6 +120,9 @@ internal class ZoomPanRotateState(
     }
 
     /**
+     * TODO: Test this API. The dest scale isn't constrained, and scroll positions not depending on
+     * constrained dest scale are suspicious.
+     *
      * Animates the layout to the scale provided, and centers the viewport to the supplied scroll
      * position.
      *
@@ -128,7 +131,6 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    @Suppress("unused")
     fun slideToAndCenterWithScale(
         scrollX: Float,
         scrollY: Float,
@@ -162,22 +164,23 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    @Suppress("unused")
-    fun smoothScaleWithFocalPoint(
+    internal fun smoothScaleWithFocalPoint(
         focusX: Float,
         focusY: Float,
         destScale: Float,
         animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
     ) {
+        val destScaleCst = constrainScale(destScale)
         val startScale = scale
+        if (startScale == destScale) return
         val startScrollX = scrollX
         val startScrollY = scrollY
-        val destScrollX = getScrollAtOffsetAndScale(startScrollX, focusX, destScale / startScale)
-        val destScrollY = getScrollAtOffsetAndScale(startScrollY, focusY, destScale / startScale)
+        val destScrollX = getScrollAtOffsetAndScale(startScrollX, focusX, destScaleCst / startScale)
+        val destScrollY = getScrollAtOffsetAndScale(startScrollY, focusY, destScaleCst / startScale)
 
         scope?.launch {
             Animatable(0f).animateTo(1f, animationSpec) {
-                setScale(lerp(startScale, destScale, value))
+                setScale(lerp(startScale, destScaleCst, value))
                 setScroll(
                     scrollX = lerp(startScrollX, destScrollX, value),
                     scrollY = lerp(startScrollY, destScrollY, value)
