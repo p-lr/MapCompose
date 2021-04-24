@@ -2,16 +2,18 @@ package ovh.plrapps.mapcompose.viewmodels
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.rotation
-import ovh.plrapps.mapcompose.api.smoothRotateTo
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.onMarkerClick
+import ovh.plrapps.mapcompose.api.onMarkerMove
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.InputStream
 
-class RotationDemoViewModel(application: Application) : AndroidViewModel(application) {
+class MarkerDemoViewModel(application: Application) : AndroidViewModel(application) {
     val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }
@@ -25,11 +27,19 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    var markerCount by mutableStateOf(0)
+
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
+            onMarkerMove { id, x, y, _, _ ->
+                println("move $id $x $y")
+            }
+            onMarkerClick { id, x, y ->
+                println("tap $id $x $y")
+            }
+            enableRotation()
+        }
     )
 
-    fun onRotate() {
-        state.smoothRotateTo(state.rotation + 90f)
-    }
+    fun addMarker() = markerCount++
 }

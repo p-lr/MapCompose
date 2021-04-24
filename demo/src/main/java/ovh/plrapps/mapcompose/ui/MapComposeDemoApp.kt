@@ -9,8 +9,10 @@ import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import ovh.plrapps.mapcompose.ui.screens.Home
 import ovh.plrapps.mapcompose.ui.screens.MapDemoSimple
+import ovh.plrapps.mapcompose.ui.screens.MarkerDemo
 import ovh.plrapps.mapcompose.ui.screens.RotationDemo
 import ovh.plrapps.mapcompose.ui.theme.MapComposeTheme
+import ovh.plrapps.mapcompose.viewmodels.MarkerDemoViewModel
 import ovh.plrapps.mapcompose.viewmodels.RotationDemoViewModel
 import ovh.plrapps.mapcompose.viewmodels.SimpleDemoViewModel
 
@@ -20,6 +22,7 @@ fun MapComposeDemoApp() {
 
     val simpleDemoVM: SimpleDemoViewModel = viewModel()
     val rotationDemoVM: RotationDemoViewModel = viewModel()
+    val markerDemoVM: MarkerDemoViewModel = viewModel()
 
     MapComposeTheme {
         NavHost(navController, startDestination = HOME) {
@@ -33,6 +36,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.MAP_WITH_ROTATION_CONTROLS.name) {
                 RotationDemo(viewModel = rotationDemoVM)
+            }
+            composable(MainDestinations.MAP_WITH_MARKERS.name) {
+                MarkerDemo(viewModel = markerDemoVM)
             }
         }
     }
