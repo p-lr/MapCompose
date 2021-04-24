@@ -13,10 +13,7 @@ import ovh.plrapps.mapcompose.api.Forced
 import ovh.plrapps.mapcompose.api.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.layout.GestureListener
 import ovh.plrapps.mapcompose.ui.layout.LayoutSizeChangeListener
-import ovh.plrapps.mapcompose.utils.AngleDegree
-import ovh.plrapps.mapcompose.utils.lerp
-import ovh.plrapps.mapcompose.utils.modulo
-import ovh.plrapps.mapcompose.utils.toRad
+import ovh.plrapps.mapcompose.utils.*
 import kotlin.math.*
 
 internal class ZoomPanRotateState(
@@ -195,14 +192,32 @@ internal class ZoomPanRotateState(
 
         /* Pinch and zoom magic */
         val effectiveScaleRatio = scale / formerScale
+        val angleRad = -rotation.toRad()
+        val centroidRotated = rotateFocalPoint(centroid, angleRad)
         setScroll(
-            scrollX = getScrollAtOffsetAndScale(scrollX, centroid.x, effectiveScaleRatio),
-            scrollY = getScrollAtOffsetAndScale(scrollY, centroid.y, effectiveScaleRatio)
+            scrollX = getScrollAtOffsetAndScale(scrollX, centroidRotated.x, effectiveScaleRatio),
+            scrollY = getScrollAtOffsetAndScale(scrollY, centroidRotated.y, effectiveScaleRatio)
         )
     }
 
     private fun getScrollAtOffsetAndScale(scroll: Float, offSet: Float, scaleRatio: Float): Float {
         return (scroll + offSet) * scaleRatio - offSet
+    }
+
+    /**
+     * Rotates a focal point around the center of the layout.
+     */
+    private fun rotateFocalPoint(point: Offset, angleRad: AngleRad): Offset {
+        val x = if (angleRad == 0f) point.x else {
+            layoutSize.height / 2 * sin(angleRad) + layoutSize.width / 2 * (1 - cos(angleRad)) +
+                    point.x * cos(angleRad) - point.y * sin(angleRad)
+        }
+
+        val y = if (angleRad == 0f) point.y else {
+            layoutSize.height / 2 * (1 - cos(angleRad)) - layoutSize.width / 2 * sin(angleRad) +
+                    point.x * sin(angleRad) + point.y * cos(angleRad)
+        }
+        return Offset(x, y)
     }
 
     override fun onRotationDelta(rotationDelta: Float) {
@@ -256,27 +271,19 @@ internal class ZoomPanRotateState(
         isFlinging = false
     }
 
-    override fun onDoubleTap(offSet: Offset) {
+    override fun onDoubleTap(focalPt: Offset) {
         val destScale = (
-            2.0.pow(floor(ln((scale * 2).toDouble()) / ln(2.0))).toFloat()
-        ).let {
-            if (shouldLoopScale && it > maxScale) minScale else it
-        }
+                2.0.pow(floor(ln((scale * 2).toDouble()) / ln(2.0))).toFloat()
+                ).let {
+                if (shouldLoopScale && it > maxScale) minScale else it
+            }
 
         val angleRad = -rotation.toRad()
-        val offSetX = if (angleRad == 0f) offSet.x else {
-            layoutSize.height / 2 * sin(angleRad) + layoutSize.width / 2 * (1 - cos(angleRad)) +
-                    offSet.x * cos(angleRad) - offSet.y * sin(angleRad)
-        }
-
-        val offSetY = if (angleRad == 0f) offSet.y else {
-            layoutSize.height / 2 * (1 - cos(angleRad)) - layoutSize.width / 2 * sin(angleRad) +
-                    offSet.x * sin(angleRad) + offSet.y * cos(angleRad)
-        }
+        val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
 
         smoothScaleWithFocalPoint(
-            offSetX,
-            offSetY,
+            focalPtRotated.x,
+            focalPtRotated.y,
             destScale,
             SpringSpec(stiffness = Spring.StiffnessMedium)
         )

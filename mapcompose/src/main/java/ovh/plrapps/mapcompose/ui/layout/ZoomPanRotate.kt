@@ -70,7 +70,7 @@ internal interface GestureListener {
     fun onScrollDelta(scrollDelta: Offset)
     fun onFling(velocity: Velocity)
     fun onTap()
-    fun onDoubleTap(offSet: Offset)
+    fun onDoubleTap(focalPt: Offset)
 }
 
 internal interface LayoutSizeChangeListener {
