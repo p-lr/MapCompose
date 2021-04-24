@@ -25,3 +25,11 @@ fun rotateX(x: Double, y: Double, angleRad: AngleRad): Double {
 fun rotateY(x: Double, y: Double, angleRad: AngleRad): Double {
     return x * sin(angleRad) + y * cos(angleRad)
 }
+
+fun rotateCenteredX(x: Double, y: Double, centerX: Double, centerY: Double, angleRad: AngleRad): Double {
+    return centerX + (x - centerX) * cos(angleRad) - (y - centerY) * sin(angleRad)
+}
+
+fun rotateCenteredY(x: Double, y: Double, centerX: Double, centerY: Double, angleRad: AngleRad): Double {
+    return centerY + (x - centerX) * sin(angleRad) + (y - centerY) * cos(angleRad)
+}

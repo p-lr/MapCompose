@@ -49,6 +49,7 @@ class RotationDemoViewModel(application: Application) : AndroidViewModel(applica
             onMarkerClick { id, x, y ->
                 println("tap $id $x $y")
             }
+            enableRotation()
         }
     )
 

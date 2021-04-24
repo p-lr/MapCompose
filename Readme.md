@@ -12,11 +12,12 @@ everything goes well, it should be done in a few weeks.
 * Core library
   * [x] Implement the equivalent of ZoomPanLayout in compose
   * [x] Implement a first minimal version (tiles loading only)
-  * [ ] Markers support
+  * [x] Markers support
   * [ ] Paths support
 
 * Demo app
-  * [ ] Simple map view, with a button for allowing/disabling rotation
+  * [x] Simple map view
+  * [x] More advanced rotation APIs use
   * [ ] Map with markers
   * [ ] Map with paths
 

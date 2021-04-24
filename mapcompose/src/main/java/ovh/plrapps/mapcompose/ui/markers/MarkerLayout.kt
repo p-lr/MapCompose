@@ -10,6 +10,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.ui.state.MarkerData
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
+import ovh.plrapps.mapcompose.utils.rotateCenteredX
+import ovh.plrapps.mapcompose.utils.rotateCenteredY
+import ovh.plrapps.mapcompose.utils.toRad
 
 @Composable
 internal fun MarkerLayout(
@@ -37,10 +40,24 @@ internal fun MarkerLayout(
                 val widthOffset = placeable.measuredWidth * data.relativeOffset.x + data.absoluteOffset.x
                 val heightOffset = placeable.measuredHeight * data.relativeOffset.y + data.absoluteOffset.y
 
-                placeable.place(
-                    x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
-                    y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt()
-                )
+                if (zoomPRState.rotation == 0f) {
+                    placeable.place(
+                        x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
+                        y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt()
+                    )
+                } else {
+                    with(zoomPRState) {
+                        val angleRad = rotation.toRad()
+                        val xFullPx = data.x * fullWidth * scale
+                        val yFullPx = data.y * fullHeight * scale
+                        val centerX = centroidX * fullWidth * scale
+                        val centerY = centroidY * fullHeight * scale
+                        placeable.place(
+                            x = (rotateCenteredX(xFullPx, yFullPx, centerX, centerY, angleRad) + widthOffset).toInt(),
+                            y = (rotateCenteredY(xFullPx, yFullPx, centerX, centerY, angleRad) + heightOffset).toInt()
+                        )
+                    }
+                }
             }
         }
     }
