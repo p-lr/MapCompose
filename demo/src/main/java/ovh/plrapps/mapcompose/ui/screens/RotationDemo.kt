@@ -9,10 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.ui.MapUI
-import ovh.plrapps.mapcompose.viewmodels.RotationDemoViewModel
+import ovh.plrapps.mapcompose.viewmodels.RotationVM
 
 @Composable
-fun RotationDemo(modifier: Modifier = Modifier, viewModel: RotationDemoViewModel) {
+fun RotationDemo(modifier: Modifier = Modifier, viewModel: RotationVM) {
     val sliderValue = viewModel.state.rotation / 360f
 
     Column(modifier.fillMaxSize()) {

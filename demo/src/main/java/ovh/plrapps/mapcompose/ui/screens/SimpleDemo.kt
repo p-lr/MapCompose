@@ -6,12 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import ovh.plrapps.mapcompose.ui.MapUI
-import ovh.plrapps.mapcompose.viewmodels.SimpleDemoViewModel
+import ovh.plrapps.mapcompose.viewmodels.SimpleDemoVM
 
 
 @Composable
 fun MapDemoSimple(
-    modifier: Modifier = Modifier, viewModel: SimpleDemoViewModel
+    modifier: Modifier = Modifier, viewModel: SimpleDemoVM
 ) {
     MapUI(
         modifier

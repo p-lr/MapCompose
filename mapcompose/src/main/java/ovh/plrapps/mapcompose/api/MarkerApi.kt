@@ -1,5 +1,8 @@
 package ovh.plrapps.mapcompose.api
 
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -61,4 +64,46 @@ fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
         dx / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
         dy / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
     )
+}
+
+fun MapState.centerOnMarker(
+    id: String,
+    destScale: Float,
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    markerState.markers[id]?.also {
+        val size = zoomPanRotateState.layoutSize
+        val destScrollX = it.x * zoomPanRotateState.fullWidth * destScale - size.width / 2
+        val destScrollY = it.y * zoomPanRotateState.fullHeight * destScale - size.height / 2
+
+        zoomPanRotateState.smoothScrollAndScale(
+            destScrollX.toFloat(),
+            destScrollY.toFloat(),
+            destScale,
+            animationSpec
+        )
+    }
+}
+
+/**
+ * TODO: this API should rely on a scroll + scale animation. It should trigger a scroll animation
+ * only.
+ */
+fun MapState.centerOnMarker(
+    id: String,
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    markerState.markers[id]?.also {
+        val size = zoomPanRotateState.layoutSize
+        val scale = zoomPanRotateState.scale
+        val destScrollX = it.x * zoomPanRotateState.fullWidth * scale - size.width / 2
+        val destScrollY = it.y * zoomPanRotateState.fullHeight * scale - size.height / 2
+
+        zoomPanRotateState.smoothScrollAndScale(
+            destScrollX.toFloat(),
+            destScrollY.toFloat(),
+            scale,
+            animationSpec
+        )
+    }
 }

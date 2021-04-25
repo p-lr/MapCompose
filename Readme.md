@@ -18,7 +18,8 @@ everything goes well, it should be done in a few weeks.
 * Demo app
   * [x] Simple map view
   * [x] More advanced rotation APIs use
-  * [ ] Map with markers
+  * [x] Map with markers
+  * [x] Center on marker with animation
   * [ ] Map with paths
 
 * Publication

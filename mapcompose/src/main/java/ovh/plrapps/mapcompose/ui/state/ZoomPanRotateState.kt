@@ -58,7 +58,6 @@ internal class ZoomPanRotateState(
     /* Used for fling animation */
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
-    private var isFlinging = false
 
     @Suppress("unused")
     fun setScale(scale: Float) {
@@ -108,6 +107,7 @@ internal class ZoomPanRotateState(
         angle: AngleDegree,
         animationSpec: AnimationSpec<Float>
     ) {
+        /* We don't have to stop scrolling animation while doing that */
         scope?.launch {
             val currRotation = this@ZoomPanRotateState.rotation
             Animatable(0f).animateTo(1f, animationSpec) {
@@ -117,31 +117,25 @@ internal class ZoomPanRotateState(
     }
 
     /**
-     * TODO: Test this API. The dest scale isn't constrained, and scroll positions not depending on
-     * constrained dest scale are suspicious.
+     * Animates the scroll and the scale together with the supplied destination values.
      *
-     * Animates the layout to the scale provided, and centers the viewport to the supplied scroll
-     * position.
-     *
-     * @param scrollX Horizontal scroll of the destination point.
-     * @param scrollY Vertical scroll of the destination point.
+     * @param destScrollX Horizontal scroll of the destination point.
+     * @param destScrollY Vertical scroll of the destination point.
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    fun slideToAndCenterWithScale(
-        scrollX: Float,
-        scrollY: Float,
+    fun smoothScrollAndScale(
+        destScrollX: Float,
+        destScrollY: Float,
         destScale: Float,
-        animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+        animationSpec: AnimationSpec<Float>
     ) {
         val startScrollX = this.scrollX
         val startScrollY = this.scrollY
-        val destScrollX = scrollX - layoutSize.width / 2
-        val destScrollY = scrollY - layoutSize.height / 2
-
         val startScale = this.scale
 
         scope?.launch {
+            scrollAnimatable.stop()
             Animatable(0f).animateTo(1f, animationSpec) {
                 setScale(lerp(startScale, destScale, value))
                 setScroll(
@@ -161,7 +155,7 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    internal fun smoothScaleWithFocalPoint(
+    fun smoothScaleWithFocalPoint(
         focusX: Float,
         focusY: Float,
         destScale: Float,
@@ -175,15 +169,7 @@ internal class ZoomPanRotateState(
         val destScrollX = getScrollAtOffsetAndScale(startScrollX, focusX, destScaleCst / startScale)
         val destScrollY = getScrollAtOffsetAndScale(startScrollY, focusY, destScaleCst / startScale)
 
-        scope?.launch {
-            Animatable(0f).animateTo(1f, animationSpec) {
-                setScale(lerp(startScale, destScaleCst, value))
-                setScroll(
-                    scrollX = lerp(startScrollX, destScrollX, value),
-                    scrollY = lerp(startScrollY, destScrollY, value)
-                )
-            }
-        }
+        smoothScrollAndScale(destScrollX, destScrollY, destScale, animationSpec)
     }
 
     override fun onScaleRatio(scaleRatio: Float, centroid: Offset) {
@@ -241,8 +227,6 @@ internal class ZoomPanRotateState(
     }
 
     override fun onFling(velocity: Velocity) {
-        isFlinging = true
-
         val rotRad = -rotation.toRad()
         val velocityX = if (rotRad == 0f) velocity.x else {
             velocity.x * cos(rotRad) - velocity.y * sin(rotRad)
@@ -257,18 +241,18 @@ internal class ZoomPanRotateState(
                 initialVelocity = -Offset(velocityX, velocityY),
                 animationSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec(),
             ) {
-                if (isFlinging) {
-                    setScroll(
-                        scrollX = value.x,
-                        scrollY = value.y
-                    )
-                }
+                setScroll(
+                    scrollX = value.x,
+                    scrollY = value.y
+                )
             }
         }
     }
 
     override fun onTap() {
-        isFlinging = false
+        scope?.launch {
+            scrollAnimatable.stop()
+        }
     }
 
     override fun onDoubleTap(focalPt: Offset) {

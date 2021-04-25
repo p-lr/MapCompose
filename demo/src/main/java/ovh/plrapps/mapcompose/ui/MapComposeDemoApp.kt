@@ -7,22 +7,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
-import ovh.plrapps.mapcompose.ui.screens.Home
-import ovh.plrapps.mapcompose.ui.screens.MapDemoSimple
-import ovh.plrapps.mapcompose.ui.screens.MarkerDemo
-import ovh.plrapps.mapcompose.ui.screens.RotationDemo
+import ovh.plrapps.mapcompose.ui.screens.*
 import ovh.plrapps.mapcompose.ui.theme.MapComposeTheme
-import ovh.plrapps.mapcompose.viewmodels.MarkerDemoViewModel
-import ovh.plrapps.mapcompose.viewmodels.RotationDemoViewModel
-import ovh.plrapps.mapcompose.viewmodels.SimpleDemoViewModel
+import ovh.plrapps.mapcompose.viewmodels.AddingMarkerVM
+import ovh.plrapps.mapcompose.viewmodels.CenteringOnMarkerVM
+import ovh.plrapps.mapcompose.viewmodels.RotationVM
+import ovh.plrapps.mapcompose.viewmodels.SimpleDemoVM
 
 @Composable
 fun MapComposeDemoApp() {
     val navController = rememberNavController()
 
-    val simpleDemoVM: SimpleDemoViewModel = viewModel()
-    val rotationDemoVM: RotationDemoViewModel = viewModel()
-    val markerDemoVM: MarkerDemoViewModel = viewModel()
+    val simpleDemoVM: SimpleDemoVM = viewModel()
+    val rotationVM: RotationVM = viewModel()
+    val addingMarkerVM: AddingMarkerVM = viewModel()
+    val centeringOnMarkerVM: CenteringOnMarkerVM = viewModel()
 
     MapComposeTheme {
         NavHost(navController, startDestination = HOME) {
@@ -35,10 +34,16 @@ fun MapComposeDemoApp() {
                 MapDemoSimple(viewModel = simpleDemoVM)
             }
             composable(MainDestinations.MAP_WITH_ROTATION_CONTROLS.name) {
-                RotationDemo(viewModel = rotationDemoVM)
+                RotationDemo(viewModel = rotationVM)
             }
-            composable(MainDestinations.MAP_WITH_MARKERS.name) {
-                MarkerDemo(viewModel = markerDemoVM)
+            composable(MainDestinations.ADDING_MARKERS.name) {
+                AddingMarkerDemo(viewModel = addingMarkerVM)
+            }
+            composable(MainDestinations.CENTERING_ON_MARKER.name) {
+                CenteringOnMarkerDemo(
+                    viewModel = centeringOnMarkerVM,
+                    onCenter = centeringOnMarkerVM::onCenter
+                )
             }
         }
     }

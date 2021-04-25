@@ -16,10 +16,10 @@ import ovh.plrapps.mapcompose.R
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.ui.MapUI
-import ovh.plrapps.mapcompose.viewmodels.MarkerDemoViewModel
+import ovh.plrapps.mapcompose.viewmodels.AddingMarkerVM
 
 @Composable
-fun MarkerDemo(modifier: Modifier = Modifier, viewModel: MarkerDemoViewModel) {
+fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM) {
     val markerCount = viewModel.markerCount
 
     Column(modifier.fillMaxSize()) {

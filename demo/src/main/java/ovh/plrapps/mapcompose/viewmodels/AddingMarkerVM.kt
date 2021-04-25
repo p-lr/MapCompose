@@ -10,23 +10,14 @@ import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onMarkerMove
 import ovh.plrapps.mapcompose.api.scale
-import ovh.plrapps.mapcompose.core.TileStreamProvider
+import ovh.plrapps.mapcompose.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.io.InputStream
 
-class MarkerDemoViewModel(application: Application) : AndroidViewModel(application) {
-    val appContext: Context by lazy {
+class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
+    private val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }
-    private val tileStreamProvider = object : TileStreamProvider {
-        override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-            return try {
-                appContext.assets?.open("tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
-            } catch (e: Exception) {
-                null
-            }
-        }
-    }
+    private val tileStreamProvider = makeTileStreamProvider(appContext)
 
     var markerCount by mutableStateOf(0)
 
