@@ -1,8 +1,10 @@
 package ovh.plrapps.mapcompose.ui.state
 
+import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
@@ -59,7 +61,10 @@ internal class ZoomPanRotateState(
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
 
-    private val doubleTapSpec = TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
+    private val doubleTapSpec =
+        TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
+    private val flingSpec =
+        SplineBasedFloatDecayAnimationSpec(Density(2f)).generateDecayAnimationSpec<Offset>()
 
     @Suppress("unused")
     fun setScale(scale: Float) {
@@ -241,7 +246,7 @@ internal class ZoomPanRotateState(
             scrollAnimatable.snapTo(Offset(scrollX, scrollY))
             scrollAnimatable.animateDecay(
                 initialVelocity = -Offset(velocityX, velocityY),
-                animationSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec(),
+                animationSpec = flingSpec,
             ) {
                 setScroll(
                     scrollX = value.x,

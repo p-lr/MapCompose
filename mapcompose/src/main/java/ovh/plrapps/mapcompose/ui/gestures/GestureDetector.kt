@@ -19,6 +19,7 @@ suspend fun PointerInputScope.detectGestures(
     onFling: (velocity: Velocity) -> Unit
 ) {
     val flingVelocityThreshold = 200.dp.toPx().pow(2)
+    val flingVelocityMaxRange = -8000f..8000f
 
     forEachGesture {
         awaitPointerEventScope {
@@ -87,9 +88,13 @@ suspend fun PointerInputScope.detectGestures(
 
             val velocity = velocityTracker.calculateVelocity()
             val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
+            val velocityCapped = velocity.copy(
+                x = velocity.x.coerceIn(flingVelocityMaxRange),
+                y = velocity.y.coerceIn(flingVelocityMaxRange)
+            )
 
             if (velocitySquared > flingVelocityThreshold) {
-                onFling(velocity)
+                onFling(velocityCapped)
             }
         }
     }
