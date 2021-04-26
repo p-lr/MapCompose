@@ -59,6 +59,8 @@ internal class ZoomPanRotateState(
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
 
+    private val doubleTapSpec = TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
+
     @Suppress("unused")
     fun setScale(scale: Float) {
         this.scale = constrainScale(scale)
@@ -159,7 +161,7 @@ internal class ZoomPanRotateState(
         focusX: Float,
         focusY: Float,
         destScale: Float,
-        animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+        animationSpec: AnimationSpec<Float>
     ) {
         val destScaleCst = constrainScale(destScale)
         val startScale = scale
@@ -269,7 +271,7 @@ internal class ZoomPanRotateState(
             focalPtRotated.x,
             focalPtRotated.y,
             destScale,
-            SpringSpec(stiffness = Spring.StiffnessMedium)
+            doubleTapSpec
         )
     }
 
