@@ -5,6 +5,7 @@ package ovh.plrapps.mapcompose.api
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
@@ -25,6 +26,16 @@ var MapState.rotation: AngleDegree
     get() = zoomPanRotateState.rotation
     set(value) {
         zoomPanRotateState.setRotation(value)
+    }
+
+/**
+ * The [scroll] property defines the position of the top-left corner of the visible viewport.
+ * This is a low-level concept. To scroll to a known position, prefer [centerTo] API.
+ */
+var MapState.scroll: Offset
+    get() = Offset(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
+    set(value) {
+        zoomPanRotateState.setScroll(value.x, value.y)
     }
 
 /**
@@ -59,5 +70,57 @@ fun MapState.smoothRotateTo(
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     zoomPanRotateState.smoothRotateTo(angle, animationSpec)
+}
+
+/**
+ * Center on a position, animating the scroll position and the scale.
+ *
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ * @param destScale The destination scale
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ */
+fun MapState.centerTo(
+    x: Double,
+    y: Double,
+    destScale: Float,
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    with(zoomPanRotateState) {
+        val destScrollX = x * fullWidth * destScale - layoutSize.width / 2
+        val destScrollY = y * fullHeight * destScale - layoutSize.height / 2
+
+        smoothScrollAndScale(
+            destScrollX.toFloat(),
+            destScrollY.toFloat(),
+            destScale,
+            animationSpec
+        )
+    }
+}
+
+/**
+ * Center on a position, animating the scroll position.
+ *
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ */
+fun MapState.centerTo(
+    x: Double,
+    y: Double,
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    with(zoomPanRotateState) {
+        val destScrollX = x * fullWidth * scale - layoutSize.width / 2
+        val destScrollY = y * fullHeight * scale - layoutSize.height / 2
+
+        smoothScrollAndScale(
+            destScrollX.toFloat(),
+            destScrollY.toFloat(),
+            scale,
+            animationSpec
+        )
+    }
 }
 

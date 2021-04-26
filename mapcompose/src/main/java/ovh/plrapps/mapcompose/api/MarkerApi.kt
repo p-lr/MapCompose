@@ -12,6 +12,18 @@ import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
 import ovh.plrapps.mapcompose.utils.toRad
 
+/**
+ * Add a marker to the given position.
+ *
+ * @param id The id of the marker
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ * @param relativeOffset The x-axis and y-axis positions of the marker will be respectively offset by
+ * the width of the marker multiplied by the x value of the offset, and the height of the marker
+ * multiplied by the y value of the offset.
+ * @param absoluteOffset The x-axis and y-axis positions of a marker will be respectively offset by
+ * the x and y values of the offset.
+ */
 fun MapState.addMarker(
     id: String,
     x: Double,
@@ -23,28 +35,56 @@ fun MapState.addMarker(
     markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, c)
 }
 
+/**
+ * Remove a marker.
+ *
+ * @param id The id of the marker
+ */
 fun MapState.removeMarker(id: String): Boolean {
     return markerState.removeMarker(id)
 }
 
+/**
+ * Move marker to the given position.
+ *
+ * @param id The id of the marker
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ */
 fun MapState.moveMarker(id: String, x: Double, y: Double) {
     markerState.moveMarkerTo(id, x, y)
 }
 
+/**
+ * Enable drag gestures on a marker.
+ *
+ * @param id The id of the marker
+ */
 fun MapState.enableMarkerDrag(id: String) {
     markerState.setDraggable(id, true)
 }
 
+/**
+ * Disable drag gestures on a marker.
+ *
+ * @param id The id of the marker
+ */
 fun MapState.disableMarkerDrag(id: String) {
     markerState.setDraggable(id, false)
 }
 
+/**
+ * Register a callback which will be invoked for every marker move (API move and user drag).
+ */
 fun MapState.onMarkerMove(
     cb: (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
 ) {
     markerState.markerMoveCb = cb
 }
 
+/**
+ * Register a callback which will be invoked when a marker is tapped.
+ */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb
 }
