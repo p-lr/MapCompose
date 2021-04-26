@@ -2,7 +2,7 @@ package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import androidx.compose.ui.graphics.ColorFilter
-import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.demo.ui.state.MapState
 
 /**
  * Controls the fade-in effect of tiles. Provided speed should be in the range [0.01f, 1.0f].

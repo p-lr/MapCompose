@@ -5,7 +5,7 @@ package ovh.plrapps.mapcompose.api
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
-import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
 /**
