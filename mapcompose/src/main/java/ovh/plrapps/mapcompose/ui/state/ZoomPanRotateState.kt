@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
@@ -52,10 +53,9 @@ internal class ZoomPanRotateState(
     var shouldLoopScale = false
 
     /**
-     * When scaled out beyond the scaled permitted by [Fill], these paddings are used by the layout.
+     * When scaled out beyond the scaled permitted by [Fill], the padding is used by the layout.
      */
-    internal var paddingX: Int by mutableStateOf(0)
-    internal var paddingY: Int by mutableStateOf(0)
+    internal var padding: IntOffset by mutableStateOf(IntOffset.Zero)
 
     /* Used for fling animation */
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
@@ -329,17 +329,18 @@ internal class ZoomPanRotateState(
     }
 
     private fun updatePadding() {
-        paddingX = if (fullWidth * scale >= layoutSize.width) {
+        val paddingX = if (fullWidth * scale >= layoutSize.width) {
             0
         } else {
             layoutSize.width / 2 - (fullWidth * scale).roundToInt() / 2
         }
 
-        paddingY = if (fullHeight * scale >= layoutSize.height) {
+        val paddingY = if (fullHeight * scale >= layoutSize.height) {
             0
         } else {
             layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
         }
+        padding = IntOffset(paddingX, paddingY)
     }
 }
 

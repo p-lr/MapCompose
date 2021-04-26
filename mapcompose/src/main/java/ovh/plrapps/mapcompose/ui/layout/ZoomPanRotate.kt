@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
@@ -19,8 +20,7 @@ internal fun ZoomPanRotate(
     modifier: Modifier = Modifier,
     gestureListener: GestureListener,
     layoutSizeChangeListener: LayoutSizeChangeListener,
-    paddingX: Int,
-    paddingY: Int,
+    padding: IntOffset,
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -51,14 +51,14 @@ internal fun ZoomPanRotate(
     ) { measurables, constraints ->
         val placeables = measurables.map { measurable ->
             // Measure each children
-            measurable.measure(constraints.copy(minHeight = 0))
+            measurable.measure(constraints)
         }
 
         // Set the size of the layout as big as it can
         layout(constraints.maxWidth, constraints.maxHeight) {
             // Place children in the parent layout
             placeables.forEach { placeable ->
-                placeable.place(x = paddingX, y = paddingY)
+                placeable.place(x = padding.x, y = padding.y)
             }
         }
     }

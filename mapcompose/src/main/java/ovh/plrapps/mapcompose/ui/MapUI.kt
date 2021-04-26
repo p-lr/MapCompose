@@ -30,8 +30,7 @@ fun MapUI(
         modifier = modifier.clipToBounds(),
         gestureListener = zoomPRState,
         layoutSizeChangeListener = zoomPRState,
-        paddingX = zoomPRState.paddingX,
-        paddingY = zoomPRState.paddingY,
+        padding = zoomPRState.padding,
     ) {
         TileCanvas(
             modifier = Modifier,
