@@ -124,6 +124,28 @@ internal class ZoomPanRotateState(
     }
 
     /**
+     * Animates the scroll to the destination value.
+     */
+    fun smoothScrollTo(
+        destScrollX: Float,
+        destScrollY: Float,
+        animationSpec: AnimationSpec<Float>
+    ) {
+        val startScrollX = this.scrollX
+        val startScrollY = this.scrollY
+
+        scope?.launch {
+            scrollAnimatable.stop()
+            Animatable(0f).animateTo(1f, animationSpec) {
+                setScroll(
+                    scrollX = lerp(startScrollX, destScrollX, value),
+                    scrollY = lerp(startScrollY, destScrollY, value)
+                )
+            }
+        }
+    }
+
+    /**
      * Animates the scroll and the scale together with the supplied destination values.
      *
      * @param destScrollX Horizontal scroll of the destination point.

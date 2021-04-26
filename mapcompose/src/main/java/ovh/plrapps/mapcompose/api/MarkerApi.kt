@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import androidx.compose.animation.core.AnimationSpec
@@ -66,6 +68,13 @@ fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
     )
 }
 
+/**
+ * Center on a marker, animating the scroll position and the scale.
+ *
+ * @param id The id of the marker
+ * @param destScale The destination scale
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ */
 fun MapState.centerOnMarker(
     id: String,
     destScale: Float,
@@ -86,8 +95,10 @@ fun MapState.centerOnMarker(
 }
 
 /**
- * TODO: this API should rely on a scroll + scale animation. It should trigger a scroll animation
- * only.
+ * Center on a marker, animating the scroll only.
+ *
+ * @param id The id of the marker
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
 fun MapState.centerOnMarker(
     id: String,
@@ -99,10 +110,9 @@ fun MapState.centerOnMarker(
         val destScrollX = it.x * zoomPanRotateState.fullWidth * scale - size.width / 2
         val destScrollY = it.y * zoomPanRotateState.fullHeight * scale - size.height / 2
 
-        zoomPanRotateState.smoothScrollAndScale(
+        zoomPanRotateState.smoothScrollTo(
             destScrollX.toFloat(),
             destScrollY.toFloat(),
-            scale,
             animationSpec
         )
     }
