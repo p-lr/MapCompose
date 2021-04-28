@@ -319,40 +319,41 @@ internal class ZoomPanRotateState(
 
     private fun constrainScrollX(scrollX: Float): Float {
         val angleRad = rotation.toRad() % Math.PI
-        val limitRight = when (angleRad) {
-                in 0.0..Math.PI/4 -> (1 - 2*angleRad/Math.PI) * layoutSize.width
-                in Math.PI/4..Math.PI/2 -> 2 * layoutSize.height * angleRad / Math.PI + (layoutSize.width - layoutSize.height) / 2
-                in Math.PI/2 .. 3*Math.PI/4 -> -2*layoutSize.height * angleRad / Math.PI + (3 * layoutSize.height + layoutSize.width) / 2
-                else -> (2 * angleRad / Math.PI - 1) * layoutSize.width
+        val offsetRight = when (angleRad) {
+            in 0.0..Math.PI / 4 -> (1 - 2 * angleRad / Math.PI) * layoutSize.width
+            in Math.PI / 4..Math.PI / 2 -> 2 * layoutSize.height * angleRad / Math.PI + (layoutSize.width - layoutSize.height) / 2
+            in Math.PI / 2..3 * Math.PI / 4 -> -2 * layoutSize.height * angleRad / Math.PI + (3 * layoutSize.height + layoutSize.width) / 2
+            else -> (2 * angleRad / Math.PI - 1) * layoutSize.width
         }
 
-        val limitLeft = when (angleRad) {
-            in 0.0..Math.PI/4 -> 2 * layoutSize.width * angleRad / Math.PI
-            in Math.PI/4 .. Math.PI/2 -> -2 * layoutSize.height * angleRad / Math.PI + (layoutSize.width + layoutSize.height) / 2
-            in Math.PI/2 .. 3*Math.PI/4 -> 2 * layoutSize.height * angleRad / Math.PI + (layoutSize.width - 3*layoutSize.height) / 2
-            else -> (1 - angleRad / Math.PI) * 2 * layoutSize.width
-        }
+        val offsetLeft = layoutSize.width - offsetRight.toFloat()
 
-        return scrollX.coerceIn(-limitLeft.toFloat(), max(0f, fullWidth * scale - limitRight.toFloat()))
+        val limitLeft = -offsetLeft
+        val limitRight = max(0f, fullWidth * scale - offsetRight.toFloat())
+        val limitMin = min(limitLeft, limitRight)
+        val limitMax = max(limitLeft, limitRight)
+
+        return scrollX.coerceIn(limitMin, limitMax)
     }
 
     private fun constrainScrollY(scrollY: Float): Float {
         val angleRad = rotation.toRad() % Math.PI
-        val limitBottom = when (angleRad) {
-            in 0.0..Math.PI / 4 -> (1 - 2 * angleRad/Math.PI) *  layoutSize.height
-            in Math.PI/4 .. Math.PI/2 -> 2 * layoutSize.width * angleRad / Math.PI + (layoutSize.height - layoutSize.width) / 2
-            in Math.PI/2 .. 3*Math.PI/4 -> -2*layoutSize.width * angleRad / Math.PI + (3 * layoutSize.width + layoutSize.height) / 2
+        val offsetBottom = when (angleRad) {
+            in 0.0..Math.PI / 4 -> (1 - 2 * angleRad / Math.PI) * layoutSize.height
+            in Math.PI / 4..Math.PI / 2 -> 2 * layoutSize.width * angleRad / Math.PI + (layoutSize.height - layoutSize.width) / 2
+            in Math.PI / 2..3 * Math.PI / 4 -> -2 * layoutSize.width * angleRad / Math.PI + (3 * layoutSize.width + layoutSize.height) / 2
             else -> (2 * angleRad / Math.PI - 1) * layoutSize.height
         }
 
-        val limitTop = when (angleRad) {
-            in 0.0..Math.PI/4 -> 2 * layoutSize.height * angleRad / Math.PI
-            in Math.PI/4 .. Math.PI/2 -> -2 * layoutSize.width * angleRad / Math.PI + (layoutSize.width + layoutSize.height) / 2
-            in Math.PI/2 .. 3*Math.PI/4 -> 2 * layoutSize.width * angleRad / Math.PI + (layoutSize.height - 3*layoutSize.width) / 2
-            else -> (1 - angleRad / Math.PI) * 2 * layoutSize.height
-        }
+        val offsetTop = layoutSize.height - offsetBottom.toFloat()
 
-        return scrollY.coerceIn(-limitTop.toFloat(), max(0f, fullHeight * scale - limitBottom.toFloat() ))
+        val limitBottom = max(0f, fullHeight * scale - offsetBottom.toFloat())
+        val limitTop = -offsetTop
+
+        val limitMin = min(limitTop, limitBottom)
+        val limitMax = max(limitTop, limitBottom)
+
+        return scrollY.coerceIn(limitMin, limitMax)
     }
 
     private fun constrainScale(scale: Float): Float {
