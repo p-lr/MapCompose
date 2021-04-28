@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import ovh.plrapps.mapcompose.api.centerTo
 import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
@@ -20,6 +21,7 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
+            centerTo(0.5, 0.5)
         }
     )
 }

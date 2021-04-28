@@ -26,6 +26,9 @@ internal class ZoomPanRotateState(
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
 
+    internal val isReadyForAnimation: Boolean
+        get() = scope != null
+
     internal var minimumScaleMode: MinimumScaleMode = Fit
         set(value) {
             field = value
