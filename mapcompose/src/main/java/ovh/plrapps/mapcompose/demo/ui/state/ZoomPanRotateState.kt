@@ -43,11 +43,6 @@ internal class ZoomPanRotateState(
     internal var centroidX: Double by mutableStateOf(0.0)
     internal var centroidY: Double by mutableStateOf(0.0)
 
-    private var cornerOffsetRight: Float = 0f
-    private var cornerOffsetLeft: Float = 0f
-    private var cornerOffsetTop: Float = 0f
-    private var cornerOffsetBottom: Float = 0f
-
     internal var layoutSize by mutableStateOf(IntSize(0, 0))
     var minScale = 0f
         set(value) {
@@ -96,7 +91,6 @@ internal class ZoomPanRotateState(
     fun setRotation(angle: AngleDegree) {
         this.rotation = angle.modulo()
         updateCentroid()
-        updateCornerOffsets()
         stateChangeListener.onStateChanged()
     }
 
@@ -325,36 +319,15 @@ internal class ZoomPanRotateState(
 
         layoutSize = size
         recalculateMinScale()
-        updateCornerOffsets()
         setScale(scale)
     }
 
     private fun constrainScrollX(scrollX: Float): Float {
-        val angleRad = rotation.toRad() % Math.PI
-
-        val limitRight = max(0f, fullWidth * scale - cornerOffsetRight)
-        val limitLeft = -cornerOffsetLeft
-
-        /* Trying to implement an acceptable behavior. When padding is non-zero, we are beyond
-         * [Fill] limit. */
-        val limitMin = (limitLeft + padding.x * cos(angleRad) - padding.y * sin(angleRad)).toFloat()
-        val limitMax = limitRight.coerceAtLeast(limitMin)
-
-        return scrollX.coerceIn(limitMin, limitMax)
+        return scrollX.coerceIn(0f, max(0f, fullWidth * scale - layoutSize.width))
     }
 
     private fun constrainScrollY(scrollY: Float): Float {
-        val angleRad = rotation.toRad() % Math.PI
-
-        val limitBottom = max(0f, fullHeight * scale - cornerOffsetBottom)
-        val limitTop = -cornerOffsetTop
-
-        /* Trying to implement an acceptable behavior. When padding is non-zero, we are beyond
-         * [Fill] limit. */
-        val limitMin = (limitTop + padding.y * sin(angleRad) - padding.x * cos(angleRad)).toFloat()
-        val limitMax = limitBottom.coerceAtLeast(limitMin)
-
-        return scrollY.coerceIn(limitMin, limitMax)
+        return scrollY.coerceIn(0f, max(0f, fullHeight * scale - layoutSize.height))
     }
 
     private fun constrainScale(scale: Float): Float {
@@ -396,34 +369,6 @@ internal class ZoomPanRotateState(
             layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
         }
         padding = IntOffset(paddingX, paddingY)
-    }
-
-    /**
-     * These corners are taken in account when constraining the scroll. When the map is rotated, we
-     * have to apply "cornerOffsets" to regular (non-rotated map) scroll limits, so that we can move
-     * around corners and be able to see the edges of the map.
-     * These calculations are right, although it's hard to implement a consistent scrolling behavior
-     * when the map is scrolled out beyond [Fill] limit.
-     */
-    private fun updateCornerOffsets() {
-        val angleRad = rotation.toRad() % Math.PI
-        cornerOffsetRight = when (angleRad) {
-            in 0.0..Math.PI / 4 -> (1 - 2 * angleRad / Math.PI) * layoutSize.width
-            in Math.PI / 4..Math.PI / 2 -> 2 * layoutSize.height * angleRad / Math.PI + (layoutSize.width - layoutSize.height) / 2
-            in Math.PI / 2..3 * Math.PI / 4 -> -2 * layoutSize.height * angleRad / Math.PI + (3 * layoutSize.height + layoutSize.width) / 2
-            else -> (2 * angleRad / Math.PI - 1) * layoutSize.width
-        }.toFloat()
-
-        cornerOffsetLeft = layoutSize.width - cornerOffsetRight
-
-        cornerOffsetBottom = when (angleRad) {
-            in 0.0..Math.PI / 4 -> (1 - 2 * angleRad / Math.PI) * layoutSize.height
-            in Math.PI / 4..Math.PI / 2 -> 2 * layoutSize.width * angleRad / Math.PI + (layoutSize.height - layoutSize.width) / 2
-            in Math.PI / 2..3 * Math.PI / 4 -> -2 * layoutSize.width * angleRad / Math.PI + (3 * layoutSize.width + layoutSize.height) / 2
-            else -> (2 * angleRad / Math.PI - 1) * layoutSize.height
-        }.toFloat()
-
-        cornerOffsetTop = layoutSize.height - cornerOffsetBottom
     }
 }
 
