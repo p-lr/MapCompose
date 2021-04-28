@@ -26,7 +26,7 @@ internal class ZoomPanRotateState(
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
 
-    internal var minimumScaleMode: MinimumScaleMode = Fill
+    internal var minimumScaleMode: MinimumScaleMode = Fit
         set(value) {
             field = value
             recalculateMinScale()
@@ -61,6 +61,18 @@ internal class ZoomPanRotateState(
      * When scaled out beyond the scaled permitted by [Fill], the padding is used by the layout.
      */
     internal var padding: IntOffset by mutableStateOf(IntOffset.Zero)
+
+    internal var scrollOffsetRatio = Offset(0f, 0f)
+        set(value) {
+            if (value.x in 0f..1f && value.y in 0f..1f) {
+                field = value
+                /* Update the scroll to constrain it */
+                setScroll(
+                    scrollX = scrollX,
+                    scrollY = scrollY
+                )
+            } else throw IllegalArgumentException("The offset ratio should have values in 0f..1f range")
+        }
 
     /* Used for fling animation */
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
@@ -323,11 +335,13 @@ internal class ZoomPanRotateState(
     }
 
     private fun constrainScrollX(scrollX: Float): Float {
-        return scrollX.coerceIn(0f, max(0f, fullWidth * scale - layoutSize.width))
+        val offset = scrollOffsetRatio.x * layoutSize.width
+        return scrollX.coerceIn(-offset, max(0f, fullWidth * scale - layoutSize.width + offset))
     }
 
     private fun constrainScrollY(scrollY: Float): Float {
-        return scrollY.coerceIn(0f, max(0f, fullHeight * scale - layoutSize.height))
+        val offset = scrollOffsetRatio.y * layoutSize.width
+        return scrollY.coerceIn(-offset, max(0f, fullHeight * scale - layoutSize.height + offset))
     }
 
     private fun constrainScale(scale: Float): Float {

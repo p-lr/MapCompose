@@ -18,7 +18,7 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             enableRotation()
-            minimumScaleMode = Fit
+            setScrollOffsetRatio(0.3f, 0.3f)
             scale = 0f
         }
     )

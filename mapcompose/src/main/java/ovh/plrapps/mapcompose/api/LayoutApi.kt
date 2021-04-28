@@ -64,8 +64,8 @@ fun MapState.disableRotation() {
 
 /**
  * Set the minimum scale mode. See [MinimumScaleMode].
- * The minimum scale can be manually defined using [Forced], or can be inferred using [Fill] (the
- * default), or [Fit].
+ * The minimum scale can be manually defined using [Forced], or can be inferred using [Fill], or
+ * [Fit] (the default).
  * Note: When enabling map rotation, it's advised to use the [Fill] mode.
  */
 var MapState.minimumScaleMode: MinimumScaleMode
@@ -73,6 +73,22 @@ var MapState.minimumScaleMode: MinimumScaleMode
     set(value) {
         zoomPanRotateState.minimumScaleMode = value
     }
+
+/**
+ * The scroll offset ratio allows to scroll past the default scroll limits. They are expressed in
+ * percentage of the layout dimensions.
+ * Values must be in [0f..1f] range, or an [IllegalArgumentException] is thrown.
+ * Setting a scroll offset ratio is useful when rotation is enabled, so that edges of the map are
+ * reachable.
+ *
+ * @param xRatio The horizontal scroll offset ratio. The scroll offset will be equal to this ratio
+ * multiplied by the layout width.
+ * @param yRatio The vertical scroll offset ratio. The scroll offset will be equal to this ratio
+ * multiplied by the layout height.
+ */
+fun MapState.setScrollOffsetRatio(xRatio: Float, yRatio: Float) {
+    zoomPanRotateState.scrollOffsetRatio = Offset(xRatio, yRatio)
+}
 
 /**
  * Animates the rotation of the map to the specified [angle] in decimal degrees.
