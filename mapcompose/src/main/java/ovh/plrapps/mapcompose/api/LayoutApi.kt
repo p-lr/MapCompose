@@ -63,6 +63,18 @@ fun MapState.disableRotation() {
 }
 
 /**
+ * Set the minimum scale mode. See [MinimumScaleMode].
+ * The minimum scale can be manually defined using [Forced], or can be inferred using [Fill] (the
+ * default), or [Fit].
+ * Note: When enabling map rotation, it's advised to use the [Fill] mode.
+ */
+var MapState.minimumScaleMode: MinimumScaleMode
+    get() = zoomPanRotateState.minimumScaleMode
+    set(value) {
+        zoomPanRotateState.minimumScaleMode = value
+    }
+
+/**
  * Animates the rotation of the map to the specified [angle] in decimal degrees.
  */
 fun MapState.smoothRotateTo(

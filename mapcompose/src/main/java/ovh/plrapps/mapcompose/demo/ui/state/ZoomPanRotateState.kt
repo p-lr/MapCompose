@@ -26,7 +26,12 @@ internal class ZoomPanRotateState(
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
 
-    private val minimumScaleMode: MinimumScaleMode = Fill
+    internal var minimumScaleMode: MinimumScaleMode = Fill
+        set(value) {
+            field = value
+            recalculateMinScale()
+        }
+
     internal var isRotationEnabled = false
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
@@ -320,6 +325,7 @@ internal class ZoomPanRotateState(
 
         layoutSize = size
         recalculateMinScale()
+        updateCornerOffsets()
         setScale(scale)
     }
 
@@ -369,10 +375,11 @@ internal class ZoomPanRotateState(
     private fun recalculateMinScale() {
         val minScaleX = layoutSize.width.toFloat() / fullWidth
         val minScaleY = layoutSize.height.toFloat() / fullHeight
-        minScale = when (minimumScaleMode) {
+        val mode = minimumScaleMode
+        minScale = when (mode) {
             Fit -> min(minScaleX, minScaleY)
             Fill -> max(minScaleX, minScaleY)
-            is Forced -> minimumScaleMode.scale
+            is Forced -> mode.scale
         }
     }
 
