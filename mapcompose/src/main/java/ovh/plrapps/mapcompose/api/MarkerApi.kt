@@ -123,9 +123,8 @@ fun MapState.centerOnMarker(
 ) {
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
-            val size = layoutSize
-            val destScrollX = (it.x * fullWidth * destScale - size.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * destScale - size.height / 2).toFloat()
+            val destScrollX = (it.x * fullWidth * destScale - layoutSize.width / 2).toFloat()
+            val destScrollY = (it.y * fullHeight * destScale - layoutSize.height / 2).toFloat()
 
             if (isReadyForAnimation) {
                 smoothScrollAndScale(
@@ -154,10 +153,8 @@ fun MapState.centerOnMarker(
 ) {
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
-            val size = layoutSize
-            val scale = scale
-            val destScrollX = (it.x * fullWidth * scale - size.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * scale - size.height / 2).toFloat()
+            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
+            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
 
             if (isReadyForAnimation) {
                 smoothScrollTo(destScrollX, destScrollY, animationSpec)
