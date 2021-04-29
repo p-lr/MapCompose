@@ -109,7 +109,8 @@ fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
 }
 
 /**
- * Center on a marker, animating the scroll position and the scale.
+ * Center on a marker, animating the scroll position and the scale if the composable is ready for
+ * animation.
  *
  * @param id The id of the marker
  * @param destScale The destination scale
@@ -120,22 +121,29 @@ fun MapState.centerOnMarker(
     destScale: Float,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    markerState.markers[id]?.also {
-        val size = zoomPanRotateState.layoutSize
-        val destScrollX = it.x * zoomPanRotateState.fullWidth * destScale - size.width / 2
-        val destScrollY = it.y * zoomPanRotateState.fullHeight * destScale - size.height / 2
+    with(zoomPanRotateState) {
+        markerState.markers[id]?.also {
+            val size = layoutSize
+            val destScrollX = (it.x * fullWidth * destScale - size.width / 2).toFloat()
+            val destScrollY = (it.y * fullHeight * destScale - size.height / 2).toFloat()
 
-        zoomPanRotateState.smoothScrollAndScale(
-            destScrollX.toFloat(),
-            destScrollY.toFloat(),
-            destScale,
-            animationSpec
-        )
+            if (isReadyForAnimation) {
+                smoothScrollAndScale(
+                    destScrollX,
+                    destScrollY,
+                    destScale,
+                    animationSpec
+                )
+            } else {
+                setScale(destScale)
+                setScroll(destScrollX, destScrollY)
+            }
+        }
     }
 }
 
 /**
- * Center on a marker, animating the scroll only.
+ * Center on a marker, animating the scroll if the composable is ready for animation.
  *
  * @param id The id of the marker
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
@@ -144,16 +152,18 @@ fun MapState.centerOnMarker(
     id: String,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    markerState.markers[id]?.also {
-        val size = zoomPanRotateState.layoutSize
-        val scale = zoomPanRotateState.scale
-        val destScrollX = it.x * zoomPanRotateState.fullWidth * scale - size.width / 2
-        val destScrollY = it.y * zoomPanRotateState.fullHeight * scale - size.height / 2
+    with(zoomPanRotateState) {
+        markerState.markers[id]?.also {
+            val size = layoutSize
+            val scale = scale
+            val destScrollX = (it.x * fullWidth * scale - size.width / 2).toFloat()
+            val destScrollY = (it.y * fullHeight * scale - size.height / 2).toFloat()
 
-        zoomPanRotateState.smoothScrollTo(
-            destScrollX.toFloat(),
-            destScrollY.toFloat(),
-            animationSpec
-        )
+            if (isReadyForAnimation) {
+                smoothScrollTo(destScrollX, destScrollY, animationSpec)
+            } else {
+                setScroll(destScrollX, destScrollY)
+            }
+        }
     }
 }
