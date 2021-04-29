@@ -30,7 +30,8 @@ var MapState.rotation: AngleDegree
 
 /**
  * The [scroll] property defines the position of the top-left corner of the visible viewport.
- * This is a low-level concept. To scroll to a known position, prefer [centerTo] API.
+ * This is a low-level concept (the value is in scaled pixels). To scroll to a known position,
+ * prefer the [scrollToAndCenter] API.
  */
 var MapState.scroll: Offset
     get() = Offset(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
@@ -56,7 +57,7 @@ fun MapState.enableRotation() {
 
 /**
  * Discard rotation gestures. The map can still be programmatically rotated using APIs such as
- * [smoothRotateTo].
+ * [rotateTo] or [rotation].
  */
 fun MapState.disableRotation() {
     zoomPanRotateState.isRotationEnabled = false
@@ -91,25 +92,32 @@ fun MapState.setScrollOffsetRatio(xRatio: Float, yRatio: Float) {
 }
 
 /**
- * Animates the rotation of the map to the specified [angle] in decimal degrees.
+ * Rotates to the specified [angle] in decimal degrees, animating the rotation if the composable is
+ * ready for animation.
  */
-fun MapState.smoothRotateTo(
+fun MapState.rotateTo(
     angle: AngleDegree,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    zoomPanRotateState.smoothRotateTo(angle, animationSpec)
+    with(zoomPanRotateState) {
+        if (isReadyForAnimation) {
+            zoomPanRotateState.smoothRotateTo(angle, animationSpec)
+        } else {
+            setRotation(angle)
+        }
+    }
 }
 
 /**
- * Center on a position, animating the scroll position and the scale. If the composable isn't ready
- * for animation, the new values are just set.
+ * Scrolls and center on a position, animating the scroll position and the scale. If the composable
+ * isn't ready for animation, the new values are just set.
  *
  * @param x The normalized X position on the map, in range [0..1]
  * @param y The normalized Y position on the map, in range [0..1]
  * @param destScale The destination scale
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
-fun MapState.centerTo(
+fun MapState.scrollToAndCenter(
     x: Double,
     y: Double,
     destScale: Float,
@@ -141,7 +149,7 @@ fun MapState.centerTo(
  * @param y The normalized Y position on the map, in range [0..1]
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
-fun MapState.centerTo(
+fun MapState.scrollToAndCenter(
     x: Double,
     y: Double,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)

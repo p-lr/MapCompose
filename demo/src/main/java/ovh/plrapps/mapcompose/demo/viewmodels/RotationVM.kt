@@ -24,6 +24,6 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
     )
 
     fun onRotate() {
-        state.smoothRotateTo(state.rotation + 90f)
+        state.rotateTo(state.rotation + 90f)
     }
 }
