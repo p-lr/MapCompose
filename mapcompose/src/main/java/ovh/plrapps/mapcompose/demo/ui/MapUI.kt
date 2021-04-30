@@ -15,6 +15,7 @@ import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.api.moveMarkerBy
 import ovh.plrapps.mapcompose.demo.ui.layout.ZoomPanRotate
 import ovh.plrapps.mapcompose.demo.ui.markers.MarkerLayout
+import ovh.plrapps.mapcompose.demo.ui.paths.PathComposer
 import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.demo.ui.view.TileCanvas
 
@@ -25,6 +26,7 @@ fun MapUI(
 ) {
     val zoomPRState = state.zoomPanRotateState
     val markerState = state.markerState
+    val pathState = state.pathState
 
     ZoomPanRotate(
         modifier = modifier.clipToBounds(),
@@ -69,6 +71,12 @@ fun MapUI(
                 }
             }
         }
+
+        PathComposer(
+            modifier = Modifier,
+            zoomPRState = zoomPRState,
+            pathState = pathState
+        )
 
         for (c in state.childComposables.values) {
             c()

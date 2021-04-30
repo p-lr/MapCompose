@@ -13,7 +13,7 @@ everything goes well, it should be done in a few weeks.
   * [x] Implement the equivalent of ZoomPanLayout in compose
   * [x] Implement a first minimal version (tiles loading only)
   * [x] Markers support
-  * [ ] Paths support
+  * [x] Paths support
 
 * Demo app
   * [x] Simple map view
