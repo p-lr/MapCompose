@@ -14,6 +14,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
+import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.moveMarkerBy
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.ui.MapUI
 import ovh.plrapps.mapcompose.demo.viewmodels.AddingMarkerVM

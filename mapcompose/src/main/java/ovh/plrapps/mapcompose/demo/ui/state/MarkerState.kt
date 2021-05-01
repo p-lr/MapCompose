@@ -1,8 +1,5 @@
 package ovh.plrapps.mapcompose.demo.ui.state
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
 
@@ -11,8 +8,10 @@ internal class MarkerState {
     internal var markerMoveCb: MarkerMoveCb? = null
     internal var markerClickCb: MarkerClickCb? = null
 
-    fun addMarker(id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-                  c: @Composable () -> Unit) {
+    fun addMarker(
+        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        c: @Composable () -> Unit
+    ) {
         markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, c)
     }
 
@@ -69,6 +68,7 @@ internal class MarkerData(
     var x: Double by mutableStateOf(x)
     var y: Double by mutableStateOf(y)
     var isDraggable by mutableStateOf(false)
+    var dragInterceptor: DragInterceptor? by mutableStateOf(null)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -93,3 +93,4 @@ internal class MarkerData(
 
 internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
 internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit
+internal typealias DragInterceptor = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit

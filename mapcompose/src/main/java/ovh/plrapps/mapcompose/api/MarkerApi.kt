@@ -7,6 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
+import ovh.plrapps.mapcompose.demo.ui.state.DragInterceptor
 import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
@@ -59,9 +60,20 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
  * Enable drag gestures on a marker.
  *
  * @param id The id of the marker
+ * @param dragInterceptor (Optional) Useful to constrain drag movements along a path. When this
+ * parameter is set, you're responsible for invoking [moveMarker] with appropriate values (using
+ * your own custom logic).
+ * The lambda receives 5 parameters:
+ * * id: The id of the marker
+ * * x, y: The current position in relative coordinates
+ * * dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
+ * have been applied if there were no drag interceptor
  */
-fun MapState.enableMarkerDrag(id: String) {
+fun MapState.enableMarkerDrag(id: String, dragInterceptor: DragInterceptor? = null) {
     markerState.setDraggable(id, true)
+    if (dragInterceptor != null) {
+        markerState.markers[id]?.dragInterceptor = dragInterceptor
+    }
 }
 
 /**
