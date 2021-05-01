@@ -30,7 +30,7 @@ fun MapContainer(
 }
 ```
 
-MapView shows only the visible part of a tiled map, and supports flinging, dragging, scaling, and
+MapCompose shows only the visible part of a tiled map, and supports flinging, dragging, scaling, and
 rotating. It's also possible to add markers and paths.
 
 This project holds the source code of this library, plus a demo app (which is useful to get started).
@@ -39,7 +39,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 **🚧 Work in progress 🚧**
 
 The core library is done, and all features of MapView are now implemented in MapCompose. I'll continue
-to add more demo to test various scenario.
+to add more demo for various scenario.
 
 ## Roadmap / TODO
 
@@ -55,6 +55,14 @@ to add more demo to test various scenario.
   * [x] Map with markers
   * [x] Center on marker with animation
   * [x] Map with paths
+  * [ ] Custom views
 
 * Publication
   * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
+
+## Design changes and differences with MapView
+
+* In MapView, you had to define bounds before you could add markers. There's no more such concept
+in MapCompose. Now, coordinates are normalized. For example, (x=0.5, y=0.5) is a point located at
+the center of the map. Normalized coordinates are easier to reason about, and application code can
+still translate this coordinate system to a custom one.
