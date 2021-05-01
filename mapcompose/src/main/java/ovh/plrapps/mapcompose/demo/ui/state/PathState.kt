@@ -11,8 +11,19 @@ import ovh.plrapps.mapcompose.demo.ui.paths.PathData
 internal class PathState {
     val pathState = mutableStateMapOf<String, DrawablePathState>()
 
-    fun addPath(id: String, path: PathData) {
-        pathState[id] = DrawablePathState(id, path)
+    fun addPath(id: String,
+                path: PathData,
+                width: Dp? = null,
+                color: Color? = null,
+                offset: Int? = null,
+                count: Int? = null) {
+        pathState[id] = DrawablePathState(id, path).apply {
+            val p = this
+            width?.also { p.width = it }
+            color?.also { p.color = it }
+            count?.also { p.count = it }
+            offset?.also { p.offset = it }
+        }
     }
 
     fun removePath(id: String): Boolean {

@@ -9,10 +9,7 @@ import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import ovh.plrapps.mapcompose.demo.ui.screens.*
 import ovh.plrapps.mapcompose.demo.ui.theme.MapComposeTheme
-import ovh.plrapps.mapcompose.demo.viewmodels.AddingMarkerVM
-import ovh.plrapps.mapcompose.demo.viewmodels.CenteringOnMarkerVM
-import ovh.plrapps.mapcompose.demo.viewmodels.RotationVM
-import ovh.plrapps.mapcompose.demo.viewmodels.SimpleDemoVM
+import ovh.plrapps.mapcompose.demo.viewmodels.*
 
 @Composable
 fun MapComposeDemoApp() {
@@ -22,6 +19,7 @@ fun MapComposeDemoApp() {
     val rotationVM: RotationVM = viewModel()
     val addingMarkerVM: AddingMarkerVM = viewModel()
     val centeringOnMarkerVM: CenteringOnMarkerVM = viewModel()
+    val pathsVM: PathsVM = viewModel()
 
     MapComposeTheme {
         NavHost(navController, startDestination = HOME) {
@@ -44,6 +42,9 @@ fun MapComposeDemoApp() {
                     viewModel = centeringOnMarkerVM,
                     onCenter = centeringOnMarkerVM::onCenter
                 )
+            }
+            composable(MainDestinations.PATHS.name) {
+                PathsDemo(viewModel = pathsVM)
             }
         }
     }

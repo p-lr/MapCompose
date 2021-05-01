@@ -20,7 +20,7 @@ everything goes well, it should be done in a few weeks.
   * [x] More advanced rotation APIs use
   * [x] Map with markers
   * [x] Center on marker with animation
-  * [ ] Map with paths
+  * [x] Map with paths
 
 * Publication
   * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
