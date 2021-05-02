@@ -34,14 +34,14 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         /* Add tracks */
         addTrack("track1", Color(0xFF448AFF))
         addTrack("track2", Color(0xFFFFFF00))
-        addTrack("track3")
+        addTrack("track3") // 0xFF448AFF is the default color
     }
 
     /**
      * In this sample, we retrieve track points from text files in the assets.
      * To add a path, follow these steps:
      *
-     * 1. Retrieve a [getPathDataBuilder] from the [MapState] instance, using [getPathDataBuilder]
+     * 1. Retrieve a [makePathDataBuilder] from the [MapState] instance, using [makePathDataBuilder]
      * 2. Add each point using [PathDataBuilder.addPoint]
      * 3. Build a [PathData] using [PathDataBuilder.build]
      * 4. Add the path to the map using [addPath]
@@ -50,7 +50,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         with(state) {
             val lines = appContext.assets?.open("tracks/$trackName.txt")?.bufferedReader()?.lines()
                 ?: return@with
-            val builder = getPathDataBuilder()
+            val builder = makePathDataBuilder()
             for (line in lines) {
                 val values = line.split(',')
                 builder.addPoint(values[0].toDouble(), values[1].toDouble())

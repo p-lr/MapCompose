@@ -21,8 +21,8 @@ internal class PathState {
             val p = this
             width?.also { p.width = it }
             color?.also { p.color = it }
-            count?.also { p.count = it }
-            offset?.also { p.offset = it }
+            setCount(count)
+            setOffset(offset)
         }
     }
 
@@ -45,8 +45,31 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
-            count?.also { path.count = it }
-            offset?.also { path.offset = it }
+            setCount(count)
+            setOffset(offset)
+        }
+    }
+
+    /**
+     * Since values are internally backed by a [FloatArray] with 4 times more values than the number
+     * of points added on user site, we define the custom modification (outside of
+     * [DrawablePathState] class, because this isn't a concern of this class).
+     */
+    private fun DrawablePathState.setCount(cnt: Int?) {
+        if (cnt == null) return
+        count = (cnt * 4).coerceIn(0, pathData.data.size - offset)
+    }
+
+    /**
+     * Same comment as [setCount].
+     */
+    private fun DrawablePathState.setOffset(ofst: Int?) {
+        if (ofst == null) return
+        offset = (ofst * 4).coerceIn(0, pathData.data.size)
+
+        // Safety - adapt the count
+        if (offset + count > pathData.data.size) {
+            count = pathData.data.size - offset
         }
     }
 }
@@ -58,7 +81,7 @@ internal class DrawablePathState(
     var pathData by mutableStateOf(pathData)
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(8.dp)
-    var color: Color by mutableStateOf(Color.Blue)
+    var color: Color by mutableStateOf(Color(0xFF448AFF))
     var offset: Int by mutableStateOf(0)
 
     /**

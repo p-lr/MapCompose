@@ -55,15 +55,7 @@ internal fun PathCanvas(
                 }
                 if (visible) {
                     drawIntoCanvas {
-                        it.nativeCanvas.drawLines(
-                            pathData.data,
-                            offset,
-                            // Safety
-                            if (offset + count > pathData.data.size) {
-                                pathData.data.size - offset
-                            } else count,
-                            paint
-                        )
+                        it.nativeCanvas.drawLines(pathData.data, offset, count, paint)
                     }
                 }
             }
