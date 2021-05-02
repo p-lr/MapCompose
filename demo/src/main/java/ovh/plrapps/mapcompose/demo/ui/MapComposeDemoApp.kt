@@ -20,6 +20,7 @@ fun MapComposeDemoApp() {
     val addingMarkerVM: AddingMarkerVM = viewModel()
     val centeringOnMarkerVM: CenteringOnMarkerVM = viewModel()
     val pathsVM: PathsVM = viewModel()
+    val customDrawVM: CustomDrawVM = viewModel()
 
     MapComposeTheme {
         NavHost(navController, startDestination = HOME) {
@@ -45,6 +46,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.PATHS.name) {
                 PathsDemo(viewModel = pathsVM)
+            }
+            composable(MainDestinations.CUSTOM_DRAW.name) {
+                CustomDraw(viewModel = customDrawVM)
             }
         }
     }

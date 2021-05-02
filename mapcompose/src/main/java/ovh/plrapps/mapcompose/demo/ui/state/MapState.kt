@@ -1,8 +1,7 @@
 package ovh.plrapps.mapcompose.demo.ui.state
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,9 +25,10 @@ class MapState(
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
     internal val markerState = MarkerState()
     internal val pathState = PathState()
-    internal val visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize) {
-        zoomPanRotateState.scale
-    }
+    internal val visibleTilesResolver =
+        VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize) {
+            zoomPanRotateState.scale
+        }
     internal val tileCanvasState = TileCanvasState(
         scope,
         tileSize,
@@ -41,21 +41,9 @@ class MapState(
     private val throttledTask: SendChannel<Unit> = scope.throttle(wait = 18) {
         renderVisibleTiles()
     }
-    internal val viewport = Viewport()
-    internal var padding: Int = 0
+    private val viewport = Viewport()
+    private var padding: Int = 0
     internal val tileSize by mutableStateOf(tileSize)
-
-    internal val childComposables = mutableStateMapOf<Int, @Composable () -> Unit>()
-
-    @Suppress("unused")
-    fun addComposable(id: Int, c: @Composable () -> Unit) {
-        childComposables[id] = c
-    }
-
-    @Suppress("unused")
-    fun removeComposable(id: Int): Boolean {
-        return childComposables.remove(id) != null
-    }
 
     /**
      * Public API to programmatically trigger a redraw of the tiles.

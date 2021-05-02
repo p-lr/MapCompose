@@ -6,6 +6,7 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntSize
 import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
@@ -170,4 +171,28 @@ fun MapState.scrollToAndCenter(
         }
     }
 }
+
+/**
+ * The [centroidX] is the x coordinate of the center of rotation transformation. It changes with the
+ * scroll and the scale.
+ * This is a low-level concept, and is only useful when defining custom views.
+ * The value is a relative coordinate (in [0.0 .. 1.0] range).
+ */
+val MapState.centroidX: Double
+    get() = zoomPanRotateState.centroidX
+
+/**
+ * The [centroidY] is the y coordinate of the center of rotation transformation. It changes with the
+ * scroll and the scale.
+ * This is a low-level concept, and is only useful when defining custom views.
+ * The value is a relative coordinate (in [0.0 .. 1.0] range).
+ */
+val MapState.centroidY: Double
+    get() = zoomPanRotateState.centroidY
+
+/**
+ * A convenience property. It corresponds to the size used when creating the [MapState].
+ */
+val MapState.fullSize: IntSize
+    get() = IntSize(zoomPanRotateState.fullWidth, zoomPanRotateState.fullHeight)
 

@@ -7,5 +7,6 @@ enum class MainDestinations(val title: String) {
     MAP_WITH_ROTATION_CONTROLS("Map with rotation controls"),
     ADDING_MARKERS("Adding markers"),
     CENTERING_ON_MARKER("Centering on marker"),
-    PATHS("Map with paths")
+    PATHS("Map with paths"),
+    CUSTOM_DRAW("Map with custom drawings")
 }

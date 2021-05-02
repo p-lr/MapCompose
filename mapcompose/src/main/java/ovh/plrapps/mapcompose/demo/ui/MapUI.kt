@@ -28,7 +28,8 @@ import ovh.plrapps.mapcompose.utils.toRad
 @Composable
 fun MapUI(
     modifier: Modifier = Modifier,
-    state: MapState
+    state: MapState,
+    content: @Composable () -> Unit = {}
 ) {
     val zoomPRState = state.zoomPanRotateState
     val markerState = state.markerState
@@ -89,9 +90,7 @@ fun MapUI(
             pathState = pathState
         )
 
-        for (c in state.childComposables.values) {
-            c()
-        }
+        content()
     }
 }
 
