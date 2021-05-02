@@ -16,7 +16,7 @@ import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 class CenteringOnMarkerVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {

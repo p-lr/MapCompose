@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.layout
+package ovh.plrapps.mapcompose.ui.layout
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
-import ovh.plrapps.mapcompose.demo.ui.gestures.detectGestures
+import ovh.plrapps.mapcompose.ui.gestures.detectGestures
 
 @Composable
 internal fun ZoomPanRotate(

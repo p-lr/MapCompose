@@ -11,7 +11,7 @@ import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.api.onMarkerMove
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {

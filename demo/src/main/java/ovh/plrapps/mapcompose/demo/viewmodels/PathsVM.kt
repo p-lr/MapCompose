@@ -9,9 +9,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
-import ovh.plrapps.mapcompose.demo.ui.paths.PathDataBuilder
-import ovh.plrapps.mapcompose.demo.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
  * In this sample, we add "tracks" to the map. The tracks are rendered as paths using MapCompose.

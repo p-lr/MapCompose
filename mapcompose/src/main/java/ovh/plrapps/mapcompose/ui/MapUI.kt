@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui
+package ovh.plrapps.mapcompose.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -14,13 +14,13 @@ import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.api.moveMarkerBy
-import ovh.plrapps.mapcompose.demo.ui.layout.ZoomPanRotate
-import ovh.plrapps.mapcompose.demo.ui.markers.MarkerLayout
-import ovh.plrapps.mapcompose.demo.ui.paths.PathComposer
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
-import ovh.plrapps.mapcompose.demo.ui.state.MarkerData
-import ovh.plrapps.mapcompose.demo.ui.state.ZoomPanRotateState
-import ovh.plrapps.mapcompose.demo.ui.view.TileCanvas
+import ovh.plrapps.mapcompose.ui.layout.ZoomPanRotate
+import ovh.plrapps.mapcompose.ui.markers.MarkerLayout
+import ovh.plrapps.mapcompose.ui.paths.PathComposer
+import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MarkerData
+import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
+import ovh.plrapps.mapcompose.ui.view.TileCanvas
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
 import ovh.plrapps.mapcompose.utils.toRad

@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.paths
+package ovh.plrapps.mapcompose.ui.paths
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,9 +11,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
-import ovh.plrapps.mapcompose.demo.ui.state.DrawablePathState
-import ovh.plrapps.mapcompose.demo.ui.state.PathState
-import ovh.plrapps.mapcompose.demo.ui.state.ZoomPanRotateState
+import ovh.plrapps.mapcompose.ui.state.DrawablePathState
+import ovh.plrapps.mapcompose.ui.state.PathState
+import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
 @Composable
 internal fun PathComposer(

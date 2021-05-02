@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.state
+package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

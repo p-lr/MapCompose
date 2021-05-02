@@ -2,9 +2,9 @@ package ovh.plrapps.mapcompose.api
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import ovh.plrapps.mapcompose.demo.ui.paths.PathData
-import ovh.plrapps.mapcompose.demo.ui.paths.PathDataBuilder
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
  * Adds a path, optionally setting some properties. The default values are:

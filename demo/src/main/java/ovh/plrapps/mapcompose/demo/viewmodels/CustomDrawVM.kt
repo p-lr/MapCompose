@@ -9,7 +9,7 @@ import ovh.plrapps.mapcompose.api.enableRotation
 import ovh.plrapps.mapcompose.api.scrollToAndCenter
 import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {

@@ -8,9 +8,9 @@ import androidx.compose.ui.graphics.Color
 import ovh.plrapps.mapcompose.api.CustomCanvas
 import ovh.plrapps.mapcompose.api.fullSize
 import ovh.plrapps.mapcompose.api.scale
-import ovh.plrapps.mapcompose.demo.ui.MapUI
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
 import ovh.plrapps.mapcompose.demo.viewmodels.CustomDrawVM
+import ovh.plrapps.mapcompose.ui.MapUI
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 
 @Composable

@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.view
+package ovh.plrapps.mapcompose.ui.view
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.IntSize
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
-import ovh.plrapps.mapcompose.demo.ui.state.ZoomPanRotateState
+import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
 @Composable
 internal fun TileCanvas(

@@ -8,8 +8,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ovh.plrapps.mapcompose.demo.ui.MapUI
 import ovh.plrapps.mapcompose.demo.viewmodels.CenteringOnMarkerVM
+import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
 fun CenteringOnMarkerDemo(

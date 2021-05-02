@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.state
+package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Paint
 import androidx.compose.runtime.*
@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import ovh.plrapps.mapcompose.demo.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.PathData
 
 internal class PathState {
     val pathState = mutableStateMapOf<String, DrawablePathState>()

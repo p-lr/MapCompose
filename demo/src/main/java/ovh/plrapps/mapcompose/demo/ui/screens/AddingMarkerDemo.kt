@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.demo.R
-import ovh.plrapps.mapcompose.demo.ui.MapUI
 import ovh.plrapps.mapcompose.demo.viewmodels.AddingMarkerVM
+import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
 fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM) {

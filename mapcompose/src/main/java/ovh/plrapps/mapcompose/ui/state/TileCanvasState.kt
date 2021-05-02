@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.state
+package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.MutableState

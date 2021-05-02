@@ -7,7 +7,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 @Composable
 fun CustomCanvas(

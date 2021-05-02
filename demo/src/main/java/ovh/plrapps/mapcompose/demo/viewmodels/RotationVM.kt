@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.demo.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.MapState
 
 class RotationVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {

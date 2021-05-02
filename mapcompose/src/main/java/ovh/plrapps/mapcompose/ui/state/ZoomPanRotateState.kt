@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.state
+package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.*
@@ -14,8 +14,8 @@ import ovh.plrapps.mapcompose.api.Fill
 import ovh.plrapps.mapcompose.api.Fit
 import ovh.plrapps.mapcompose.api.Forced
 import ovh.plrapps.mapcompose.api.MinimumScaleMode
-import ovh.plrapps.mapcompose.demo.ui.layout.GestureListener
-import ovh.plrapps.mapcompose.demo.ui.layout.LayoutSizeChangeListener
+import ovh.plrapps.mapcompose.ui.layout.GestureListener
+import ovh.plrapps.mapcompose.ui.layout.LayoutSizeChangeListener
 import ovh.plrapps.mapcompose.utils.*
 import kotlin.math.*
 

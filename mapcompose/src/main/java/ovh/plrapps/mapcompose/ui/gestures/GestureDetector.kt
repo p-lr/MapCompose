@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.ui.gestures
+package ovh.plrapps.mapcompose.ui.gestures
 
 import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
