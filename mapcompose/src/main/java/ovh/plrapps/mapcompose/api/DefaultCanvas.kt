@@ -8,9 +8,18 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.MapUI
 
+/**
+ * A custom canvas which moves, scales, and rotates along with the map (exactly like some internal
+ * components of [MapUI]).
+ * It's an example which can be used in a custom composable (as it takes a [drawBlock] as input).
+ *
+ * This implementation only uses the public API. Therefore, different implementations are possible.
+ * However, this implementation should fit most needs for custom drawings inside [MapUI].
+ */
 @Composable
-fun CustomCanvas(
+fun DefaultCanvas(
     modifier: Modifier,
     mapState: MapState,
     drawBlock: DrawScope.() -> Unit

@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import ovh.plrapps.mapcompose.api.CustomCanvas
+import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.demo.viewmodels.CustomDrawVM
@@ -13,6 +13,9 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 
+/**
+ * This demo shows how to embed custom drawings inside [MapUI].
+ */
 @Composable
 fun CustomDraw(
     modifier: Modifier = Modifier, viewModel: CustomDrawVM
@@ -50,8 +53,8 @@ fun CustomDraw(
 
 /**
  * Here, we define a custom square with various inputs such as [position], [color], and [isScaling].
- * Our custom composable is based on [CustomCanvas], which is provided by the MapCompose library.
- * Since [CustomCanvas] moves, scales, and rotates with the map, so does our custom square composable.
+ * Our custom composable is based on [DefaultCanvas], which is provided by the MapCompose library.
+ * Since [DefaultCanvas] moves, scales, and rotates with the map, so does our custom square composable.
  */
 @Composable
 fun CustomSquare(
@@ -61,7 +64,7 @@ fun CustomSquare(
     color: Color,
     isScaling: Boolean
 ) {
-    CustomCanvas(
+    DefaultCanvas(
         modifier = modifier,
         mapState = mapState
     ) {

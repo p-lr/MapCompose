@@ -1,6 +1,6 @@
 # MapCompose
 
-MapCompose is a Fast, memory efficient Jetpack compose library to display tiled maps with minimal effort.
+MapCompose is a fast, memory efficient Jetpack compose library to display tiled maps with minimal effort.
 Inspired from [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
 been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
@@ -48,6 +48,7 @@ to add more demo for various scenario.
   * [x] Implement a first minimal version (tiles loading only)
   * [x] Markers support
   * [x] Paths support
+  * [x] Custom drawings support
 
 * Demo app
   * [x] Simple map view
@@ -55,7 +56,7 @@ to add more demo for various scenario.
   * [x] Map with markers
   * [x] Center on marker with animation
   * [x] Map with paths
-  * [ ] Custom views
+  * [x] Custom drawings
 
 * Publication
   * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
