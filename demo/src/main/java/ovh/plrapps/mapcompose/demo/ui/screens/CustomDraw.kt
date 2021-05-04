@@ -21,15 +21,8 @@ fun CustomDraw(
     modifier: Modifier = Modifier, viewModel: CustomDrawVM
 ) {
     MapUI(modifier, state = viewModel.state) {
-        CustomSquare(
-            modifier = modifier,
-            mapState = viewModel.state,
-            position = Offset.Zero,
-            color = Color(0xfff44336),
-            isScaling = true
-        )
-        CustomSquare(
-            modifier = modifier,
+        Square(
+            modifier = Modifier,
             mapState = viewModel.state,
             position = Offset(
                 viewModel.state.fullSize.width / 2f - 300f,
@@ -38,8 +31,8 @@ fun CustomDraw(
             color = Color(0xff5c6bc0),
             isScaling = true
         )
-        CustomSquare(
-            modifier = modifier,
+        Square(
+            modifier = Modifier,
             mapState = viewModel.state,
             position = Offset(
                 viewModel.state.fullSize.width / 2f,
@@ -48,16 +41,33 @@ fun CustomDraw(
             color = Color(0xff087f23),
             isScaling = false
         )
+        Line(
+            modifier = Modifier,
+            mapState = viewModel.state,
+            color = Color(0xAAF44336),
+            p1 = with(viewModel) {
+                Offset(
+                    (p1x * state.fullSize.width).toFloat(),
+                    (p1y * state.fullSize.height).toFloat()
+                )
+            },
+            p2 = with(viewModel) {
+                Offset(
+                    (p2x * state.fullSize.width).toFloat(),
+                    (p2y * state.fullSize.height).toFloat()
+                )
+            }
+        )
     }
 }
 
 /**
- * Here, we define a custom square with various inputs such as [position], [color], and [isScaling].
+ * Here, we define a square with various inputs such as [position], [color], and [isScaling].
  * Our custom composable is based on [DefaultCanvas], which is provided by the MapCompose library.
  * Since [DefaultCanvas] moves, scales, and rotates with the map, so does our custom square composable.
  */
 @Composable
-fun CustomSquare(
+fun Square(
     modifier: Modifier,
     mapState: MapState,
     position: Offset,
@@ -74,5 +84,21 @@ fun CustomSquare(
             topLeft = position,
             size = Size(side, side)
         )
+    }
+}
+
+@Composable
+fun Line(
+    modifier: Modifier,
+    mapState: MapState,
+    color: Color,
+    p1: Offset,
+    p2: Offset
+) {
+    DefaultCanvas(
+        modifier = modifier,
+        mapState = mapState
+    ) {
+        drawLine(color, start = p1, end = p2, strokeWidth = 8f / mapState.scale)
     }
 }

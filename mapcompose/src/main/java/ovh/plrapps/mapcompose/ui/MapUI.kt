@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.zIndex
 import ovh.plrapps.mapcompose.api.moveMarkerBy
 import ovh.plrapps.mapcompose.ui.layout.ZoomPanRotate
 import ovh.plrapps.mapcompose.ui.markers.MarkerLayout
@@ -52,7 +53,7 @@ fun MapUI(
         )
 
         MarkerLayout(
-            modifier = Modifier,
+            modifier = Modifier.zIndex(1f),
             zoomPRState = zoomPRState,
         ) {
             for (data in markerState.markers.values) {
