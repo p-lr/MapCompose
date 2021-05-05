@@ -10,9 +10,10 @@ internal class MarkerState {
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        zIndex: Float,
         c: @Composable () -> Unit
     ) {
-        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, c)
+        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
     }
 
     fun removeMarker(id: String): Boolean {
@@ -63,12 +64,14 @@ internal class MarkerData(
     x: Double, y: Double,
     val relativeOffset: Offset,
     val absoluteOffset: Offset,
+    zIndex: Float,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)
     var y: Double by mutableStateOf(y)
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
+    var zIndex: Float by mutableStateOf(zIndex)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

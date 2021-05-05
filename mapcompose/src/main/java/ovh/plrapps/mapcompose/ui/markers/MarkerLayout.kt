@@ -45,7 +45,8 @@ internal fun MarkerLayout(
                 if (zoomPRState.rotation == 0f) {
                     placeable.place(
                         x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
-                        y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt()
+                        y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt(),
+                        zIndex = data.zIndex
                     )
                 } else {
                     with(zoomPRState) {
@@ -68,7 +69,8 @@ internal fun MarkerLayout(
                                 centerX,
                                 centerY,
                                 angleRad
-                            ) + heightOffset).toInt()
+                            ) + heightOffset).toInt(),
+                            zIndex = data.zIndex
                         )
                     }
                 }

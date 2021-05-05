@@ -24,6 +24,8 @@ import ovh.plrapps.mapcompose.utils.toRad
  * multiplied by the y value of the offset.
  * @param absoluteOffset The x-axis and y-axis positions of a marker will be respectively offset by
  * the x and y values of the offset.
+ * @param zIndex A marker with larger zIndex will be drawn on top of all markers with smaller zIndex.
+ * When markers have the same zIndex, the original order in which the parent placed the marker is used.
  */
 fun MapState.addMarker(
     id: String,
@@ -31,9 +33,24 @@ fun MapState.addMarker(
     y: Double,
     relativeOffset: Offset = Offset(-0.5f, -1f),
     absoluteOffset: Offset = Offset.Zero,
+    zIndex: Float = 0f,
     c: @Composable () -> Unit
 ) {
-    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, c)
+    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+}
+
+/**
+ * Updates the [zIndex] for an existing marker.
+ *
+ * @param id The id of the marker
+ * @param zIndex A marker with larger zIndex will be drawn on top of all markers with smaller zIndex.
+ * When markers have the same zIndex, the original order in which the parent placed the marker is used.
+ */
+fun MapState.updateMarkerZ(
+    id: String,
+    zIndex: Float
+) {
+    markerState.markers[id]?.zIndex = zIndex
 }
 
 /**
