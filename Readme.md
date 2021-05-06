@@ -1,8 +1,8 @@
 # MapCompose
 
 MapCompose is a fast, memory efficient Jetpack compose library to display tiled maps with minimal effort.
-Inspired from [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
-been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
+It shows the visible part of a tiled map with support of markers and paths, and various gestures
+(flinging, dragging, scaling, and rotating).
 
 An example of setting up:
 
@@ -30,13 +30,13 @@ fun MapContainer(
 }
 ```
 
-MapCompose shows only the visible part of a tiled map, and supports flinging, dragging, scaling, and
-rotating. It's also possible to add markers and paths.
+Inspired from [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
+been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
 This project holds the source code of this library, plus a demo app (which is useful to get started).
 To test the demo, just clone the repo and launch the demo app from Android Studio Canary (for now).
 
-**🚧 Work in progress 🚧**
+**🚧 Almost done 🚧**
 
 The core library is done, and all features of MapView are now implemented in MapCompose. I'll continue
 to add more demo for various scenario.
