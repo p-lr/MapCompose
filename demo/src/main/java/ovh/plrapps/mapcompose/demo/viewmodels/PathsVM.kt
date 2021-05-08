@@ -55,8 +55,8 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 val values = line.split(',')
                 builder.addPoint(values[0].toDouble(), values[1].toDouble())
             }
-            val data1 = builder.build() ?: return@with
-            addPath(trackName, data1, color = color, width = 12.dp)
+            val pathData = builder.build() ?: return@with
+            addPath(trackName, pathData, color = color, width = 12.dp)
         }
     }
 }
