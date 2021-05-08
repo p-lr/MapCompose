@@ -7,7 +7,7 @@ It shows the visible part of a tiled map with support of markers and paths, and 
 An example of setting up:
 
 ```kotlin
-/* Inside a YourViewModel */
+/* Inside your view-model */
 val tileStreamProvider = object : TileStreamProvider {
      override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
          return FileInputStream(File("path/{zoomLvl}/{row}/{col}.jpg")) // or it can be a remote HTTP fetch
@@ -49,6 +49,8 @@ to add more demo for various scenario.
   * [x] Markers support
   * [x] Paths support
   * [x] Custom drawings support
+  * [ ] Callouts support
+  * [ ] Hotspots support
 
 * Demo app
   * [x] Simple map view
@@ -57,6 +59,8 @@ to add more demo for various scenario.
   * [x] Center on marker with animation
   * [x] Map with paths
   * [x] Custom drawings
+  * [ ] Callouts demo
+  * [ ] Hotspots demo
 
 * Publication
   * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
@@ -67,3 +71,19 @@ to add more demo for various scenario.
 in MapCompose. Now, coordinates are normalized. For example, (x=0.5, y=0.5) is a point located at
 the center of the map. Normalized coordinates are easier to reason about, and application code can
 still translate this coordinate system to a custom one.
+
+* The `TileStreamProvider` is now an interface with a suspending function:
+```kotlin
+interface TileStreamProvider {
+    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+}
+```
+
+* In MapView, you had to build a configuration and use that configuration to create a `MapView`
+instance. There's no such thing in MapCompose. Now, you create a `MapState` object with required
+parameters.
+
+* A lot of things which couldn't change after MapView configuration can now be changed dynamically
+in MapCompose. For example, the `zIndex` of a marker, or the minimum scale mode can be changed at
+runtime.
+
