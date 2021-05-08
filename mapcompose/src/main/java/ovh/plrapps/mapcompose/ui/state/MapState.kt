@@ -59,6 +59,10 @@ class MapState(
         renderVisibleTilesThrottled()
     }
 
+    override fun onTouchDown() {
+        markerState.removeAllCallouts()
+    }
+
     private fun renderVisibleTilesThrottled() {
         throttledTask.offer(Unit)
     }

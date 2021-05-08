@@ -193,3 +193,29 @@ fun MapState.centerOnMarker(
         }
     }
 }
+
+/**
+ * Add a callout to the given position.
+ *
+ * @param id The id of the callout
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ * @param relativeOffset The x-axis and y-axis positions of the callout will be respectively offset by
+ * the width of the marker multiplied by the x value of the offset, and the height of the marker
+ * multiplied by the y value of the offset.
+ * @param absoluteOffset The x-axis and y-axis positions of a callout will be respectively offset by
+ * the x and y values of the offset.
+ * @param zIndex A callout with larger zIndex will be drawn on top of all callouts with smaller zIndex.
+ * When callouts have the same zIndex, the original order in which the parent placed the callout is used.
+ */
+fun MapState.addCallout(
+    id: String,
+    x: Double,
+    y: Double,
+    relativeOffset: Offset = Offset(-0.5f, -1f),
+    absoluteOffset: Offset = Offset.Zero,
+    zIndex: Float = 0f,
+    c: @Composable () -> Unit
+) {
+    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+}

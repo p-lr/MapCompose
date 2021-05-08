@@ -305,14 +305,16 @@ internal class ZoomPanRotateState(
         scope?.launch {
             scrollAnimatable.stop()
         }
+        stateChangeListener.onTouchDown()
     }
 
     override fun onTap(focalPt: Offset) {
+        val tapCb = tapCb ?: return
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
         val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
         val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
-        tapCb?.invoke(x, y)
+        tapCb.invoke(x, y)
     }
 
     override fun onDoubleTap(focalPt: Offset) {
@@ -402,6 +404,7 @@ internal class ZoomPanRotateState(
 
 interface ZoomPanRotateStateListener {
     fun onStateChanged()
+    fun onTouchDown()
 }
 
 internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit

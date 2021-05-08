@@ -83,6 +83,14 @@ fun MapUI(
                     data.c()
                 }
             }
+            for (data in markerState.callouts.values) {
+                Surface(Modifier
+                    .layoutId(data),
+                    color = Color.Transparent
+                ) {
+                    data.c()
+                }
+            }
         }
 
         PathComposer(
