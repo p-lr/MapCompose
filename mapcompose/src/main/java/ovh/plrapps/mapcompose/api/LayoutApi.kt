@@ -7,6 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.platform.ViewConfiguration
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
@@ -195,4 +196,14 @@ val MapState.centroidY: Double
  */
 val MapState.fullSize: IntSize
     get() = IntSize(zoomPanRotateState.fullWidth, zoomPanRotateState.fullHeight)
+
+/**
+ * Registers a tap callback for tap gestures. The callback is invoked with the relative coordinates
+ * of the tapped point on the map.
+ * Note: the tap gesture is detected only after the [ViewConfiguration.doubleTapMinTimeMillis] has
+ * passed, because the layout's gesture detector also detects double-tap gestures.
+ */
+fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
+    zoomPanRotateState.tapCb = tapCb
+}
 

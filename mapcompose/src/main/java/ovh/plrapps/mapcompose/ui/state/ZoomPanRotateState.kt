@@ -77,6 +77,9 @@ internal class ZoomPanRotateState(
             } else throw IllegalArgumentException("The offset ratio should have values in 0f..1f range")
         }
 
+    /* Not used internally (user customizable) */
+    internal var tapCb: LayoutTapCb? = null
+
     /* Used for fling animation */
     private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
@@ -298,10 +301,18 @@ internal class ZoomPanRotateState(
         }
     }
 
-    override fun onTap() {
+    override fun onTouchDown() {
         scope?.launch {
             scrollAnimatable.stop()
         }
+    }
+
+    override fun onTap(focalPt: Offset) {
+        val angleRad = -rotation.toRad()
+        val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
+        val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
+        val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
+        tapCb?.invoke(x, y)
     }
 
     override fun onDoubleTap(focalPt: Offset) {
@@ -392,3 +403,5 @@ internal class ZoomPanRotateState(
 interface ZoomPanRotateStateListener {
     fun onStateChanged()
 }
+
+internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit
