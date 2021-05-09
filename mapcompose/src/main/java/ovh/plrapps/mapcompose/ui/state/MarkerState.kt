@@ -8,7 +8,7 @@ internal class MarkerState {
     internal var markerMoveCb: MarkerMoveCb? = null
     internal var markerClickCb: MarkerClickCb? = null
 
-    internal val callouts = mutableStateMapOf<String, MarkerData>()
+    internal val callouts = mutableStateMapOf<String, CalloutData>()
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
@@ -20,18 +20,26 @@ internal class MarkerState {
 
     fun addCallout(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float,
+        zIndex: Float, autoDismiss: Boolean,
         c: @Composable () -> Unit
     ) {
-        callouts[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+        val markerData = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+        callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
     fun removeMarker(id: String): Boolean {
         return markers.remove(id) != null
     }
 
-    fun removeAllCallouts() {
-        callouts.clear()
+    fun removeCallout(id: String): Boolean {
+        return callouts.remove(id) != null
+    }
+
+    fun removeAllAutoDismissCallouts() {
+        val it = callouts.iterator()
+        while (it.hasNext()) {
+            if (it.next().value.autoDismiss) it.remove()
+        }
     }
 
     fun moveMarkerTo(id: String, x: Double, y: Double) {
@@ -107,6 +115,8 @@ internal class MarkerData(
         return result
     }
 }
+
+internal data class CalloutData(val markerData: MarkerData, val autoDismiss: Boolean)
 
 internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
 internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit

@@ -207,6 +207,8 @@ fun MapState.centerOnMarker(
  * the x and y values of the offset.
  * @param zIndex A callout with larger zIndex will be drawn on top of all callouts with smaller zIndex.
  * When callouts have the same zIndex, the original order in which the parent placed the callout is used.
+ * @param autoDismiss Whether the callout should be dismissed on touch down. Default is true. If set
+ * to false, the callout can be programmatically dismissed with [removeCallout].
  */
 fun MapState.addCallout(
     id: String,
@@ -215,7 +217,17 @@ fun MapState.addCallout(
     relativeOffset: Offset = Offset(-0.5f, -1f),
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
+    autoDismiss: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, autoDismiss, c)
+}
+
+/**
+ * Removes a callout.
+ *
+ * @param id The id of the callout.
+ */
+fun MapState.removeCallout(id: String): Boolean {
+    return markerState.removeCallout(id)
 }

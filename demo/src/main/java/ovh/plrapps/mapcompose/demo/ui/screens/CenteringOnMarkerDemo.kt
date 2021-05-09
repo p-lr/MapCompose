@@ -33,7 +33,7 @@ fun CenteringOnMarkerDemo(
     /* Add a callout on marker click */
     viewModel.state.apply {
         onMarkerClick { id, x, y ->
-            addCallout(id, x, y, absoluteOffset = Offset(0f, -150f)) {
+            addCallout(id, x, y, absoluteOffset = Offset(0f, -150f), autoDismiss = false) {
                 Callout(x, y)
             }
         }
