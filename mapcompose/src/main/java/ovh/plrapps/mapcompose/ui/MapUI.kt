@@ -84,8 +84,8 @@ fun MapUI(
                 }
             }
             for (data in markerState.callouts.values) {
-                Surface(Modifier
-                    .layoutId(data.markerData),
+                Surface(
+                    Modifier.layoutId(data.markerData),
                     color = Color.Transparent
                 ) {
                     data.markerData.c()

@@ -36,6 +36,7 @@ internal class MarkerState {
     }
 
     fun removeAllAutoDismissCallouts() {
+        if (callouts.isEmpty()) return
         val it = callouts.iterator()
         while (it.hasNext()) {
             if (it.next().value.autoDismiss) it.remove()

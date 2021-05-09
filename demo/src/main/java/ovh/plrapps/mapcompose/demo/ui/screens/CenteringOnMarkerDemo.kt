@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +32,7 @@ fun CenteringOnMarkerDemo(
     /* Add a callout on marker click */
     viewModel.state.apply {
         onMarkerClick { id, x, y ->
-            addCallout(id, x, y, absoluteOffset = Offset(0f, -150f), autoDismiss = false) {
+            addCallout(id, x, y, absoluteOffset = Offset(0f, -130f), autoDismiss = false) {
                 Callout(x, y)
             }
         }
@@ -55,12 +54,13 @@ fun CenteringOnMarkerDemo(
 @Composable
 fun Callout(x: Double, y: Double) {
     Surface(
-        Modifier
-            .clip(RoundedCornerShape(5.dp)),
+        Modifier.padding(10.dp),
+        shape = RoundedCornerShape(5.dp),
+        elevation = 10.dp
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                text = "Title",
+                text = "Callout title",
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
