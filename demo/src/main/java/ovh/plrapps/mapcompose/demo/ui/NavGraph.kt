@@ -8,5 +8,6 @@ enum class MainDestinations(val title: String) {
     ADDING_MARKERS("Adding markers"),
     CENTERING_ON_MARKER("Centering on marker"),
     PATHS("Map with paths"),
-    CUSTOM_DRAW("Map with custom drawings")
+    CUSTOM_DRAW("Map with custom drawings"),
+    CALLOUT_DEMO("Callout (tap markers)")
 }
