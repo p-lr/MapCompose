@@ -61,7 +61,11 @@ internal fun MarkerComposer(
         }
         for (data in markerState.callouts.values) {
             Surface(
-                Modifier.layoutId(data.markerData),
+                Modifier
+                    .layoutId(data.markerData)
+                    .clickable(
+                        onClick = { markerState.onCalloutClick(data.markerData) },
+                    ),
                 color = Color.Transparent
             ) {
                 data.markerData.c()

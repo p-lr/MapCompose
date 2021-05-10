@@ -9,6 +9,7 @@ internal class MarkerState {
     internal var markerClickCb: MarkerClickCb? = null
 
     internal val callouts = mutableStateMapOf<String, CalloutData>()
+    internal var calloutClickCb: MarkerClickCb? = null
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
@@ -79,6 +80,10 @@ internal class MarkerState {
 
     internal fun onMarkerClick(data: MarkerData) {
         markerClickCb?.invoke(data.id, data.x, data.y)
+    }
+
+    internal fun onCalloutClick(data: MarkerData) {
+        calloutClickCb?.invoke(data.id, data.x, data.y)
     }
 }
 

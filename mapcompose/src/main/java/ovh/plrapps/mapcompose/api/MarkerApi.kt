@@ -119,6 +119,13 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 }
 
 /**
+ * Register a callback which will be invoked when a callout is tapped.
+ */
+fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
+    markerState.calloutClickCb = cb
+}
+
+/**
  * Move a marker, given a displacement in pixels. This is typically useful when programmatically
  * simulating a drag gesture.
  * This API is internally used when enabling drag gestures on a marker using [enableMarkerDrag].
