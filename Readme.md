@@ -87,15 +87,49 @@ the state often ended-up scattered between views own state and application state
 difficult to predict how views were rendered because there were so many things to take into account.
 
 Now, the rendering is function of a state. If that state changes, the "view" updates accordingly.
-The library exposes its API though `MapState`, which is the only public handle to mutate the state
-of the "view" (or in Compose terms, "composables").
+The library exposes its API though `MapState`, which is the _only_ public handle to mutate the state
+of the "view" (or in Compose terms, "composables"). As its name suggests, `MapState` also _owns_ the
+state. Therefore, the composables will always render consistently, even after a device rotation.
+
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
-composable. The code sample at the top of this readme shows an example.
+composable. The code sample at the top of this readme shows an example. Then, whenever you need to
+interact with the map, you invoke APIs on your `MapState` instance. As an example, the following
+section shows how to add markers and callouts.
 
 ### Markers & Callouts
 
-TODO
+To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/f3b5f162cd5d48803440e7944f583c0e74fc1f29/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
+API, like so:
+
+```kotlin
+/* Add a marker at the center of the map */
+mapState.addMarker("id", x = 0.5, y = 0.5) {
+    Icon(
+        painter = painterResource(id = R.drawable.map_marker),
+        contentDescription = null,
+        modifier = Modifier.size(50.dp),
+        tint = Color(0xCC2196F3)
+    )
+}
+```
+
+<p align="center">
+<img src="doc/readme-files/marker.png">
+</p>
+
+A marker is composable which you supply (in the example above, it's an `Icon`). It can be
+whatever composable you like. A marker does not scale, but it's position updates as the map scales,
+so it's always attached to the original position. A marker has an anchor point defined - the point
+which defines the exact position and is fixed relatively to the map. This anchor point is defined
+with relative offsets, which are applied to with and height of the marker. For example, to have a
+marker center horizontally to a point, and align at the bottom edge (like a typical map pin would do),
+you'd pass -0.5f and -1.0f (thus, left position is offset by half the width, and top is offset by the
+full height). If necessary, an absolute offset expressed in pixels can be applied, in addition to the
+relative offset.
+
+Callouts are basically markers, but treated in a slightly different way. By default, they
+automatically dismiss on touch down.
 
 ### Paths
 
