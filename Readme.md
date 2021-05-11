@@ -97,7 +97,7 @@ composable. The code sample at the top of this readme shows an example. Then, wh
 interact with the map, you invoke APIs on your `MapState` instance. As an example, the following
 section shows how to add markers and callouts.
 
-### Markers & Callouts
+### Markers
 
 To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/f3b5f162cd5d48803440e7944f583c0e74fc1f29/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
 API, like so:
@@ -121,15 +121,28 @@ mapState.addMarker("id", x = 0.5, y = 0.5) {
 A marker is composable which you supply (in the example above, it's an `Icon`). It can be
 whatever composable you like. A marker does not scale, but it's position updates as the map scales,
 so it's always attached to the original position. A marker has an anchor point defined - the point
-which defines the exact position and is fixed relatively to the map. This anchor point is defined
-with relative offsets, which are applied to with and height of the marker. For example, to have a
-marker center horizontally to a point, and align at the bottom edge (like a typical map pin would do),
-you'd pass -0.5f and -1.0f (thus, left position is offset by half the width, and top is offset by the
-full height). If necessary, an absolute offset expressed in pixels can be applied, in addition to the
+which is fixed relatively to the map. This anchor point is defined using relative offsets, which are
+applied to with and height of the marker. For example, to have a marker center horizontally to a
+point, and align at the bottom edge (like a typical map pin would do), you'd pass -0.5f and -1.0f
+(thus, left position is offset by half the width, and top is offset by the full height).
+If necessary, an absolute offset expressed in pixels can be applied, in addition to the
 relative offset.
 
-Callouts are basically markers, but treated in a slightly different way. By default, they
-automatically dismiss on touch down.
+Markers can be moved, removed, and be draggable. See the following APIs: [moveMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L72),
+[removeMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L61),
+[enableMarkerDrag](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L89).
+
+### Callouts
+
+Callouts are typically message popups which are, like markers, attached to a specific position.
+However, they automatically dismiss on touch down (this is the default behavior, which can be
+changed). To add a callout, use [addCallout](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
+
+<p align="center">
+<img src="doc/readme-files/callout.png">
+</p>
+
+Callouts can be programmatically removed (if automatic dismiss was disabled).
 
 ### Paths
 
