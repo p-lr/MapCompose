@@ -49,8 +49,7 @@ to add more demo for various scenario.
   * [x] Markers support
   * [x] Paths support
   * [x] Custom drawings support
-  * [ ] Callouts support
-  * [ ] Hotspots support
+  * [x] Callouts support
 
 * Demo app
   * [x] Simple map view
@@ -59,11 +58,48 @@ to add more demo for various scenario.
   * [x] Center on marker with animation
   * [x] Map with paths
   * [x] Custom drawings
-  * [ ] Callouts demo
-  * [ ] Hotspots demo
+  * [x] Callouts demo
 
 * Publication
   * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
+
+## Basics
+
+MapCompose is optimized to display maps that have several levels, like this:
+
+<p align="center">
+<img src="doc/readme-files/deepzoom.png">
+</p>
+
+Each next level is twice bigger than the former, and provides more details. Overall, this looks like
+ a pyramid. Another common name is "deep-zoom" map.
+This library comes with a demo app made of a set of various use-cases such as using markers,
+paths, rotating the map, etc. All examples use the same map stored in the assets. If you wonder what
+a deep-zoom maps looks like, you have a great example there.
+
+MapCompose can also be used with single level maps.
+
+### Usage
+
+With Jetpack compose, we have to change the way we think about view state. In the previous `View`
+system, we had references on views and mutated their state directly. While that could be done right,
+the state often ended-up scattered between views own state and application state. Sometimes, it was
+difficult to predict how views were rendered because there were so many things to take into account.
+
+Now, the rendering is function of a state. If that state changes, the "view" updates accordingly.
+The library exposes its API though `MapState`, which is the only public handle to mutate the state
+of the "view" (or in Compose terms, "composables").
+In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
+component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
+composable. The code sample at the top of this readme shows an example.
+
+### Markers & Callouts
+
+TODO
+
+### Paths
+
+TODO
 
 ## Design changes and differences with MapView
 
