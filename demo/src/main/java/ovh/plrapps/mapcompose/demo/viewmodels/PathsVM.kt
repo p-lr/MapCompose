@@ -41,7 +41,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
      * In this sample, we retrieve track points from text files in the assets.
      * To add a path, follow these steps:
      *
-     * 1. Retrieve a [makePathDataBuilder] from the [MapState] instance, using [makePathDataBuilder]
+     * 1. Retrieve a [PathDataBuilder] from the [MapState] instance, using [makePathDataBuilder]
      * 2. Add each point using [PathDataBuilder.addPoint]
      * 3. Build a [PathData] using [PathDataBuilder.build]
      * 4. Add the path to the map using [addPath]

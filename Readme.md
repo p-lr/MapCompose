@@ -94,8 +94,9 @@ state. Therefore, the composables will always render consistently, even after a 
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
 composable. The code sample at the top of this readme shows an example. Then, whenever you need to
-interact with the map, you invoke APIs on your `MapState` instance. As an example, the following
-section shows how to add markers and callouts.
+interact with the map, you invoke APIs on your `MapState` instance. All public APIs are located under
+the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections give
+examples of how to add markers, callouts, and paths.
 
 ### Markers
 
@@ -146,7 +147,28 @@ Callouts can be programmatically removed (if automatic dismiss was disabled).
 
 ### Paths
 
-TODO
+To add a path, use the [addPath](https://github.com/peterLaurence/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
+API, like so:
+
+```kotlin
+// 1. Get a PathDataBuilder
+val builder: PathDataBuilder = mapState.makePathDataBuilder()
+
+// 2. Build the path
+for (point in points) {
+    builder.addPoint(point.x, point.y)
+}
+val pathData = builder.build()
+
+// 3. Use the API
+mapState.addPath("pathName", pathData, color = Color(0xFF448AFF), width = 12.dp)
+```
+
+It's important to note that you can get the `PathDataBuilder` using `makePathDataBuilder` function.
+
+<p align="center">
+<img src="doc/readme-files/path.png">
+</p>
 
 ## Design changes and differences with MapView
 
