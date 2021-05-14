@@ -30,7 +30,7 @@ fun MapContainer(
 }
 ```
 
-Inspired from [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
+Inspired by [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
 been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
 This project holds the source code of this library, plus a demo app (which is useful to get started).
@@ -95,8 +95,29 @@ In a typical application, you create a `MapState` instance inside a `ViewModel` 
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
 composable. The code sample at the top of this readme shows an example. Then, whenever you need to
 interact with the map, you invoke APIs on your `MapState` instance. All public APIs are located under
-the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections give
-examples of how to add markers, callouts, and paths.
+the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections provide
+details on the `MapState` class, and give examples of how to add markers, callouts, and paths.
+
+### MapState
+
+The `MapState` class expects 4 parameters for its construction:
+* `levelCount`: The number of levels of the map,
+* `fullWidth`: The width of the map at scale 1.0, which is the width of last level,
+* `fullHeight`: The height of the map at scale 1.0, which is the height of last level,
+* `tileStreamProvider`: Your implementation of this interface (see below) provides `InputStream`s of
+image files (png, jpg). MapCompose will request tiles using the convention that the origin is at the
+top-left corner. For example, the tile requested with `row` = 0, and `col = 0` will be positioned at
+the top-left corner.
+
+```kotlin
+interface TileStreamProvider {
+    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+}
+```
+
+Depending on your configuration, your `TileStreamProvider` implementation might fetch local files,
+as well as performing remote HTTP requests - it's up to you. You don't have to worry about threading,
+MapCompose takes care of that (the main thread isn't blocked by `getTileStream` calls).
 
 ### Markers
 
