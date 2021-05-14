@@ -27,7 +27,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
 
     /* Define the markers data (id and position) */
     private val markers = listOf(
-        MarkerInfo("Callout #1", 0.14, 0.17),
+        MarkerInfo("Callout #1", 0.45, 0.6),
         MarkerInfo("Callout #2", 0.24, 0.1),
         MarkerInfo(TAP_TO_DISMISS_ID, 0.4, 0.3)
     )
@@ -46,7 +46,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            scale = 1f
+            scale = 0f
 
             /**
              * On marker click, add a callout. If the id is [TAP_TO_DISMISS_ID], set auto-dismiss
