@@ -22,6 +22,7 @@ fun MapComposeDemoApp() {
     val pathsVM: PathsVM = viewModel()
     val customDrawVM: CustomDrawVM = viewModel()
     val calloutVM: CalloutVM = viewModel()
+    val httpTilesVM: HttpTilesVM = viewModel()
 
     MapComposeTheme {
         NavHost(navController, startDestination = HOME) {
@@ -53,6 +54,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.CALLOUT_DEMO.name) {
                 CalloutDemo(viewModel = calloutVM)
+            }
+            composable(MainDestinations.HTTP_TILES_DEMO.name) {
+                HttpTilesDemo(viewModel = httpTilesVM)
             }
         }
     }

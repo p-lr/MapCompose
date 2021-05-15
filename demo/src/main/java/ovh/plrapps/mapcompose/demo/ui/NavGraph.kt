@@ -9,5 +9,6 @@ enum class MainDestinations(val title: String) {
     CENTERING_ON_MARKER("Centering on marker"),
     PATHS("Map with paths"),
     CUSTOM_DRAW("Map with custom drawings"),
-    CALLOUT_DEMO("Callout (tap markers)")
+    CALLOUT_DEMO("Callout (tap markers)"),
+    HTTP_TILES_DEMO("Remote HTTP tiles")
 }
