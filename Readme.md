@@ -1,5 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+[![](https://img.shields.io/badge/Compose-1.0.0--beta06-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 # MapCompose
 
@@ -45,6 +46,9 @@ Add this to your module's build.gradle
 ```groovy
 implementation 'ovh.plrapps:mapcompose:0.8.0'
 ```
+
+This version depends on Kotlin `1.4.32`. Once Jetpack Compose will make use of Kotlin `1.5.0`, this
+library will be promoted to version `0.9.0`.
 
 ## Basics
 
