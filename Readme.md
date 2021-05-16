@@ -1,3 +1,6 @@
+[![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
+[![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+
 # MapCompose
 
 MapCompose is a fast, memory efficient Jetpack compose library to display tiled maps with minimal effort.
@@ -36,32 +39,12 @@ been revisited. MapCompose brings the same level of performance as MapView, with
 This project holds the source code of this library, plus a demo app (which is useful to get started).
 To test the demo, just clone the repo and launch the demo app from Android Studio Canary (for now).
 
-**🚧 Almost done 🚧**
+## Installation
 
-The core library is done, and all features of MapView are now implemented in MapCompose. I'll continue
-to add more demo for various scenario.
-
-## Roadmap / TODO
-
-* Core library
-  * [x] Implement the equivalent of ZoomPanLayout in compose
-  * [x] Implement a first minimal version (tiles loading only)
-  * [x] Markers support
-  * [x] Paths support
-  * [x] Custom drawings support
-  * [x] Callouts support
-
-* Demo app
-  * [x] Simple map view
-  * [x] More advanced rotation APIs use
-  * [x] Map with markers
-  * [x] Center on marker with animation
-  * [x] Map with paths
-  * [x] Custom drawings
-  * [x] Callouts demo
-
-* Publication
-  * [ ] Publish on maven central, under `ovh.plrapps.mapcompose`, artifact id `mapcompose`
+Add this to your module's build.gradle
+```groovy
+implementation 'ovh.plrapps:mapcompose:0.8.0'
+```
 
 ## Basics
 
