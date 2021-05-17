@@ -20,6 +20,11 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
             enableRotation()
             setScrollOffsetRatio(0.3f, 0.3f)
             scale = 0f
+
+            /* Not useful here, just showing how this API works */
+            setStateChangeListener {
+                println("scale: $scale, scroll: $scroll, rotation: $rotation")
+            }
         }
     )
 

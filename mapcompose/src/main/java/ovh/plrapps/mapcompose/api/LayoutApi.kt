@@ -42,6 +42,22 @@ var MapState.scroll: Offset
     }
 
 /**
+ * Get notified whenever the state ([scale] and/or [scroll] and/or [rotation]) changes.
+ *
+ * @param cb An extension function with [MapState] as receiver type
+ */
+fun MapState.setStateChangeListener(cb: MapState.() -> Unit) {
+    stateChangeListener = cb
+}
+
+/**
+ * Removes the state change listener.
+ */
+fun MapState.removeStateChangeListener() {
+    stateChangeListener = null
+}
+
+/**
  * On double-tap, and if the scale is already at its maximum value, circle-back to the minimum scale.
  */
 var MapState.shouldLoopScale

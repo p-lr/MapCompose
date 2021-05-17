@@ -44,6 +44,7 @@ class MapState(
     private val viewport = Viewport()
     private var padding: Int = 0
     internal val tileSize by mutableStateOf(tileSize)
+    internal var stateChangeListener: (MapState.() -> Unit)? = null
 
     /**
      * Public API to programmatically trigger a redraw of the tiles.
@@ -57,6 +58,7 @@ class MapState(
 
     override fun onStateChanged() {
         renderVisibleTilesThrottled()
+        stateChangeListener?.invoke(this)
     }
 
     override fun onTouchDown() {

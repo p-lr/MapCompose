@@ -180,9 +180,18 @@ API.
 <img src="doc/readme-files/path.png">
 </p>
 
-## Callbacks and Listeners
+## State change listener
 
-TODO
+In order to get notified whenever the state (scale, scroll, rotation) changes, you can register a
+callback using `setStateChangeListener` API:
+
+```kotlin
+mapState.setStateChangeListener {
+   println("scale: $scale, scroll: $scroll, rotation: $rotation")
+}
+```
+
+To unregister, use `removeStateChangeListener()`.
 
 ## Design changes and differences with MapView
 
