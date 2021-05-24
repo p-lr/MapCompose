@@ -5,18 +5,13 @@ plugins {
     id 'signing'
 }
 
-version = VERSION_NAME
-group = GROUP
-
 android {
     compileSdk 30
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        minSdk 24
+        minSdkVersion 24
         targetSdk 30
-        versionCode 1
-        versionName version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -78,7 +73,7 @@ afterEvaluate { project ->
 
                 groupId = GROUP
                 artifactId = 'mapcompose'
-                version = VERSION_NAME
+                version = VERSION_NAME  // see gradle.properties
 
                 artifact bundleReleaseAar
                 artifact androidSourcesJar
