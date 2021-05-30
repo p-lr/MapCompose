@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
+import ovh.plrapps.mapcompose.demo.ui.screens.ScaleIndicatorController
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -44,8 +45,9 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
         }
     )
 
-    init {
+    val scaleIndicatorController = ScaleIndicatorController(450, state.scale)
 
+    init {
         state.addMarker("m1", p1x, p1y, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
@@ -71,6 +73,9 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
             p2x = x + dx
             p2y = y + dy
             state.moveMarker(id, p2x, p2y)
+        }
+        state.setStateChangeListener {
+            scaleIndicatorController.onScaleChanged(scale)
         }
     }
 }
