@@ -44,11 +44,8 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:0.8.0'
+implementation 'ovh.plrapps:mapcompose:0.9.0'
 ```
-
-This version depends on Kotlin `1.4.32`. Once Jetpack Compose will make use of Kotlin `1.5.0`, this
-library will be promoted to version `0.9.0`.
 
 ## Basics
 
