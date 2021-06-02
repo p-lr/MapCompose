@@ -126,29 +126,31 @@ fun ScaleIndicator(
 }
 
 class ScaleIndicatorController(val widthPx: Int, initScale: Float) {
-    var lastScale: Float = initScale
     var widthRatio by mutableStateOf(0f)
     var scaleText by mutableStateOf("")
+
+    private var snapScale: Float = initScale
+    private var snapWidthRatio = 0f
 
     init {
         snapToNewValue(initScale)
     }
 
     fun onScaleChanged(scale: Float) {
-        val ratio = scale / lastScale
+        val ratio = scale / snapScale
         if (widthRatio * ratio in 0.5f..1f) {
-            widthRatio *= ratio
+            widthRatio = snapWidthRatio * ratio
         } else {
             snapToNewValue(scale)
         }
-        lastScale = scale
     }
 
     private fun snapToNewValue(scale: Float) {
         val distance = distanceForPx(widthPx, scale)
         val snap = computeSnapValue(distance) ?: return
-        lastScale = scale
+        snapScale = scale
         widthRatio = snap.toFloat() / distance
+        snapWidthRatio = widthRatio
         scaleText = formatDistance(snap)
     }
 
