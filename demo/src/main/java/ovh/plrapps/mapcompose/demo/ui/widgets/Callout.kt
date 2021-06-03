@@ -28,6 +28,8 @@ import java.text.DecimalFormat
 
 /**
  * A callout which animates its entry with an overshoot scaling interpolator.
+ * TODO: Once we don't use experimental API, remove the module wide opt-in for @ExperimentalMaterialApi
+ * defined build.gradle of the demo.
  */
 @ExperimentalMaterialApi
 @Composable
