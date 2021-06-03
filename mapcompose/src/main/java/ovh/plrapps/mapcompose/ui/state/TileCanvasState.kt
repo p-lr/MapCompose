@@ -196,7 +196,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
             if (lastVisible.contains(tile) && !tilesCollected.contains(tile)) {
                 tile.prepare()
                 tilesCollected.add(tile)
-                idleDebounced.offer(Unit)
+                idleDebounced.trySend(Unit)
                 renderThrottled()
             } else {
                 tile.recycle()
@@ -345,7 +345,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
      * Post a new value to the observable. The view should update its UI.
      */
     private fun renderThrottled() {
-        renderTask.offer(Unit)
+        renderTask.trySend(Unit)
     }
 
     /**

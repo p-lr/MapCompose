@@ -66,7 +66,7 @@ class MapState(
     }
 
     private fun renderVisibleTilesThrottled() {
-        throttledTask.offer(Unit)
+        throttledTask.trySend(Unit)
     }
 
     private fun renderVisibleTiles() {
