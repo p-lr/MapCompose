@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.0.0--beta07-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.0.0--beta08-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 # MapCompose
 
@@ -57,9 +57,9 @@ MapCompose is optimized to display maps that have several levels, like this:
 
 Each next level is twice bigger than the former, and provides more details. Overall, this looks like
  a pyramid. Another common name is "deep-zoom" map.
-This library comes with a demo app made of a set of various use-cases such as using markers,
-paths, rotating the map, etc. All examples use the same map stored in the assets. If you wonder what
-a deep-zoom maps looks like, you have a great example there.
+This library comes with a demo app featuring various use-cases such as using markers, paths,
+map rotation, etc. All examples use the same map stored in the assets. If you wonder what does
+a deep-zoom maps look like, you have a great example there.
 
 MapCompose can also be used with single level maps.
 
