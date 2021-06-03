@@ -2,13 +2,12 @@ package ovh.plrapps.mapcompose.ui.markers
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -33,40 +32,39 @@ internal fun MarkerComposer(
         zoomPRState = zoomPRState,
     ) {
         for (data in markerState.markers.values) {
-            Surface(Modifier
-                .layoutId(data)
-                .clip(CircleShape)
-                .clickable(
-                    onClick = { markerState.onMarkerClick(data) },
-                )
-                .then(
-                    if (data.isDraggable) {
-                        Modifier.pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consumeAllChanges()
-                                val interceptor = data.dragInterceptor
-                                if (interceptor != null) {
-                                    invokeDragInterceptor(data, zoomPRState, dragAmount)
-                                } else {
-                                    mapState.moveMarkerBy(data.id, dragAmount)
+            Box(
+                Modifier
+                    .layoutId(data)
+                    .clip(CircleShape)
+                    .clickable(
+                        onClick = { markerState.onMarkerClick(data) },
+                    )
+                    .then(
+                        if (data.isDraggable) {
+                            Modifier.pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    change.consumeAllChanges()
+                                    val interceptor = data.dragInterceptor
+                                    if (interceptor != null) {
+                                        invokeDragInterceptor(data, zoomPRState, dragAmount)
+                                    } else {
+                                        mapState.moveMarkerBy(data.id, dragAmount)
+                                    }
                                 }
                             }
-                        }
-                    } else Modifier
-                ),
-                color = Color.Transparent
+                        } else Modifier
+                    )
             ) {
                 data.c()
             }
         }
         for (data in markerState.callouts.values) {
-            Surface(
+            Box(
                 Modifier
                     .layoutId(data.markerData)
                     .clickable(
                         onClick = { markerState.onCalloutClick(data.markerData) },
-                    ),
-                color = Color.Transparent
+                    )
             ) {
                 data.markerData.c()
             }

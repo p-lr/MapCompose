@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -28,11 +29,13 @@ import java.text.DecimalFormat
 /**
  * A callout which animates its entry with an overshoot scaling interpolator.
  */
+@ExperimentalMaterialApi
 @Composable
-fun Callout(x: Double, y: Double,
-            title: String,
-            shouldAnimate: Boolean,
-            onAnimationDone: () -> Unit
+fun Callout(
+    x: Double, y: Double,
+    title: String,
+    shouldAnimate: Boolean,
+    onAnimationDone: () -> Unit
 ) {
     var animVal by remember { mutableStateOf(if (shouldAnimate) 0f else 1f) }
     LaunchedEffect(true) {
@@ -47,6 +50,7 @@ fun Callout(x: Double, y: Double,
         }
     }
     Surface(
+        onClick = {},
         Modifier
             .alpha(animVal)
             .padding(10.dp)
@@ -57,6 +61,7 @@ fun Callout(x: Double, y: Double,
                 transformOrigin = TransformOrigin(0.5f, 1f)
             },
         shape = RoundedCornerShape(5.dp),
+        enabled = false,
         elevation = 10.dp
     ) {
         Column(Modifier.padding(16.dp)) {
