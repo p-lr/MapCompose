@@ -1,10 +1,11 @@
-package ovh.plrapps.mapview.core
+package ovh.plrapps.mapcompose.core
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -16,12 +17,12 @@ import kotlinx.coroutines.launch
  *
  * @author peterLaurence
  */
-fun CoroutineScope.throttle(wait: Long, block: () -> Unit): SendChannel<Unit> {
+fun CoroutineScope.throttle(wait: Long, block: suspend () -> Unit): SendChannel<Unit> {
 
     val channel = Channel<Unit>(capacity = 1)
     val flow = channel.receiveAsFlow()
     launch {
-        flow.collect {
+        flow.collectLatest {
             block()
             delay(wait)
         }

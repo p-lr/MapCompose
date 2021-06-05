@@ -2,16 +2,13 @@ package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.utils.toRad
-import ovh.plrapps.mapview.core.throttle
+import ovh.plrapps.mapcompose.core.throttle
 
 class MapState(
     levelCount: Int,
@@ -19,9 +16,8 @@ class MapState(
     fullHeight: Int,
     tileStreamProvider: TileStreamProvider,
     tileSize: Int = 256,
-    dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ZoomPanRotateStateListener {
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
     internal val markerState = MarkerState()
     internal val pathState = PathState()
@@ -52,7 +48,9 @@ class MapState(
     @Suppress("unused")
     fun redrawTiles() {
         tileCanvasState.clearVisibleTiles().invokeOnCompletion {
-            renderVisibleTiles()
+            scope.launch {
+                renderVisibleTiles()
+            }
         }
     }
 
@@ -69,7 +67,7 @@ class MapState(
         throttledTask.trySend(Unit)
     }
 
-    private fun renderVisibleTiles() {
+    private suspend fun renderVisibleTiles() {
         val viewport = updateViewport()
         tileCanvasState.setViewport(viewport)
     }

@@ -2,19 +2,14 @@ package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.core.*
-import ovh.plrapps.mapcompose.core.Pool
-import ovh.plrapps.mapcompose.core.VisibleTilesResolver
-import ovh.plrapps.mapview.core.throttle
 import java.util.concurrent.Executors
 import kotlin.math.pow
 
@@ -49,6 +44,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
 
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others, and make a defensive copy. */
+        val lastVisible = lastVisible ?: return@throttle
         val tilesToRenderCopy = tilesCollected.sortedBy {
             it.zoom == lastVisible.level && it.subSample == lastVisible.subSample
         }
@@ -84,8 +80,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         Bitmap.Config.RGB_565
     }
 
-    private lateinit var lastViewport: Viewport
-    private lateinit var lastVisible: VisibleTiles
+    private var lastVisible: VisibleTiles? = null
     private var lastVisibleCount: Int = 0
     private var idle = false
 
@@ -94,6 +89,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
      */
     private val idleDebounced = scope.debounce<Unit>(400) {
         idle = true
+        val lastVisible = lastVisible ?: return@debounce
         evictTiles(lastVisible)
     }
 
@@ -116,16 +112,16 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         }
     }
 
-    fun setViewport(viewport: Viewport) {
-        /* Thread-confine the tileResolver to the main thread. */
-        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport, )
+    suspend fun setViewport(viewport: Viewport) {
+        /* Thread-confine the tileResolver to the main thread */
+        val visibleTiles = withContext(Dispatchers.Main.immediate) {
+             visibleTilesResolver.getVisibleTiles(viewport)
+        }
 
-        scope.launch {
+        withContext(scope.coroutineContext) {
             /* It's important to set the idle flag to false before launching computations, so that
              * tile eviction don't happen too quickly (can cause blinks) */
             idle = false
-
-            lastViewport = viewport
 
             setVisibleTiles(visibleTiles)
         }
@@ -162,8 +158,8 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
      * Using [Flow.collectLatest], we cancel any ongoing previous tile list processing. It's
      * particularly useful when the [TileCollector] is too slow, so when a new [VisibleTiles] element
      * is received from [visibleTilesFlow], no new [TileSpec] elements from the previous [VisibleTiles]
-     * element are sent to the [TileCollector]. Instead, the new [VisibleTiles] element is processed
-     * right away.
+     * element are sent to the [TileCollector]. When the [TileCollector] is ready to resume processing,
+     * the latest [VisibleTiles] element is processed right away.
      */
     private suspend fun collectNewTiles() {
         visibleTilesFlow.collectLatest { visibleTiles ->
@@ -193,7 +189,8 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
      */
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
-            if (lastVisible.contains(tile) && !tilesCollected.contains(tile)) {
+            val lastVisible = lastVisible
+            if ((lastVisible == null || lastVisible.contains(tile)) && !tilesCollected.contains(tile)) {
                 tile.prepare()
                 tilesCollected.add(tile)
                 idleDebounced.trySend(Unit)
