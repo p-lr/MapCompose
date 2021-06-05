@@ -58,14 +58,14 @@ MapCompose is optimized to display maps that have several levels, like this:
 Each next level is twice bigger than the former, and provides more details. Overall, this looks like
  a pyramid. Another common name is "deep-zoom" map.
 This library comes with a demo app featuring various use-cases such as using markers, paths,
-map rotation, etc. All examples use the same map stored in the assets. If you wonder what does
-a deep-zoom maps look like, you have a great example there.
+map rotation, etc. All examples use the same map stored in the assets, which is a great example of
+deep-zoom map.
 
 MapCompose can also be used with single level maps.
 
 ### Usage
 
-With Jetpack compose, we have to change the way we think about view state. In the previous `View`
+With Jetpack compose, we have to change the way we think about views. In the previous `View`
 system, we had references on views and mutated their state directly. While that could be done right,
 the state often ended-up scattered between views own state and application state. Sometimes, it was
 difficult to predict how views were rendered because there were so many things to take into account.
@@ -84,7 +84,7 @@ details on the `MapState` class, and give examples of how to add markers, callou
 
 ### MapState
 
-The `MapState` class expects 4 parameters for its construction:
+The `MapState` class expects four parameters for its construction:
 * `levelCount`: The number of levels of the map,
 * `fullWidth`: The width of the map at scale 1.0, which is the width of last level,
 * `fullHeight`: The height of the map at scale 1.0, which is the height of last level,
