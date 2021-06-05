@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
@@ -11,6 +13,13 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  */
 fun MapState.setFadeInSpeed(speed: Float) {
     tileCanvasState.alphaTick = speed
+}
+
+/**
+ * Disables the fade-in effect of tiles.
+ */
+fun MapState.disableFadeIn() {
+    tileCanvasState.alphaTick = 1f
 }
 
 /**
