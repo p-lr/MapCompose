@@ -10,10 +10,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.Fill
-import ovh.plrapps.mapcompose.api.Fit
-import ovh.plrapps.mapcompose.api.Forced
-import ovh.plrapps.mapcompose.api.MinimumScaleMode
+import ovh.plrapps.mapcompose.ui.layout.Fill
+import ovh.plrapps.mapcompose.ui.layout.Fit
+import ovh.plrapps.mapcompose.ui.layout.Forced
+import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.layout.GestureListener
 import ovh.plrapps.mapcompose.ui.layout.LayoutSizeChangeListener
 import ovh.plrapps.mapcompose.utils.*
@@ -47,11 +47,13 @@ internal class ZoomPanRotateState(
     internal var centroidY: Double by mutableStateOf(0.0)
 
     internal var layoutSize by mutableStateOf(IntSize(0, 0))
-    var minScale = 0f
+
+    private var minScale = 0f   // should only be changed through MinimumScaleMode
         set(value) {
             field = value
             setScale(scale)
         }
+
     var maxScale = 2f
         set(value) {
             field = value
@@ -361,7 +363,7 @@ internal class ZoomPanRotateState(
     }
 
     private fun constrainScale(scale: Float): Float {
-        return scale.coerceIn(max(minScale, Float.MIN_VALUE), maxScale)  // scale between 0+ and 2f
+        return scale.coerceIn(max(minScale, Float.MIN_VALUE), maxScale.coerceAtLeast(minScale))
     }
 
     private fun updateCentroid() {

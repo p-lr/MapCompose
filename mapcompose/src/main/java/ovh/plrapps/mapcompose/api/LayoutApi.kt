@@ -6,8 +6,12 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.unit.IntSize
+import ovh.plrapps.mapcompose.ui.layout.Fill
+import ovh.plrapps.mapcompose.ui.layout.Fit
+import ovh.plrapps.mapcompose.ui.layout.Forced
+import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 
@@ -91,6 +95,17 @@ var MapState.minimumScaleMode: MinimumScaleMode
     get() = zoomPanRotateState.minimumScaleMode
     set(value) {
         zoomPanRotateState.minimumScaleMode = value
+    }
+
+/**
+ * The default maximum scale is 2f.
+ * When changed, and if the current scale is greater than the new [maxScale], the current scale is
+ * changed to be equal to [maxScale].
+ */
+var MapState.maxScale: Float
+    get() = zoomPanRotateState.maxScale
+    set(value) {
+        zoomPanRotateState.maxScale = value
     }
 
 /**

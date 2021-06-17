@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.api
+package ovh.plrapps.mapcompose.ui.layout
 
 sealed class MinimumScaleMode
 
