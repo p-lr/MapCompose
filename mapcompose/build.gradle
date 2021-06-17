@@ -38,7 +38,6 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
-        kotlinCompilerVersion kotlin_version
     }
 }
 
@@ -72,7 +71,7 @@ afterEvaluate { project ->
             release(MavenPublication) {
 
                 groupId = GROUP
-                artifactId = 'mapcompose'
+                artifactId = ARTIFACT_ID
                 version = VERSION_NAME  // see gradle.properties
 
                 artifact bundleReleaseAar
