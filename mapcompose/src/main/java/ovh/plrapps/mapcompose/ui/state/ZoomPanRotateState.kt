@@ -239,6 +239,11 @@ internal class ZoomPanRotateState(
         smoothScrollAndScale(destScrollX, destScrollY, destScale, animationSpec)
     }
 
+    suspend fun stopAnimations() {
+        apiAnimatable.stop()
+        userAnimatable.stop()
+    }
+
     override fun onScaleRatio(scaleRatio: Float, centroid: Offset) {
         val formerScale = scale
         setScale(scale * scaleRatio)
@@ -318,8 +323,7 @@ internal class ZoomPanRotateState(
 
     override fun onTouchDown() {
         scope?.launch {
-            userAnimatable.stop()
-            apiAnimatable.stop()
+            stopAnimations()
         }
         stateChangeListener.onTouchDown()
     }

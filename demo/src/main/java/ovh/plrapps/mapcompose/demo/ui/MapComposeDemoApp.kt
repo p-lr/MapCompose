@@ -21,6 +21,7 @@ fun MapComposeDemoApp() {
     val pathsVM: PathsVM = viewModel()
     val customDrawVM: CustomDrawVM = viewModel()
     val calloutVM: CalloutVM = viewModel()
+    val animationVM: AnimationDemoVM = viewModel()
     val httpTilesVM: HttpTilesVM = viewModel()
 
     MapComposeTheme {
@@ -53,6 +54,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.CALLOUT_DEMO.name) {
                 CalloutDemo(viewModel = calloutVM)
+            }
+            composable(MainDestinations.ANIMATION_DEMO.name) {
+                AnimationDemo(viewModel = animationVM, onRestart = animationVM::startAnimation)
             }
             composable(MainDestinations.HTTP_TILES_DEMO.name) {
                 HttpTilesDemo(viewModel = httpTilesVM)

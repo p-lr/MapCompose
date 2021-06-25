@@ -41,6 +41,7 @@ class MapState(
     private var padding: Int = 0
     internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
+    internal var touchDownCb: (() -> Unit)? = null
 
     /**
      * Public API to programmatically trigger a redraw of the tiles.
@@ -61,6 +62,7 @@ class MapState(
 
     override fun onTouchDown() {
         markerState.removeAllAutoDismissCallouts()
+        touchDownCb?.invoke()
     }
 
     private fun renderVisibleTilesThrottled() {

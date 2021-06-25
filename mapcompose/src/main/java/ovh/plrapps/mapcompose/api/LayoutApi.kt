@@ -196,3 +196,18 @@ fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
     zoomPanRotateState.tapCb = tapCb
 }
 
+/**
+ * Registers a callback for touch down event.
+ */
+fun MapState.onTouchDown(cb: () -> Unit) {
+    touchDownCb = cb
+}
+
+/**
+ * Stops all currently running animations. If other animations are scheduled to run (inside running
+ * coroutines), you might have to cancel those coroutines as well.
+ */
+suspend fun MapState.stopAnimations() {
+    zoomPanRotateState.stopAnimations()
+}
+
