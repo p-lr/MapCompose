@@ -107,7 +107,7 @@ MapCompose takes care of that (the main thread isn't blocked by `getTileStream` 
 
 ### Markers
 
-To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/f3b5f162cd5d48803440e7944f583c0e74fc1f29/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
+To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
 API, like so:
 
 ```kotlin
@@ -191,6 +191,36 @@ mapState.setStateChangeListener {
 ```
 
 To unregister, use `removeStateChangeListener()`.
+
+## Animate state change
+
+It's pretty common to programmatically animate the scroll and/or the scale, or even the rotation of
+the map.
+
+*scroll and/or scale animation*
+
+When animating the scale, we generally do so while maintaining the center of the screen at
+a specific position. When animating the scroll position, we can do so with or without animating the
+scale altogether. There's one API to handle both scenario:
+[scrollToAndCenter](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L145)
+
+*rotation animation*
+
+For animating the rotation while keeping the current scale and scroll, use the
+[rotateTo](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L130) API.
+
+Both `scrollToAndCenter` and `rotateTo` are suspending functions. That means you know exactly when
+an animation finishes, and you can easily chain animation inside a coroutine.
+
+```kotlin
+// Inside a ViewModel
+viewModelScope.launch {
+    mapState.scrollToAndCenter(0.8, 0.8, destScale = 2f)
+    mapState.rotateTo(180f, TweenSpec(2000, easing = FastOutSlowInEasing))
+}
+```
+
+For a detailed example, see the "AnimationDemo".
 
 ## Design changes and differences with MapView
 
