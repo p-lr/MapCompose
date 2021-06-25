@@ -3,11 +3,11 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 import android.app.Application
 import android.content.Context
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.SnapSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -27,6 +27,7 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
     }
     private val tileStreamProvider = makeTileStreamProvider(appContext)
     private var job: Job? = null
+    private val spec = TweenSpec<Float>(2000, easing = FastOutSlowInEasing)
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
@@ -39,6 +40,9 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
             onTouchDown {
                 job?.cancel()
             }
+            viewModelScope.launch {
+                scrollTo(0.5, 0.5, 2f, SnapSpec())
+            }
         }
     )
 
@@ -49,12 +53,11 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
         /* Start a new one */
         with(state) {
             job = viewModelScope.launch {
-                scrollToAndCenter(0.5, 0.5, 0f, SnapSpec())
-                scrollToAndCenter(0.0, 0.0, 2f, TweenSpec(2000, easing = LinearEasing))
-                scrollToAndCenter(0.8, 0.8, 2f, TweenSpec(2000, easing = FastOutSlowInEasing))
-                rotateTo(180f, TweenSpec(2000, easing = FastOutSlowInEasing))
-                scrollToAndCenter(0.5, 0.5, 0.5f, TweenSpec(2000, easing = FastOutSlowInEasing))
-                scrollToAndCenter(0.5, 0.5, 2f, TweenSpec(800, easing = FastOutSlowInEasing))
+                scrollTo(0.0, 0.0, 2f, spec, screenOffset = Offset.Zero)
+                scrollTo(0.8, 0.8, 2f, spec)
+                rotateTo(180f, spec)
+                scrollTo(0.5, 0.5, 0.5f, spec)
+                scrollTo(0.5, 0.5, 2f, TweenSpec(800, easing = FastOutSlowInEasing))
                 rotateTo(0f, TweenSpec(1000, easing = FastOutSlowInEasing))
             }
         }

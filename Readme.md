@@ -21,7 +21,7 @@ val tileStreamProvider = object : TileStreamProvider {
 val state: MapState by mutableStateOf(
     MapState(4, 4096, 4096, tileStreamProvider).apply {
         enableRotation()
-        scrollToAndCenter(0.5, 0.5)
+        scrollTo(0.5, 0.5)
     }
 )
 

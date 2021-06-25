@@ -29,7 +29,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
-                scrollToAndCenter(0.72, 0.3)
+                scrollTo(0.72, 0.3)
             }
         }
     )

@@ -37,7 +37,7 @@ var MapState.rotation: AngleDegree
 /**
  * The [scroll] property defines the position of the top-left corner of the visible viewport.
  * This is a low-level concept (the value is in scaled pixels). To scroll to a known position,
- * prefer the [scrollToAndCenter] API.
+ * prefer the [scrollTo] API.
  */
 var MapState.scroll: Offset
     get() = Offset(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
@@ -135,23 +135,30 @@ suspend fun MapState.rotateTo(
 }
 
 /**
- * Scrolls and center on a position, animating the scroll position and the scale.
+ * Scrolls on a position, animating the scroll position and the scale.
  *
  * @param x The normalized X position on the map, in range [0..1]
  * @param y The normalized Y position on the map, in range [0..1]
  * @param destScale The destination scale. The default value is the current scale.
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ * @param screenOffset Offset of the screen relatively to its dimension. Default is
+ * Offset(-0.5f, -0.5f), so moving the screen by half the width left and by half the height top,
+ * effectively centering on the scroll destination.
  */
-suspend fun MapState.scrollToAndCenter(
+suspend fun MapState.scrollTo(
     x: Double,
     y: Double,
     destScale: Float = scale,
-    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow),
+    screenOffset: Offset = Offset(-0.5f, -0.5f)
 ) {
     with(zoomPanRotateState) {
         awaitLayout()
-        val destScrollX = (x * fullWidth * destScale - layoutSize.width / 2).toFloat()
-        val destScrollY = (y * fullHeight * destScale - layoutSize.height / 2).toFloat()
+        val offsetX = screenOffset.x * layoutSize.width
+        val offsetY = screenOffset.y * layoutSize.height
+
+        val destScrollX = (x * fullWidth * destScale + offsetX).toFloat()
+        val destScrollY = (y * fullHeight * destScale + offsetY).toFloat()
 
         smoothScrollAndScale(
             destScrollX,
