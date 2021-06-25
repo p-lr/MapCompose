@@ -202,20 +202,20 @@ the map.
 When animating the scale, we generally do so while maintaining the center of the screen at
 a specific position. When animating the scroll position, we can do so with or without animating the
 scale altogether. There's one API to handle both scenario:
-[scrollToAndCenter](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L145)
+[scrollTo](https://github.com/peterLaurence/MapCompose/blob/cf69d55a8ca9eb279ab07011c4c7a003b5c4266f/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L138)
 
 *rotation animation*
 
 For animating the rotation while keeping the current scale and scroll, use the
 [rotateTo](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L130) API.
 
-Both `scrollToAndCenter` and `rotateTo` are suspending functions. That means you know exactly when
+Both `scrollTo` and `rotateTo` are suspending functions. That means you know exactly when
 an animation finishes, and you can easily chain animation inside a coroutine.
 
 ```kotlin
 // Inside a ViewModel
 viewModelScope.launch {
-    mapState.scrollToAndCenter(0.8, 0.8, destScale = 2f)
+    mapState.scrollTo(0.8, 0.8, destScale = 2f)
     mapState.rotateTo(180f, TweenSpec(2000, easing = FastOutSlowInEasing))
 }
 ```

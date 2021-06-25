@@ -135,7 +135,8 @@ suspend fun MapState.rotateTo(
 }
 
 /**
- * Scrolls on a position, animating the scroll position and the scale.
+ * Scrolls on a position, animating the scroll position and the scale. Defaults to centering on the
+ * provided scroll destination.
  *
  * @param x The normalized X position on the map, in range [0..1]
  * @param y The normalized Y position on the map, in range [0..1]
