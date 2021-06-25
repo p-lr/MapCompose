@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.scale
@@ -39,6 +41,8 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
     )
 
     fun onCenter() {
-        state.centerOnMarker("parking", 1f)
+        viewModelScope.launch {
+            state.centerOnMarker("parking", 1f)
+        }
     }
 }

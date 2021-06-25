@@ -15,6 +15,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.screens.ScaleIndicatorController
@@ -41,7 +43,9 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
-            scrollToAndCenter(0.5, 0.5, 1.1f)
+            viewModelScope.launch {
+                scrollToAndCenter(0.5, 0.5, 1.1f)
+            }
         }
     )
 

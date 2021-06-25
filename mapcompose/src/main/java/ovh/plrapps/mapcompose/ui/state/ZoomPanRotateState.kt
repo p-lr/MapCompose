@@ -8,15 +8,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.ui.layout.Fill
-import ovh.plrapps.mapcompose.ui.layout.Fit
-import ovh.plrapps.mapcompose.ui.layout.Forced
-import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
-import ovh.plrapps.mapcompose.ui.layout.GestureListener
-import ovh.plrapps.mapcompose.ui.layout.LayoutSizeChangeListener
+import kotlinx.coroutines.*
+import ovh.plrapps.mapcompose.ui.layout.*
 import ovh.plrapps.mapcompose.utils.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.*
 
 internal class ZoomPanRotateState(
@@ -25,9 +22,21 @@ internal class ZoomPanRotateState(
     private val stateChangeListener: ZoomPanRotateStateListener
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
+    private var continuations = mutableListOf<Continuation<Unit>>()
 
-    internal val isReadyForAnimation: Boolean
-        get() = scope != null
+    /**
+     * Suspends until the view is laid out. To do that, we use the [scope] as flag.
+     * Contract: When [awaitLayout] resumes, [scope] and [layoutSize] have consistent values.
+     */
+    internal suspend fun awaitLayout() = withContext(Dispatchers.Main.immediate) {
+        suspendCoroutine<Unit> {
+            if (scope == null) {
+                continuations.add(it)
+            } else {
+                it.resume(Unit)
+            }
+        }
+    }
 
     internal var minimumScaleMode: MinimumScaleMode = Fit
         set(value) {
@@ -82,9 +91,9 @@ internal class ZoomPanRotateState(
     /* Not used internally (user customizable) */
     internal var tapCb: LayoutTapCb? = null
 
-    /* Used for fling animation */
-    private val scrollAnimatable: Animatable<Offset, AnimationVector2D> =
+    private val userAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
+    private val apiAnimatable = Animatable(0f)
 
     private val doubleTapSpec =
         TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
@@ -121,37 +130,39 @@ internal class ZoomPanRotateState(
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
     @Suppress("unused")
-    fun smoothScaleTo(
+    suspend fun smoothScaleTo(
         scale: Float,
         animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
     ) {
         scope?.launch {
             val currScale = this@ZoomPanRotateState.scale
             if (currScale > 0) {
-                Animatable(0f).animateTo(1f, animationSpec) {
+                apiAnimatable.snapTo(0f)
+                apiAnimatable.animateTo(1f, animationSpec) {
                     setScale(lerp(currScale, scale, value))
                 }
             }
-        }
+        }?.join()
     }
 
-    fun smoothRotateTo(
+    suspend fun smoothRotateTo(
         angle: AngleDegree,
         animationSpec: AnimationSpec<Float>
     ) {
         /* We don't have to stop scrolling animation while doing that */
         scope?.launch {
             val currRotation = this@ZoomPanRotateState.rotation
-            Animatable(0f).animateTo(1f, animationSpec) {
+            apiAnimatable.snapTo(0f)
+            apiAnimatable.animateTo(1f, animationSpec) {
                 setRotation(lerp(currRotation, angle, value))
             }
-        }
+        }?.join()
     }
 
     /**
      * Animates the scroll to the destination value.
      */
-    fun smoothScrollTo(
+    suspend fun smoothScrollTo(
         destScrollX: Float,
         destScrollY: Float,
         animationSpec: AnimationSpec<Float>
@@ -160,14 +171,15 @@ internal class ZoomPanRotateState(
         val startScrollY = this.scrollY
 
         scope?.launch {
-            scrollAnimatable.stop()
-            Animatable(0f).animateTo(1f, animationSpec) {
+            userAnimatable.stop()
+            apiAnimatable.snapTo(0f)
+            apiAnimatable.animateTo(1f, animationSpec) {
                 setScroll(
                     scrollX = lerp(startScrollX, destScrollX, value),
                     scrollY = lerp(startScrollY, destScrollY, value)
                 )
             }
-        }
+        }?.join()
     }
 
     /**
@@ -178,7 +190,7 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    fun smoothScrollAndScale(
+    suspend fun smoothScrollAndScale(
         destScrollX: Float,
         destScrollY: Float,
         destScale: Float,
@@ -189,15 +201,16 @@ internal class ZoomPanRotateState(
         val startScale = this.scale
 
         scope?.launch {
-            scrollAnimatable.stop()
-            Animatable(0f).animateTo(1f, animationSpec) {
+            userAnimatable.stop()
+            apiAnimatable.snapTo(0f)
+            apiAnimatable.animateTo(1f, animationSpec) {
                 setScale(lerp(startScale, destScale, value))
                 setScroll(
                     scrollX = lerp(startScrollX, destScrollX, value),
                     scrollY = lerp(startScrollY, destScrollY, value)
                 )
             }
-        }
+        }?.join()
     }
 
     /**
@@ -209,7 +222,7 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    fun smoothScaleWithFocalPoint(
+    suspend fun smoothScaleWithFocalPoint(
         focusX: Float,
         focusY: Float,
         destScale: Float,
@@ -290,8 +303,8 @@ internal class ZoomPanRotateState(
         }
 
         scope?.launch {
-            scrollAnimatable.snapTo(Offset(scrollX, scrollY))
-            scrollAnimatable.animateDecay(
+            userAnimatable.snapTo(Offset(scrollX, scrollY))
+            userAnimatable.animateDecay(
                 initialVelocity = -Offset(velocityX, velocityY),
                 animationSpec = flingSpec,
             ) {
@@ -305,7 +318,8 @@ internal class ZoomPanRotateState(
 
     override fun onTouchDown() {
         scope?.launch {
-            scrollAnimatable.stop()
+            userAnimatable.stop()
+            apiAnimatable.stop()
         }
         stateChangeListener.onTouchDown()
     }
@@ -329,12 +343,14 @@ internal class ZoomPanRotateState(
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
 
-        smoothScaleWithFocalPoint(
-            focalPtRotated.x,
-            focalPtRotated.y,
-            destScale,
-            doubleTapSpec
-        )
+        scope?.launch {
+            smoothScaleWithFocalPoint(
+                focalPtRotated.x,
+                focalPtRotated.y,
+                destScale,
+                doubleTapSpec
+            )
+        }
     }
 
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
@@ -350,6 +366,12 @@ internal class ZoomPanRotateState(
         layoutSize = size
         recalculateMinScale()
         setScale(scale)
+
+        /* Layout was done at least once, resume continuations */
+        for (ct in continuations) {
+            ct.resume(Unit)
+        }
+        continuations.clear()
     }
 
     private fun constrainScrollX(scrollX: Float): Float {

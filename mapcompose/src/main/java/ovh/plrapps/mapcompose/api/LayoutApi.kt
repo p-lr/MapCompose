@@ -125,82 +125,40 @@ fun MapState.setScrollOffsetRatio(xRatio: Float, yRatio: Float) {
 }
 
 /**
- * Rotates to the specified [angle] in decimal degrees, animating the rotation if the composable is
- * ready for animation.
+ * Rotates to the specified [angle] in decimal degrees, animating the rotation.
  */
-fun MapState.rotateTo(
+suspend fun MapState.rotateTo(
     angle: AngleDegree,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    with(zoomPanRotateState) {
-        if (isReadyForAnimation) {
-            zoomPanRotateState.smoothRotateTo(angle, animationSpec)
-        } else {
-            setRotation(angle)
-        }
-    }
+    zoomPanRotateState.smoothRotateTo(angle, animationSpec)
 }
 
 /**
- * Scrolls and center on a position, animating the scroll position and the scale. If the composable
- * isn't ready for animation, the new values are just set.
+ * Scrolls and center on a position, animating the scroll position and the scale.
  *
  * @param x The normalized X position on the map, in range [0..1]
  * @param y The normalized Y position on the map, in range [0..1]
- * @param destScale The destination scale
+ * @param destScale The destination scale. The default value is the current scale.
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
-fun MapState.scrollToAndCenter(
+suspend fun MapState.scrollToAndCenter(
     x: Double,
     y: Double,
-    destScale: Float,
+    destScale: Float = scale,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
+        awaitLayout()
         val destScrollX = (x * fullWidth * destScale - layoutSize.width / 2).toFloat()
         val destScrollY = (y * fullHeight * destScale - layoutSize.height / 2).toFloat()
 
-        if (isReadyForAnimation) {
-            smoothScrollAndScale(
-                destScrollX,
-                destScrollY,
-                destScale,
-                animationSpec
-            )
-        } else {
-            setScroll(destScrollX, destScrollY)
-            setScale(destScale)
-        }
-    }
-}
-
-/**
- * Center on a position, animating the scroll position. If the composable isn't ready for animation,
- * the new values are just set.
- *
- * @param x The normalized X position on the map, in range [0..1]
- * @param y The normalized Y position on the map, in range [0..1]
- * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
- */
-fun MapState.scrollToAndCenter(
-    x: Double,
-    y: Double,
-    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
-) {
-    with(zoomPanRotateState) {
-        val destScrollX = (x * fullWidth * scale - layoutSize.width / 2).toFloat()
-        val destScrollY = (y * fullHeight * scale - layoutSize.height / 2).toFloat()
-
-        if (isReadyForAnimation) {
-            smoothScrollAndScale(
-                destScrollX,
-                destScrollY,
-                scale,
-                animationSpec
-            )
-        } else {
-            setScroll(destScrollX, destScrollY)
-        }
+        smoothScrollAndScale(
+            destScrollX,
+            destScrollY,
+            destScale,
+            animationSpec
+        )
     }
 }
 

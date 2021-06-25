@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -29,6 +31,8 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
     )
 
     fun onRotate() {
-        state.rotateTo(state.rotation + 90f)
+        viewModelScope.launch {
+            state.rotateTo(state.rotation + 90f)
+        }
     }
 }

@@ -145,58 +145,50 @@ fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
 }
 
 /**
- * Center on a marker, animating the scroll position and the scale if the composable is ready for
- * animation.
+ * Center on a marker, animating the scroll position and the scale.
  *
  * @param id The id of the marker
  * @param destScale The destination scale
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
-fun MapState.centerOnMarker(
+suspend fun MapState.centerOnMarker(
     id: String,
     destScale: Float,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
+            awaitLayout()
             val destScrollX = (it.x * fullWidth * destScale - layoutSize.width / 2).toFloat()
             val destScrollY = (it.y * fullHeight * destScale - layoutSize.height / 2).toFloat()
 
-            if (isReadyForAnimation) {
-                smoothScrollAndScale(
-                    destScrollX,
-                    destScrollY,
-                    destScale,
-                    animationSpec
-                )
-            } else {
-                setScale(destScale)
-                setScroll(destScrollX, destScrollY)
-            }
+            smoothScrollAndScale(
+                destScrollX,
+                destScrollY,
+                destScale,
+                animationSpec
+            )
         }
     }
 }
 
 /**
- * Center on a marker, animating the scroll if the composable is ready for animation.
+ * Center on a marker, animating the scroll.
  *
  * @param id The id of the marker
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
-fun MapState.centerOnMarker(
+suspend fun MapState.centerOnMarker(
     id: String,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
+            awaitLayout()
             val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
             val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
 
-            if (isReadyForAnimation) {
-                smoothScrollTo(destScrollX, destScrollY, animationSpec)
-            } else {
-                setScroll(destScrollX, destScrollY)
-            }
+            smoothScrollTo(destScrollX, destScrollY, animationSpec)
         }
     }
 }

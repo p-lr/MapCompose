@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.paths.PathData
@@ -26,7 +28,9 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
-            scrollToAndCenter(0.72, 0.3)
+            viewModelScope.launch {
+                scrollToAndCenter(0.72, 0.3)
+            }
         }
     )
 
