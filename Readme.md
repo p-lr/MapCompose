@@ -67,7 +67,7 @@ MapCompose can also be used with single level maps.
 
 ### Usage
 
-With Jetpack compose, we have to change the way we think about views. In the previous `View`
+With Jetpack Compose, we have to change the way we think about views. In the previous `View`
 system, we had references on views and mutated their state directly. While that could be done right,
 the state often ended-up scattered between views own state and application state. Sometimes, it was
 difficult to predict how views were rendered because there were so many things to take into account.
@@ -80,8 +80,9 @@ state. Therefore, the composables will always render consistently, even after a 
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
 composable. The code sample at the top of this readme shows an example. Then, whenever you need to
-interact with the map, you invoke APIs on your `MapState` instance. All public APIs are located under
-the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections provide
+update the map (add a marker, a path, change the scale, etc.), you invoke APIs on your `MapState`
+instance. All public APIs are located under the
+[api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections provide
 details on the `MapState` class, and give examples of how to add markers, callouts, and paths.
 
 ### MapState
@@ -210,7 +211,7 @@ For animating the rotation while keeping the current scale and scroll, use the
 [rotateTo](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L130) API.
 
 Both `scrollTo` and `rotateTo` are suspending functions. That means you know exactly when
-an animation finishes, and you can easily chain animation inside a coroutine.
+an animation finishes, and you can easily chain animations inside a coroutine.
 
 ```kotlin
 // Inside a ViewModel
