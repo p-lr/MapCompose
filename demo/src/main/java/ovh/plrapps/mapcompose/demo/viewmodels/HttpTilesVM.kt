@@ -31,9 +31,9 @@ class HttpTilesVM : ViewModel() {
 /**
  * A [TileStreamProvider] which performs HTTP requests.
  */
-private fun makeTileStreamProvider() = object : TileStreamProvider {
-    override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-        return try {
+private fun makeTileStreamProvider() =
+    TileStreamProvider { row, col, zoomLvl ->
+        try {
             val url = URL("https://plrapps.ovh:8080/mapcompose-tile/$zoomLvl/$row/$col.jpg")
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
@@ -44,4 +44,3 @@ private fun makeTileStreamProvider() = object : TileStreamProvider {
             null
         }
     }
-}

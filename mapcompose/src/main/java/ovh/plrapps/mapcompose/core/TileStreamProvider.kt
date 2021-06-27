@@ -12,6 +12,6 @@ import java.io.InputStream
  *
  * If [getTileStream] returns null, the tile is simply ignored by the tile processing machinery.
  */
-interface TileStreamProvider {
-    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+fun interface TileStreamProvider {
+    fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
 }

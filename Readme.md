@@ -12,11 +12,10 @@ An example of setting up:
 
 ```kotlin
 /* Inside your view-model */
-val tileStreamProvider = object : TileStreamProvider {
-     override suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-         return FileInputStream(File("path/{zoomLvl}/{row}/{col}.jpg")) // or it can be a remote HTTP fetch
-     }
-}
+val tileStreamProvider =
+    TileStreamProvider { row, col, zoomLvl ->
+        FileInputStream(File("path/{$zoomLvl}/{$row}/{$col}.jpg")) // or it can be a remote HTTP fetch
+    }
 
 val state: MapState by mutableStateOf(
     MapState(4, 4096, 4096, tileStreamProvider).apply {
@@ -229,13 +228,6 @@ For a detailed example, see the "AnimationDemo".
 in MapCompose. Now, coordinates are normalized. For example, (x=0.5, y=0.5) is a point located at
 the center of the map. Normalized coordinates are easier to reason about, and application code can
 still translate this coordinate system to a custom one.
-
-* The `TileStreamProvider` is now an interface with a suspending function:
-```kotlin
-interface TileStreamProvider {
-    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
-}
-```
 
 * In MapView, you had to build a configuration and use that configuration to create a `MapView`
 instance. There's no such thing in MapCompose. Now, you create a `MapState` object with required
