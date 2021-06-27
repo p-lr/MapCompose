@@ -8,20 +8,18 @@ import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.BufferedInputStream
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
  * Shows how MapCompose behaves with remote HTTP tiles.
- *
- * @author P.Laurence on 15/05/2021
  */
 class HttpTilesVM : ViewModel() {
     private val tileStreamProvider = makeTileStreamProvider()
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        /* Notice how we increase the worker count when performing HTTP requests */
+        MapState(4, 4096, 4096, tileStreamProvider, workerCount = 16).apply {
             scale = 0f
             shouldLoopScale = true
         }
