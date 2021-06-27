@@ -96,14 +96,18 @@ top-left corner. For example, the tile requested with `row` = 0, and `col = 0` w
 the top-left corner.
 
 ```kotlin
-interface TileStreamProvider {
-    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+fun interface TileStreamProvider {
+    fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
 }
 ```
 
 Depending on your configuration, your `TileStreamProvider` implementation might fetch local files,
 as well as performing remote HTTP requests - it's up to you. You don't have to worry about threading,
-MapCompose takes care of that (the main thread isn't blocked by `getTileStream` calls).
+MapCompose takes care of that (the main thread isn't blocked by `getTileStream` calls). However, in
+case of HTTP requests, it's advised to create a `MapState` with a higher than default `workerCount`.
+That optional parameter defines the size of the dedicated thread pool for fetching tiles, and defaults
+to the number of cores minus one. Typically, you would want to set `workerCount` to 16 when performing
+HTTP requests. Otherwise, you can safely leave it to its default.
 
 ### Markers
 
