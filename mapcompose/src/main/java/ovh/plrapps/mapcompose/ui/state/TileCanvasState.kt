@@ -14,14 +14,15 @@ import java.util.concurrent.Executors
 import kotlin.math.pow
 
 /**
- * The view-model which contains all the logic related to [Tile] management.
+ * This class contains all the logic related to [Tile] management.
  * It defers [Tile] loading to the [TileCollector].
  * All internal data manipulation are thread-confined to a single background thread. This is
  * guarantied by the [scope] and its custom dispatcher.
  * Ultimately, it exposes the list of tiles to render ([tilesToRender]) which is backed by a
  * [MutableState]. A composable using [tilesToRender] will be automatically recomposed when this
  * list changes.
- * @author peterLaurence on 04/06/2019
+ *
+ * @author P.Laurence on 04/06/2019
  */
 internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
                                private val visibleTilesResolver: VisibleTilesResolver,
