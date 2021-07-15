@@ -1,5 +1,6 @@
 package ovh.plrapps.mapcompose.ui.markers
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -36,9 +38,9 @@ internal fun MarkerComposer(
                 Modifier
                     .layoutId(data)
                     .clip(CircleShape)
-                    .clickable(
-                        onClick = { markerState.onMarkerClick(data) },
-                    )
+                    .clickable {
+                        markerState.onMarkerClick(data)
+                    }
                     .then(
                         if (data.isDraggable) {
                             Modifier.pointerInput(Unit) {
@@ -60,13 +62,17 @@ internal fun MarkerComposer(
         }
         for (data in markerState.callouts.values) {
             Box(
-                Modifier
-                    .layoutId(data.markerData)
-                    .clickable(
-                        onClick = { markerState.onCalloutClick(data.markerData) },
-                    )
+                Modifier.layoutId(data.markerData)
             ) {
                 data.markerData.c()
+                Box(
+                    Modifier
+                        .clickable {
+                            markerState.onCalloutClick(data.markerData)
+                        }
+                        .matchParentSize()
+                        .background(Color.Transparent)
+                )
             }
         }
     }
