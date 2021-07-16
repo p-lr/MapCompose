@@ -34,7 +34,8 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
         useIR = true
-        freeCompilerArgs += "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi"
+        // Activate the option below when using @ExperimentalMaterialApi
+        // freeCompilerArgs += "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi"
     }
     buildFeatures {
         compose true

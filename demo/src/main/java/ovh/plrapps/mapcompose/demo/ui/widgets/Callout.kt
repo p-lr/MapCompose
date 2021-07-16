@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -28,10 +27,7 @@ import java.text.DecimalFormat
 
 /**
  * A callout which animates its entry with an overshoot scaling interpolator.
- * TODO: Once we don't use experimental Surface API, remove the module wide opt-in for
- * @ExperimentalMaterialApi defined build.gradle of the demo.
  */
-@ExperimentalMaterialApi
 @Composable
 fun Callout(
     x: Double, y: Double,
@@ -52,7 +48,6 @@ fun Callout(
         }
     }
     Surface(
-        onClick = {},
         Modifier
             .alpha(animVal)
             .padding(10.dp)
@@ -63,7 +58,6 @@ fun Callout(
                 transformOrigin = TransformOrigin(0.5f, 1f)
             },
         shape = RoundedCornerShape(5.dp),
-        enabled = false,
         elevation = 10.dp
     ) {
         Column(Modifier.padding(16.dp)) {

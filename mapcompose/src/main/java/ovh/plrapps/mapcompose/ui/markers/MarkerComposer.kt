@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.markers
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -9,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -62,17 +60,15 @@ internal fun MarkerComposer(
         }
         for (data in markerState.callouts.values) {
             Box(
-                Modifier.layoutId(data.markerData)
+                Modifier
+                    .layoutId(data.markerData)
+                    .clickable {
+                        /* This click listener will be invoked only if the child composable doesn't
+                         * consume clicks */
+                        markerState.onCalloutClick(data.markerData)
+                    },
             ) {
                 data.markerData.c()
-                Box(
-                    Modifier
-                        .clickable {
-                            markerState.onCalloutClick(data.markerData)
-                        }
-                        .matchParentSize()
-                        .background(Color.Transparent)
-                )
             }
         }
     }

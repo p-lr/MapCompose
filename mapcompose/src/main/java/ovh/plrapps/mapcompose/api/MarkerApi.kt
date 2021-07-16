@@ -113,6 +113,9 @@ fun MapState.onMarkerMove(
 
 /**
  * Register a callback which will be invoked when a marker is tapped.
+ * Beware that this clicked listener will only be invoked when the marker is clicked
+ * in an area where it doesn't consumes the click. A button, for example, consumes
+ * click events.
  */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb
@@ -120,6 +123,9 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 
 /**
  * Register a callback which will be invoked when a callout is tapped.
+ * Beware that this clicked listener will only be invoked when the callout is clicked
+ * in an area where it doesn't consumes the click. A button, for example, consumes
+ * click events.
  */
 fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.calloutClickCb = cb
