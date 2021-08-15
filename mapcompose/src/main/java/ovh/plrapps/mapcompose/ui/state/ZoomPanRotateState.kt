@@ -22,16 +22,19 @@ internal class ZoomPanRotateState(
     private val stateChangeListener: ZoomPanRotateStateListener
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
-    private var continuations = mutableListOf<Continuation<Unit>>()
+    private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
 
     /**
      * Suspends until the view is laid out. To do that, we use the [scope] as flag.
-     * Contract: When [awaitLayout] resumes, [scope] and [layoutSize] have consistent values.
+     *
+     * _Contract_:
+     * On layout change, [scope] and [layoutSize] are initialized, and queued continuations
+     * are resumed.
      */
     internal suspend fun awaitLayout() = withContext(Dispatchers.Main.immediate) {
         suspendCoroutine<Unit> {
             if (scope == null) {
-                continuations.add(it)
+                onLayoutContinuations.add(it)
             } else {
                 it.resume(Unit)
             }
@@ -372,10 +375,10 @@ internal class ZoomPanRotateState(
         setScale(scale)
 
         /* Layout was done at least once, resume continuations */
-        for (ct in continuations) {
+        for (ct in onLayoutContinuations) {
             ct.resume(Unit)
         }
-        continuations.clear()
+        onLayoutContinuations.clear()
     }
 
     private fun constrainScrollX(scrollX: Float): Float {

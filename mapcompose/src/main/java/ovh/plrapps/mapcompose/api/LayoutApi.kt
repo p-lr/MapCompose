@@ -35,15 +35,25 @@ var MapState.rotation: AngleDegree
     }
 
 /**
- * The [scroll] property defines the position of the top-left corner of the visible viewport.
- * This is a low-level concept (the value is in scaled pixels). To scroll to a known position,
- * prefer the [scrollTo] API.
+ * Get the current [scroll] - the position of the top-left corner of the visible viewport.
+ * This is a low-level concept (returned value is in scaled pixels).
  */
-var MapState.scroll: Offset
+val MapState.scroll: Offset
     get() = Offset(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
-    set(value) {
-        zoomPanRotateState.setScroll(value.x, value.y)
+
+/**
+ * Set the [scroll] - the position of the top-left corner of the visible viewport. This is a
+ * suspending call because it's required to wait the first composition. Otherwise, it's invoked
+ * immediately.
+ * This is a low-level concept (input value is expected to be in scaled pixels). To scroll to a
+ * known position, prefer the [scrollTo] API.
+ */
+suspend fun MapState.setScroll(offset: Offset) {
+    with(zoomPanRotateState) {
+        awaitLayout()
+        setScroll(offset.x, offset.y)
     }
+}
 
 /**
  * Get notified whenever the state ([scale] and/or [scroll] and/or [rotation]) changes.
