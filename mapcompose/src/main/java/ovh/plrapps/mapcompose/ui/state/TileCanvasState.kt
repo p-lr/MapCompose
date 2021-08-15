@@ -96,6 +96,8 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
 
     private val tilesCollected = mutableListOf<Tile>()
 
+    private val tileCollector: TileCollector
+
     init {
         /* Collect visible tiles and send specs to the TileCollector */
         scope.launch {
@@ -103,7 +105,8 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         }
 
         /* Launch the TileCollector */
-        with(TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)) {
+        tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)
+        with(tileCollector) {
             scope.collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
         }
 
@@ -111,6 +114,11 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         scope.launch {
             consumeTiles(tilesOutput)
         }
+    }
+
+    fun shutdown() {
+        singleThreadDispatcher.close()
+        tileCollector.shutdownNow()
     }
 
     suspend fun setViewport(viewport: Viewport) {

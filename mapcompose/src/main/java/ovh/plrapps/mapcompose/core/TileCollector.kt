@@ -2,15 +2,12 @@ package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.singleOrNull
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
@@ -45,7 +42,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author peterLaurence on 22/06/19
  */
-class TileCollector(private val workerCount: Int, private val bitmapConfig: Bitmap.Config) {
+internal class TileCollector(private val workerCount: Int, private val bitmapConfig: Bitmap.Config) {
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
@@ -132,12 +129,22 @@ class TileCollector(private val workerCount: Int, private val bitmapConfig: Bitm
     }
 
     /**
+     * Attempts to stop all actively executing tasks, halts the processing of waiting tasks.
+     */
+    fun shutdownNow() {
+        executor.shutdownNow()
+    }
+
+    /**
      * When using a [LinkedBlockingQueue], the core pool size mustn't be 0, or the active thread
      * count won't be greater than 1. Previous versions used a [SynchronousQueue], which could have
      * a core pool size of 0 and a growing count of active threads. However, a [Runnable] could be
      * rejected when no thread were available. Starting from kotlinx.coroutines 1.4.0, this cause
      * the associated coroutine to be cancelled. By using a [LinkedBlockingQueue], we avoid rejections.
      */
-    private val dispatcher = ThreadPoolExecutor(workerCount, workerCount,
-            60L, TimeUnit.SECONDS, LinkedBlockingQueue()).asCoroutineDispatcher()
+    private val executor = ThreadPoolExecutor(workerCount, workerCount,
+        60L, TimeUnit.SECONDS, LinkedBlockingQueue()).apply {
+            allowCoreThreadTimeOut(true)
+    }
+    private val dispatcher = executor.asCoroutineDispatcher()
 }

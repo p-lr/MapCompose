@@ -57,6 +57,15 @@ class MapState(
     internal var touchDownCb: (() -> Unit)? = null
 
     /**
+     * Cancels all internal tasks.
+     * After this call, this [MapState] is unusable.
+     */
+    fun shutdown() {
+        scope.cancel()
+        tileCanvasState.shutdown()
+    }
+
+    /**
      * Public API to programmatically trigger a redraw of the tiles.
      */
     @Suppress("unused")
