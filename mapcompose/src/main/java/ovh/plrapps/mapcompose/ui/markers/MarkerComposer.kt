@@ -82,11 +82,15 @@ private fun invokeDragInterceptor(
     val angle = -zoomPRState.rotation.toRad()
     val dx = rotateX(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
     val dy = rotateY(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
+
+    val deltaX = (data.x + dx / (zoomPRState.fullWidth * zoomPRState.scale)).coerceIn(0.0, 1.0) - data.x
+    val deltaY = (data.y + dy / (zoomPRState.fullHeight * zoomPRState.scale)).coerceIn(0.0, 1.0) - data.y
+
     with(data) {
         dragInterceptor?.invoke(
             id, x, y,
-            dx / (zoomPRState.fullWidth * zoomPRState.scale),
-            dy / (zoomPRState.fullHeight * zoomPRState.scale)
+            deltaX,
+            deltaY
         )
     }
 }
