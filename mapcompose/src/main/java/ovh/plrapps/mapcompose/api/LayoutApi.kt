@@ -229,3 +229,21 @@ suspend fun MapState.stopAnimations() {
     zoomPanRotateState.stopAnimations()
 }
 
+/**
+ * Returns the visible area expressed in normalized coordinates. This does not account for rotation.
+ */
+suspend fun MapState.visibleBoundingBox(): BoundingBox {
+    return with(zoomPanRotateState) {
+        awaitLayout()
+
+        BoundingBox(
+            xLeft = centroidX - layoutSize.width / (2 * fullWidth * scale),
+            yTop = centroidY - layoutSize.height / (2 * fullWidth * scale),
+            xRight = centroidX + layoutSize.width / (2 * fullWidth * scale),
+            yBottom = centroidY + layoutSize.height / (2 * fullWidth * scale)
+        )
+    }
+}
+
+data class BoundingBox(val xLeft: Double, val yTop: Double, val xRight: Double, val yBottom: Double)
+
