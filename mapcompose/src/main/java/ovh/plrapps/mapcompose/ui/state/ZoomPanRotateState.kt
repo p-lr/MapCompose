@@ -391,7 +391,7 @@ internal class ZoomPanRotateState(
         return scrollY.coerceIn(-offset, max(0f, fullHeight * scale - layoutSize.height + offset))
     }
 
-    private fun constrainScale(scale: Float): Float {
+    internal fun constrainScale(scale: Float): Float {
         return scale.coerceIn(max(minScale, Float.MIN_VALUE), maxScale.coerceAtLeast(minScale))
     }
 

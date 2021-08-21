@@ -40,6 +40,13 @@ fun MapState.addMarker(
 }
 
 /**
+ * Check whether a marker was already added or not.
+ */
+fun MapState.hasMarker(id: String): Boolean {
+    return markerState.markers.keys.contains(id)
+}
+
+/**
  * Updates the [zIndex] for an existing marker.
  *
  * @param id The id of the marker
@@ -165,8 +172,9 @@ suspend fun MapState.centerOnMarker(
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
             awaitLayout()
-            val destScrollX = (it.x * fullWidth * destScale - layoutSize.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * destScale - layoutSize.height / 2).toFloat()
+            val destScaleCst = constrainScale(destScale)
+            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat()
+            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat()
 
             smoothScrollAndScale(
                 destScrollX,
