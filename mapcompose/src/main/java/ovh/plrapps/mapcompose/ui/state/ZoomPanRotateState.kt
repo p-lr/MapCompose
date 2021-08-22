@@ -31,13 +31,10 @@ internal class ZoomPanRotateState(
      * On layout change, [scope] and [layoutSize] are initialized, and queued continuations
      * are resumed.
      */
-    internal suspend fun awaitLayout() = withContext(Dispatchers.Main.immediate) {
+    internal suspend fun awaitLayout() {
+        if (scope != null) return
         suspendCoroutine<Unit> {
-            if (scope == null) {
-                onLayoutContinuations.add(it)
-            } else {
-                it.resume(Unit)
-            }
+            onLayoutContinuations.add(it)
         }
     }
 
@@ -136,8 +133,8 @@ internal class ZoomPanRotateState(
     suspend fun smoothScaleTo(
         scale: Float,
         animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
-    ) {
-        scope?.launch {
+    ): Boolean {
+        return invokeAndCheckSuccess {
             val currScale = this@ZoomPanRotateState.scale
             if (currScale > 0) {
                 apiAnimatable.snapTo(0f)
@@ -145,35 +142,37 @@ internal class ZoomPanRotateState(
                     setScale(lerp(currScale, scale, value))
                 }
             }
-        }?.join()
+        }
     }
 
     suspend fun smoothRotateTo(
         angle: AngleDegree,
         animationSpec: AnimationSpec<Float>
-    ) {
+    ): Boolean {
         /* We don't have to stop scrolling animation while doing that */
-        scope?.launch {
+        return invokeAndCheckSuccess {
             val currRotation = this@ZoomPanRotateState.rotation
             apiAnimatable.snapTo(0f)
             apiAnimatable.animateTo(1f, animationSpec) {
                 setRotation(lerp(currRotation, angle, value))
             }
-        }?.join()
+        }
     }
 
     /**
      * Animates the scroll to the destination value.
+     *
+     * @return `true` if the operation completed without being cancelled.
      */
     suspend fun smoothScrollTo(
         destScrollX: Float,
         destScrollY: Float,
         animationSpec: AnimationSpec<Float>
-    ) {
+    ): Boolean {
         val startScrollX = this.scrollX
         val startScrollY = this.scrollY
 
-        scope?.launch {
+        return invokeAndCheckSuccess {
             userAnimatable.stop()
             apiAnimatable.snapTo(0f)
             apiAnimatable.animateTo(1f, animationSpec) {
@@ -182,7 +181,7 @@ internal class ZoomPanRotateState(
                     scrollY = lerp(startScrollY, destScrollY, value)
                 )
             }
-        }?.join()
+        }
     }
 
     /**
@@ -198,12 +197,12 @@ internal class ZoomPanRotateState(
         destScrollY: Float,
         destScale: Float,
         animationSpec: AnimationSpec<Float>
-    ) {
+    ): Boolean {
         val startScrollX = this.scrollX
         val startScrollY = this.scrollY
         val startScale = this.scale
 
-        scope?.launch {
+        return invokeAndCheckSuccess {
             userAnimatable.stop()
             apiAnimatable.snapTo(0f)
             apiAnimatable.animateTo(1f, animationSpec) {
@@ -213,7 +212,7 @@ internal class ZoomPanRotateState(
                     scrollY = lerp(startScrollY, destScrollY, value)
                 )
             }
-        }?.join()
+        }
     }
 
     /**
@@ -230,16 +229,32 @@ internal class ZoomPanRotateState(
         focusY: Float,
         destScale: Float,
         animationSpec: AnimationSpec<Float>
-    ) {
+    ) : Boolean {
         val destScaleCst = constrainScale(destScale)
         val startScale = scale
-        if (startScale == destScale) return
+        if (startScale == destScale) return true
         val startScrollX = scrollX
         val startScrollY = scrollY
         val destScrollX = getScrollAtOffsetAndScale(startScrollX, focusX, destScaleCst / startScale)
         val destScrollY = getScrollAtOffsetAndScale(startScrollY, focusY, destScaleCst / startScale)
 
-        smoothScrollAndScale(destScrollX, destScrollY, destScale, animationSpec)
+        return smoothScrollAndScale(destScrollX, destScrollY, destScale, animationSpec)
+    }
+
+    /**
+     * Invoke [block] and return whether the operation completed without being cancelled.
+     */
+    private suspend fun invokeAndCheckSuccess(block: suspend () -> Unit): Boolean {
+        var success = true
+        scope?.launch {
+            block()
+        }?.also {
+            it.invokeOnCompletion { t ->
+                if (t != null) success = false
+            }
+        }?.join()
+
+        return success
     }
 
     suspend fun stopAnimations() {

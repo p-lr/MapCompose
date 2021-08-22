@@ -12,6 +12,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
 import ovh.plrapps.mapcompose.utils.toRad
+import ovh.plrapps.mapcompose.utils.withRetry
 
 /**
  * Add a marker to the given position.
@@ -176,12 +177,14 @@ suspend fun MapState.centerOnMarker(
             val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat()
             val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat()
 
-            smoothScrollAndScale(
-                destScrollX,
-                destScrollY,
-                destScale,
-                animationSpec
-            )
+            withRetry(maxAnimationsRetries, animationsRetriesInterval) {
+                smoothScrollAndScale(
+                    destScrollX,
+                    destScrollY,
+                    destScale,
+                    animationSpec
+                )
+            }
         }
     }
 }
@@ -202,7 +205,9 @@ suspend fun MapState.centerOnMarker(
             val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
             val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
 
-            smoothScrollTo(destScrollX, destScrollY, animationSpec)
+            withRetry(maxAnimationsRetries, animationsRetriesInterval) {
+                smoothScrollTo(destScrollX, destScrollY, animationSpec)
+            }
         }
     }
 }

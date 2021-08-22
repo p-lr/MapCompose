@@ -14,6 +14,7 @@ import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
+import ovh.plrapps.mapcompose.utils.withRetry
 
 /**
  * The scale of the map. By convention, the scale at full dimension is 1f.
@@ -51,6 +52,7 @@ val MapState.scroll: Offset
 suspend fun MapState.setScroll(offset: Offset) {
     with(zoomPanRotateState) {
         awaitLayout()
+
         setScroll(offset.x, offset.y)
     }
 }
@@ -141,7 +143,9 @@ suspend fun MapState.rotateTo(
     angle: AngleDegree,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    zoomPanRotateState.smoothRotateTo(angle, animationSpec)
+    withRetry(maxAnimationsRetries, animationsRetriesInterval) {
+        zoomPanRotateState.smoothRotateTo(angle, animationSpec)
+    }
 }
 
 /**
@@ -171,12 +175,14 @@ suspend fun MapState.scrollTo(
         val destScrollX = (x * fullWidth * destScale + offsetX).toFloat()
         val destScrollY = (y * fullHeight * destScale + offsetY).toFloat()
 
-        smoothScrollAndScale(
-            destScrollX,
-            destScrollY,
-            destScale,
-            animationSpec
-        )
+        withRetry(maxAnimationsRetries, animationsRetriesInterval) {
+            smoothScrollAndScale(
+                destScrollX,
+                destScrollY,
+                destScale,
+                animationSpec
+            )
+        }
     }
 }
 
