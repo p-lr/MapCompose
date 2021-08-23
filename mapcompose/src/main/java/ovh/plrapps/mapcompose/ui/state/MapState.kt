@@ -28,14 +28,15 @@ class MapState(
     fullHeight: Int,
     tileStreamProvider: TileStreamProvider,
     tileSize: Int = 256,
-    workerCount: Int = Runtime.getRuntime().availableProcessors() - 1
+    workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
+    magnifyingFactor: Int = 0
 ) : ZoomPanRotateStateListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
     internal val markerState = MarkerState()
     internal val pathState = PathState()
     internal val visibleTilesResolver =
-        VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize) {
+        VisibleTilesResolver(levelCount, fullWidth, fullHeight, tileSize, magnifyingFactor) {
             zoomPanRotateState.scale
         }
     internal val tileCanvasState = TileCanvasState(

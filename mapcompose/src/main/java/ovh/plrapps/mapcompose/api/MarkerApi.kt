@@ -48,6 +48,17 @@ fun MapState.hasMarker(id: String): Boolean {
 }
 
 /**
+ * Get info on a marker, if the marker is already added.
+ *
+ * @return Available [MarkerInfo] if the marker was already added, `null` otherwise.
+ */
+fun MapState.getMarkerInfo(id: String): MarkerInfo? {
+    return markerState.markers[id]?.let {
+        MarkerInfo(it.id, it.x, it.y, it.relativeOffset, it.absoluteOffset, it.zIndex)
+    }
+}
+
+/**
  * Updates the [zIndex] for an existing marker.
  *
  * @param id The id of the marker
@@ -249,3 +260,14 @@ fun MapState.addCallout(
 fun MapState.removeCallout(id: String): Boolean {
     return markerState.removeCallout(id)
 }
+
+/**
+ * Public data on a marker.
+ */
+data class MarkerInfo(
+    val id: String, val x: Double,
+    val y: Double,
+    val relativeOffset: Offset,
+    val absoluteOffset: Offset,
+    val zIndex: Float
+)
