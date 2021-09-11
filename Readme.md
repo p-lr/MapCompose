@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.0.1-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.0.2-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 # MapCompose
 
@@ -43,7 +43,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:1.0.2'
+implementation 'ovh.plrapps:mapcompose:1.0.3'
 ```
 
 ## Basics
