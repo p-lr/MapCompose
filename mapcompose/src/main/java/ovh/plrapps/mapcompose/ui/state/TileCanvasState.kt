@@ -24,15 +24,18 @@ import kotlin.math.pow
  *
  * @author P.Laurence on 04/06/2019
  */
-internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
-                               private val visibleTilesResolver: VisibleTilesResolver,
-                               tileStreamProvider: TileStreamProvider,
-                               workerCount: Int, highFidelityColors: Boolean) {
+internal class TileCanvasState(
+    parentScope: CoroutineScope, tileSize: Int,
+    private val visibleTilesResolver: VisibleTilesResolver,
+    tileStreamProvider: TileStreamProvider,
+    workerCount: Int, highFidelityColors: Boolean
+) {
 
     /* This view-model uses a background thread for its computations */
     private val singleThreadDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(
-            parentScope.coroutineContext + singleThreadDispatcher)
+        parentScope.coroutineContext + singleThreadDispatcher
+    )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
     private var hashOfPreviousRender: Int = 0
     private val renderTask = scope.throttle(wait = 34) {
@@ -107,7 +110,12 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         /* Launch the TileCollector */
         tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)
         with(tileCollector) {
-            scope.collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
+            scope.collectTiles(
+                visibleTileLocationsChannel,
+                tilesOutput,
+                tileStreamProvider,
+                bitmapFlow
+            )
         }
 
         /* Launch a coroutine to consume the produced tiles */
@@ -124,7 +132,7 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
     suspend fun setViewport(viewport: Viewport) {
         /* Thread-confine the tileResolver to the main thread */
         val visibleTiles = withContext(Dispatchers.Main.immediate) {
-             visibleTilesResolver.getVisibleTiles(viewport)
+            visibleTilesResolver.getVisibleTiles(viewport)
         }
 
         withContext(scope.coroutineContext) {
@@ -184,7 +192,14 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
                          * Doing this now results in less object allocations than filtering the flow
                          * afterwards */
                         if (!alreadyProcessed) {
-                            visibleTileLocationsChannel.send(TileSpec(visibleTiles.level, row, col, visibleTiles.subSample))
+                            visibleTileLocationsChannel.send(
+                                TileSpec(
+                                    visibleTiles.level,
+                                    row,
+                                    col,
+                                    visibleTiles.subSample
+                                )
+                            )
                         }
                     }
                 }
@@ -267,7 +282,11 @@ internal class TileCanvasState(parentScope: CoroutineScope, tileSize: Int,
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
-            if (tile.zoom == currentLevel && tile.subSample == visibleTiles.subSample && !visibleTiles.contains(tile)) {
+            if (
+                tile.zoom == currentLevel
+                && tile.subSample == visibleTiles.subSample
+                && !visibleTiles.contains(tile)
+            ) {
                 iterator.remove()
                 tile.recycle()
             }

@@ -11,12 +11,14 @@ import ovh.plrapps.mapcompose.ui.paths.PathData
 internal class PathState {
     val pathState = mutableStateMapOf<String, DrawablePathState>()
 
-    fun addPath(id: String,
-                path: PathData,
-                width: Dp? = null,
-                color: Color? = null,
-                offset: Int? = null,
-                count: Int? = null) {
+    fun addPath(
+        id: String,
+        path: PathData,
+        width: Dp? = null,
+        color: Color? = null,
+        offset: Int? = null,
+        count: Int? = null
+    ) {
         pathState[id] = DrawablePathState(id, path).apply {
             val p = this
             width?.also { p.width = it }

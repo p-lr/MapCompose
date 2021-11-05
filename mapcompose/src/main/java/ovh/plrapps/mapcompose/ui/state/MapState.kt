@@ -7,8 +7,8 @@ import kotlinx.coroutines.channels.SendChannel
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
-import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.core.throttle
+import ovh.plrapps.mapcompose.utils.toRad
 
 /**
  * The state of the map. All public APIs are extensions functions or extension properties of this

@@ -42,7 +42,10 @@ import java.util.concurrent.TimeUnit
  *
  * @author peterLaurence on 22/06/19
  */
-internal class TileCollector(private val workerCount: Int, private val bitmapConfig: Bitmap.Config) {
+internal class TileCollector(
+    private val workerCount: Int,
+    private val bitmapConfig: Bitmap.Config
+) {
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
@@ -54,22 +57,34 @@ internal class TileCollector(private val workerCount: Int, private val bitmapCon
      * @param [tileSpecs] channel of [TileSpec], which capacity should be [Channel.RENDEZVOUS].
      * @param [tilesOutput] channel of [Tile], which should be set as [Channel.RENDEZVOUS].
      */
-    fun CoroutineScope.collectTiles(tileSpecs: ReceiveChannel<TileSpec>,
-                                    tilesOutput: SendChannel<Tile>,
-                                    tileStreamProvider: TileStreamProvider,
-                                    bitmapFlow: Flow<Bitmap>) {
+    fun CoroutineScope.collectTiles(
+        tileSpecs: ReceiveChannel<TileSpec>,
+        tilesOutput: SendChannel<Tile>,
+        tileStreamProvider: TileStreamProvider,
+        bitmapFlow: Flow<Bitmap>
+    ) {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
 
-        repeat(workerCount) { worker(tilesToDownload, tilesDownloadedFromWorker, tilesOutput, tileStreamProvider, bitmapFlow) }
+        repeat(workerCount) {
+            worker(
+                tilesToDownload,
+                tilesDownloadedFromWorker,
+                tilesOutput,
+                tileStreamProvider,
+                bitmapFlow
+            )
+        }
         tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
     }
 
-    private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileSpec>,
-                                      tilesDownloaded: SendChannel<TileSpec>,
-                                      tilesOutput: SendChannel<Tile>,
-                                      tileStreamProvider: TileStreamProvider,
-                                      bitmapFlow: Flow<Bitmap>) = launch(dispatcher) {
+    private fun CoroutineScope.worker(
+        tilesToDownload: ReceiveChannel<TileSpec>,
+        tilesDownloaded: SendChannel<TileSpec>,
+        tilesOutput: SendChannel<Tile>,
+        tileStreamProvider: TileStreamProvider,
+        bitmapFlow: Flow<Bitmap>
+    ) = launch(dispatcher) {
 
         val bitmapLoadingOptions = BitmapFactory.Options()
         bitmapLoadingOptions.inPreferredConfig = bitmapConfig
@@ -104,9 +119,11 @@ internal class TileCollector(private val workerCount: Int, private val bitmapCon
         }
     }
 
-    private fun CoroutineScope.tileCollectorKernel(tileSpecs: ReceiveChannel<TileSpec>,
-                                                   tilesToDownload: SendChannel<TileSpec>,
-                                                   tilesDownloadedFromWorker: ReceiveChannel<TileSpec>) = launch(Dispatchers.Default) {
+    private fun CoroutineScope.tileCollectorKernel(
+        tileSpecs: ReceiveChannel<TileSpec>,
+        tilesToDownload: SendChannel<TileSpec>,
+        tilesDownloadedFromWorker: ReceiveChannel<TileSpec>
+    ) = launch(Dispatchers.Default) {
 
         val tilesBeingProcessed = mutableListOf<TileSpec>()
 
@@ -142,9 +159,11 @@ internal class TileCollector(private val workerCount: Int, private val bitmapCon
      * rejected when no thread were available. Starting from kotlinx.coroutines 1.4.0, this cause
      * the associated coroutine to be cancelled. By using a [LinkedBlockingQueue], we avoid rejections.
      */
-    private val executor = ThreadPoolExecutor(workerCount, workerCount,
-        60L, TimeUnit.SECONDS, LinkedBlockingQueue()).apply {
-            allowCoreThreadTimeOut(true)
+    private val executor = ThreadPoolExecutor(
+        workerCount, workerCount,
+        60L, TimeUnit.SECONDS, LinkedBlockingQueue()
+    ).apply {
+        allowCoreThreadTimeOut(true)
     }
     private val dispatcher = executor.asCoroutineDispatcher()
 }

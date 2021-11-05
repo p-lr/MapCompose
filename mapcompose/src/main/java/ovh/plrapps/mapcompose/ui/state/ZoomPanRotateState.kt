@@ -229,7 +229,7 @@ internal class ZoomPanRotateState(
         focusY: Float,
         destScale: Float,
         animationSpec: AnimationSpec<Float>
-    ) : Boolean {
+    ): Boolean {
         val destScaleCst = constrainScale(destScale)
         val startScale = scale
         if (startScale == destScale) return true
