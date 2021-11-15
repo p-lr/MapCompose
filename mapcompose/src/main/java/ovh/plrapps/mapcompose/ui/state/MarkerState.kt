@@ -13,18 +13,18 @@ internal class MarkerState {
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float,
+        zIndex: Float, clickable: Boolean,
         c: @Composable () -> Unit
     ) {
-        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
     }
 
     fun addCallout(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float, autoDismiss: Boolean,
+        zIndex: Float, autoDismiss: Boolean, clickable: Boolean,
         c: @Composable () -> Unit
     ) {
-        val markerData = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+        val markerData = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
@@ -93,12 +93,14 @@ internal class MarkerData(
     val relativeOffset: Offset,
     val absoluteOffset: Offset,
     zIndex: Float,
+    clickable: Boolean,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)
     var y: Double by mutableStateOf(y)
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
+    var isClickable: Boolean by mutableStateOf(clickable)
     var zIndex: Float by mutableStateOf(zIndex)
 
     override fun equals(other: Any?): Boolean {

@@ -27,6 +27,9 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * the x and y values of the offset.
  * @param zIndex A marker with larger zIndex will be drawn on top of all markers with smaller zIndex.
  * When markers have the same zIndex, the original order in which the parent placed the marker is used.
+ * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
+ * is registered using [onMarkerClick], that listener will only be invoked for that marker if
+ * [clickable] is true.
  */
 fun MapState.addMarker(
     id: String,
@@ -35,9 +38,10 @@ fun MapState.addMarker(
     relativeOffset: Offset = Offset(-0.5f, -1f),
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
+    clickable: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, c)
+    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
 }
 
 /**
@@ -70,6 +74,19 @@ fun MapState.updateMarkerZ(
     zIndex: Float
 ) {
     markerState.markers[id]?.zIndex = zIndex
+}
+
+/**
+ * Updates the clickable property of an existing marker.
+ *
+ * @param id The id of the marker
+ * @param clickable Controls whether the marker is clickable.
+ */
+fun MapState.updateMarkerClickable(
+    id: String,
+    clickable: Boolean
+) {
+    markerState.markers[id]?.isClickable = clickable
 }
 
 /**
@@ -132,9 +149,8 @@ fun MapState.onMarkerMove(
 
 /**
  * Register a callback which will be invoked when a marker is tapped.
- * Beware that this clicked listener will only be invoked when the marker is clicked
- * in an area where it doesn't consumes the click. A button, for example, consumes
- * click events.
+ * Beware that this clicked listener will only be invoked if the marker is clickable, and when the
+ * click gesture isn't already consumed by some other composable (like a button).
  */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb
@@ -142,9 +158,8 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 
 /**
  * Register a callback which will be invoked when a callout is tapped.
- * Beware that this clicked listener will only be invoked when the callout is clicked
- * in an area where it doesn't consumes the click. A button, for example, consumes
- * click events.
+ * Beware that this click listener will only be invoked if the callout is clickable, and when the
+ * click gesture isn't already consumed by some other composable (like a button).
  */
 fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.calloutClickCb = cb
@@ -238,6 +253,9 @@ suspend fun MapState.centerOnMarker(
  * When callouts have the same zIndex, the original order in which the parent placed the callout is used.
  * @param autoDismiss Whether the callout should be dismissed on touch down. Default is true. If set
  * to false, the callout can be programmatically dismissed with [removeCallout].
+ * @param clickable Controls whether the callout is clickable. Default is false. If a click listener
+ * is registered using [onMarkerClick], that listener will only be invoked for that marker if
+ * [clickable] is true.
  */
 fun MapState.addCallout(
     id: String,
@@ -247,9 +265,23 @@ fun MapState.addCallout(
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
     autoDismiss: Boolean = true,
+    clickable: Boolean = false,
     c: @Composable () -> Unit
 ) {
-    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, autoDismiss, c)
+    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, autoDismiss, clickable, c)
+}
+
+/**
+ * Updates the clickable property of an existing callout.
+ *
+ * @param id The id of the marker
+ * @param clickable Controls whether the callout is clickable.
+ */
+fun MapState.updateCalloutClickable(
+    id: String,
+    clickable: Boolean
+) {
+    markerState.callouts[id]?.markerData?.isClickable = clickable
 }
 
 /**

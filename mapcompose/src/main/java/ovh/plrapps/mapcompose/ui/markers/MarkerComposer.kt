@@ -36,9 +36,13 @@ internal fun MarkerComposer(
                 Modifier
                     .layoutId(data)
                     .clip(CircleShape)
-                    .clickable {
-                        markerState.onMarkerClick(data)
-                    }
+                    .then(
+                        if (data.isClickable) {
+                            Modifier.clickable {
+                                markerState.onMarkerClick(data)
+                            }
+                        } else Modifier
+                    )
                     .then(
                         if (data.isDraggable) {
                             Modifier.pointerInput(Unit) {
@@ -62,11 +66,13 @@ internal fun MarkerComposer(
             Box(
                 Modifier
                     .layoutId(data.markerData)
-                    .clickable {
-                        /* This click listener will be invoked only if the child composable doesn't
-                         * consume clicks */
-                        markerState.onCalloutClick(data.markerData)
-                    },
+                    .then(
+                        if (data.markerData.isClickable) {
+                            Modifier.clickable {
+                                markerState.onCalloutClick(data.markerData)
+                            }
+                        } else Modifier
+                    )
             ) {
                 data.markerData.c()
             }

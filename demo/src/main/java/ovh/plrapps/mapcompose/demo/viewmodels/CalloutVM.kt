@@ -57,7 +57,8 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
                 addCallout(
                     id, x, y,
                     absoluteOffset = Offset(0f, -130f),
-                    autoDismiss = id != TAP_TO_DISMISS_ID
+                    autoDismiss = id != TAP_TO_DISMISS_ID,
+                    clickable = id == TAP_TO_DISMISS_ID
                 ) {
                     Callout(x, y, title = id, shouldAnimate) {
                         shouldAnimate = false
