@@ -346,6 +346,10 @@ internal class ZoomPanRotateState(
         stateChangeListener.onTouchDown()
     }
 
+    override fun onPressUnconsumed() {
+        stateChangeListener.onPressUnconsumed()
+    }
+
     override fun onTap(focalPt: Offset) {
         val tapCb = tapCb ?: return
         val angleRad = -rotation.toRad()
@@ -451,6 +455,7 @@ internal class ZoomPanRotateState(
 interface ZoomPanRotateStateListener {
     fun onStateChanged()
     fun onTouchDown()
+    fun onPressUnconsumed()
 }
 
 internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit

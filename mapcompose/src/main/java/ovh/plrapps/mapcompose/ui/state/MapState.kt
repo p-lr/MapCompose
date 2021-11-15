@@ -84,8 +84,11 @@ class MapState(
     }
 
     override fun onTouchDown() {
-        markerState.removeAllAutoDismissCallouts()
         touchDownCb?.invoke()
+    }
+
+    override fun onPressUnconsumed() {
+        markerState.removeAllAutoDismissCallouts()
     }
 
     private fun renderVisibleTilesThrottled() {
