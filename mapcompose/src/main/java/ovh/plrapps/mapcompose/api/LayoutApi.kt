@@ -244,9 +244,9 @@ suspend fun MapState.visibleBoundingBox(): BoundingBox {
 
         BoundingBox(
             xLeft = centroidX - layoutSize.width / (2 * fullWidth * scale),
-            yTop = centroidY - layoutSize.height / (2 * fullWidth * scale),
+            yTop = centroidY - layoutSize.height / (2 * fullHeight * scale),
             xRight = centroidX + layoutSize.width / (2 * fullWidth * scale),
-            yBottom = centroidY + layoutSize.height / (2 * fullWidth * scale)
+            yBottom = centroidY + layoutSize.height / (2 * fullHeight * scale)
         )
     }
 }
