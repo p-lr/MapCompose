@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -32,49 +33,55 @@ internal fun MarkerComposer(
         zoomPRState = zoomPRState,
     ) {
         for (data in markerState.markers.values) {
-            Box(
-                Modifier
-                    .layoutId(data)
-                    .clip(CircleShape)
-                    .then(
-                        if (data.isClickable) {
-                            Modifier.clickable {
-                                markerState.onMarkerClick(data)
-                            }
-                        } else Modifier
-                    )
-                    .then(
-                        if (data.isDraggable) {
-                            Modifier.pointerInput(Unit) {
-                                detectDragGestures { change, dragAmount ->
-                                    change.consumeAllChanges()
-                                    val interceptor = data.dragInterceptor
-                                    if (interceptor != null) {
-                                        invokeDragInterceptor(data, zoomPRState, dragAmount)
-                                    } else {
-                                        mapState.moveMarkerBy(data.id, dragAmount)
+            /* Optimize re-compositions */
+            key(data.id) {
+                Box(
+                    Modifier
+                        .layoutId(data)
+                        .clip(CircleShape)
+                        .then(
+                            if (data.isClickable) {
+                                Modifier.clickable {
+                                    markerState.onMarkerClick(data)
+                                }
+                            } else Modifier
+                        )
+                        .then(
+                            if (data.isDraggable) {
+                                Modifier.pointerInput(Unit) {
+                                    detectDragGestures { change, dragAmount ->
+                                        change.consumeAllChanges()
+                                        val interceptor = data.dragInterceptor
+                                        if (interceptor != null) {
+                                            invokeDragInterceptor(data, zoomPRState, dragAmount)
+                                        } else {
+                                            mapState.moveMarkerBy(data.id, dragAmount)
+                                        }
                                     }
                                 }
-                            }
-                        } else Modifier
-                    )
-            ) {
-                data.c()
+                            } else Modifier
+                        )
+                ) {
+                    data.c()
+                }
             }
         }
         for (data in markerState.callouts.values) {
-            Box(
-                Modifier
-                    .layoutId(data.markerData)
-                    .then(
-                        if (data.markerData.isClickable) {
-                            Modifier.clickable {
-                                markerState.onCalloutClick(data.markerData)
-                            }
-                        } else Modifier
-                    )
-            ) {
-                data.markerData.c()
+            /* Optimize re-compositions */
+            key(data.markerData.id) {
+                Box(
+                    Modifier
+                        .layoutId(data.markerData)
+                        .then(
+                            if (data.markerData.isClickable) {
+                                Modifier.clickable {
+                                    markerState.onCalloutClick(data.markerData)
+                                }
+                            } else Modifier
+                        )
+                ) {
+                    data.markerData.c()
+                }
             }
         }
     }
