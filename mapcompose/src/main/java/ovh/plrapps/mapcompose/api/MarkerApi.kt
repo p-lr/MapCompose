@@ -6,6 +6,8 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.ui.state.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -155,6 +157,21 @@ fun MapState.onMarkerMove(
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb
 }
+
+/**
+ * Sometimes, some components need to react to marker position change. However, the [MapState] owns
+ * the [State] of each marker position. To avoid duplicating state and have the [MapState] as single
+ * source of truth, this API creates an "observer" [State] of marker positions.
+ */
+fun MapState.derivedMarkerState(): State<List<MarkerDataSnapshot>> {
+    return derivedStateOf {
+        markerState.markers.values.map {
+            MarkerDataSnapshot(it.id, it.x, it.y)
+        }
+    }
+}
+
+data class MarkerDataSnapshot(val id: String, val x: Double, val y: Double)
 
 /**
  * Register a callback which will be invoked when a callout is tapped.
