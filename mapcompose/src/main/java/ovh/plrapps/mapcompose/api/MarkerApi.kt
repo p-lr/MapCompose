@@ -8,7 +8,9 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.rotateX
@@ -163,8 +165,19 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
  * the [State] of each marker position. To avoid duplicating state and have the [MapState] as single
  * source of truth, this API creates an "observer" [State] of marker positions.
  */
-fun MapState.derivedMarkerState(): State<List<MarkerDataSnapshot>> {
+fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
     return derivedStateOf {
+        markerState.markers.values.map {
+            MarkerDataSnapshot(it.id, it.x, it.y)
+        }
+    }
+}
+
+/**
+ * Similar to [markerDerivedState], but useful for asynchronous processing, using flow operators.
+ */
+fun MapState.markerSnapshotFlow(): Flow<List<MarkerDataSnapshot>> {
+    return snapshotFlow {
         markerState.markers.values.map {
             MarkerDataSnapshot(it.id, it.x, it.y)
         }
