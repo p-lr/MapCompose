@@ -17,6 +17,7 @@ import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.*
 import ovh.plrapps.mapcompose.utils.withRetry
+import kotlin.math.min
 
 /**
  * The scale of the map. By convention, the scale at full dimension is 1f.
@@ -187,6 +188,43 @@ suspend fun MapState.scrollTo(
                 animationSpec
             )
         }
+    }
+}
+
+/**
+ * Scrolls to an area, animating the scroll and the scale. The target position will be centered
+ * on the area, scaled in as much as possible while still keeping the area plus the provided
+ * padding completely in view.
+ *
+ * @param area The [BoundingBox] of the target area to scroll to.
+ * @param padding Padding around the area defined as a fraction of the viewport.
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ */
+suspend fun MapState.scrollTo(
+    area: BoundingBox,
+    padding: Offset = Offset(0f, 0f),
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow),
+) {
+    with(zoomPanRotateState) {
+        awaitLayout()
+
+        val centerX = (area.xLeft + area.xRight) / 2
+        val centerY = (area.yTop + area.yBottom) / 2
+
+        val areaWidth = fullWidth * (area.xRight - area.xLeft)
+        val availableViewportWidth = layoutSize.width * (1 - padding.x)
+        val areaWidthLayoutFraction = areaWidth / availableViewportWidth
+        val horizontalScale = 1 / areaWidthLayoutFraction
+
+        val areaHeight = fullHeight * (area.yBottom - area.yTop)
+        val availableViewportHeight = layoutSize.height * (1 - padding.y)
+        val areaHeightLayoutFraction = areaHeight / availableViewportHeight
+        val verticalScale = 1 / areaHeightLayoutFraction
+
+        val targetScale = min(horizontalScale, verticalScale).toFloat()
+        val effectiveTargetScale = constrainScale(targetScale)
+
+        scrollTo(centerX, centerY, effectiveTargetScale, animationSpec)
     }
 }
 
