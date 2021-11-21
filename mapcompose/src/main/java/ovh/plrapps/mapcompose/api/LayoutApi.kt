@@ -8,12 +8,14 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import ovh.plrapps.mapcompose.ui.layout.Fill
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.AngleDegree
+import ovh.plrapps.mapcompose.utils.*
 import ovh.plrapps.mapcompose.utils.withRetry
 
 /**
@@ -237,6 +239,8 @@ suspend fun MapState.stopAnimations() {
 
 /**
  * Returns the visible area expressed in normalized coordinates. This does not account for rotation.
+ * When the map isn't rotated, the obtained [BoundingBox] represents the same area as the one
+ * obtained with the [visibleArea] API.
  */
 suspend fun MapState.visibleBoundingBox(): BoundingBox {
     return with(zoomPanRotateState) {
@@ -252,4 +256,90 @@ suspend fun MapState.visibleBoundingBox(): BoundingBox {
 }
 
 data class BoundingBox(val xLeft: Double, val yTop: Double, val xRight: Double, val yBottom: Double)
+
+/**
+ * Returns the visible area expressed in normalized coordinates. This *does* account for rotation.
+ *
+ * @return The [VisibleArea], as follows:
+ *    p1         p2
+ *      ---------
+ *      |       |
+ *      |       |
+ *      |       |
+ *      ---------
+ *    p4         p3
+ */
+suspend fun MapState.visibleArea(): VisibleArea {
+    return with(zoomPanRotateState) {
+        awaitLayout()
+
+        val xLeft = centroidX - layoutSize.width / (2 * fullWidth * scale)
+        val yTop = centroidY - layoutSize.height / (2 * fullHeight * scale)
+        val xRight = centroidX + layoutSize.width / (2 * fullWidth * scale)
+        val yBottom = centroidY + layoutSize.height / (2 * fullHeight * scale)
+
+        val p1x = rotateCenteredX(xLeft, yTop, centroidX, centroidY, -rotation.toRad())
+        val p1y = rotateCenteredY(xLeft, yTop, centroidX, centroidY, -rotation.toRad())
+
+        val p2x = rotateCenteredX(xRight, yTop, centroidX, centroidY, -rotation.toRad())
+        val p2y = rotateCenteredY(xRight, yTop, centroidX, centroidY, -rotation.toRad())
+
+        val p3x = rotateCenteredX(xRight, yBottom, centroidX, centroidY, -rotation.toRad())
+        val p3y = rotateCenteredY(xRight, yBottom, centroidX, centroidY, -rotation.toRad())
+
+        val p4x = rotateCenteredX(xLeft, yBottom, centroidX, centroidY, -rotation.toRad())
+        val p4y = rotateCenteredY(xLeft, yBottom, centroidX, centroidY, -rotation.toRad())
+
+        visibleAreaMutex.withLock {
+            val area = visibleArea
+            if (area == null) {
+                visibleArea = VisibleArea(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y)
+            } else {
+                area._p1x = p1x
+                area._p1y = p1y
+                area._p2x = p2x
+                area._p2y = p2y
+                area._p3x = p3x
+                area._p3y = p3y
+                area._p4x = p4x
+                area._p4y = p4y
+            }
+            visibleArea as VisibleArea
+        }
+    }
+}
+
+data class VisibleArea(
+    internal var _p1x: Double,
+    internal var _p1y: Double,
+    internal var _p2x: Double,
+    internal var _p2y: Double,
+    internal var _p3x: Double,
+    internal var _p3y: Double,
+    internal var _p4x: Double,
+    internal var _p4y: Double,
+) {
+    val p1x: Double
+        get() = _p1x
+    val p1y: Double
+        get() = _p1y
+    val p2x: Double
+        get() = _p2x
+    val p2y: Double
+        get() = _p2y
+    val p3x: Double
+        get() = _p3x
+    val p3y: Double
+        get() = _p3y
+    val p4x: Double
+        get() = _p4x
+    val p4y: Double
+        get() = _p4y
+}
+
+/* Internally, we're working on a single VisibleArea instance, and we must ensure mutual exclusion
+ * when creating the instance. */
+internal val visibleAreaMutex = Mutex()
+internal var visibleArea: VisibleArea? = null
+
 
