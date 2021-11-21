@@ -52,7 +52,7 @@ internal fun TileCanvas(
                 val t = tile.row * tileScaled
 
                 val destOffset = IntOffset(l, t)
-                val destSize = IntSize(tileScaled + 1, tileScaled + 1)
+                val destSize = IntSize(tileScaled, tileScaled)
 
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
