@@ -174,8 +174,10 @@ suspend fun MapState.scrollTo(
         val offsetX = screenOffset.x * layoutSize.width
         val offsetY = screenOffset.y * layoutSize.height
 
-        val destScrollX = (x * fullWidth * destScale + offsetX).toFloat()
-        val destScrollY = (y * fullHeight * destScale + offsetY).toFloat()
+        val effectiveDstScale = constrainScale(destScale)
+
+        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX).toFloat()
+        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY).toFloat()
 
         withRetry(maxAnimationsRetries, animationsRetriesInterval) {
             smoothScrollAndScale(
