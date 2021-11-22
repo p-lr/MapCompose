@@ -280,17 +280,36 @@ suspend fun MapState.visibleArea(): VisibleArea {
         val xRight = centroidX + layoutSize.width / (2 * fullWidth * scale)
         val yBottom = centroidY + layoutSize.height / (2 * fullHeight * scale)
 
-        val p1x = rotateCenteredX(xLeft, yTop, centroidX, centroidY, -rotation.toRad())
-        val p1y = rotateCenteredY(xLeft, yTop, centroidX, centroidY, -rotation.toRad())
+        val xAxisScale = fullHeight / fullWidth.toDouble()
+        val scaledCenterX = centroidX / xAxisScale
 
-        val p2x = rotateCenteredX(xRight, yTop, centroidX, centroidY, -rotation.toRad())
-        val p2y = rotateCenteredY(xRight, yTop, centroidX, centroidY, -rotation.toRad())
+        val p1x = rotateCenteredX(
+            xLeft / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
+        ) * xAxisScale
+        val p1y = rotateCenteredY(
+            xLeft / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
+        )
 
-        val p3x = rotateCenteredX(xRight, yBottom, centroidX, centroidY, -rotation.toRad())
-        val p3y = rotateCenteredY(xRight, yBottom, centroidX, centroidY, -rotation.toRad())
+        val p2x = rotateCenteredX(
+            xRight / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
+        ) * xAxisScale
+        val p2y = rotateCenteredY(
+            xRight / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
+        )
 
-        val p4x = rotateCenteredX(xLeft, yBottom, centroidX, centroidY, -rotation.toRad())
-        val p4y = rotateCenteredY(xLeft, yBottom, centroidX, centroidY, -rotation.toRad())
+        val p3x = rotateCenteredX(
+            xRight / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
+        ) * xAxisScale
+        val p3y = rotateCenteredY(
+            xRight / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
+        )
+
+        val p4x = rotateCenteredX(
+            xLeft / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
+        ) * xAxisScale
+        val p4y = rotateCenteredY(
+            xLeft / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
+        )
 
         visibleAreaMutex.withLock {
             val area = visibleArea
