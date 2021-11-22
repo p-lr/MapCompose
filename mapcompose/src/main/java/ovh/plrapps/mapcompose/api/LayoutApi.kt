@@ -15,7 +15,13 @@ import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.*
+import ovh.plrapps.mapcompose.utils.AngleDegree
+import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.rotate
+import ovh.plrapps.mapcompose.utils.rotateCenteredX
+import ovh.plrapps.mapcompose.utils.rotateCenteredY
+import ovh.plrapps.mapcompose.utils.scaleAxis
+import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
 import kotlin.math.min
 
@@ -211,12 +217,17 @@ suspend fun MapState.scrollTo(
         val centerX = (area.xLeft + area.xRight) / 2
         val centerY = (area.yTop + area.yBottom) / 2
 
-        val areaWidth = fullWidth * (area.xRight - area.xLeft)
+        val xAxisScale = fullHeight / fullWidth.toDouble()
+        val normalizedArea = area.scaleAxis(1 / xAxisScale)
+        val rotatedNormalizedArea = normalizedArea.rotate(Point(centerX / xAxisScale, centerY), -rotation.toRad())
+        val rotatedArea = rotatedNormalizedArea.scaleAxis(xAxisScale)
+
+        val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
         val availableViewportWidth = layoutSize.width * (1 - padding.x)
         val areaWidthLayoutFraction = areaWidth / availableViewportWidth
         val horizontalScale = 1 / areaWidthLayoutFraction
 
-        val areaHeight = fullHeight * (area.yBottom - area.yTop)
+        val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
         val availableViewportHeight = layoutSize.height * (1 - padding.y)
         val areaHeightLayoutFraction = areaHeight / availableViewportHeight
         val verticalScale = 1 / areaHeightLayoutFraction
