@@ -26,6 +26,22 @@ fun rotateY(x: Double, y: Double, angleRad: AngleRad): Double {
     return x * sin(angleRad) + y * cos(angleRad)
 }
 
+fun rotateCentered(points: List<Point>, center: Point, angleRad: AngleRad): List<Point> {
+    return points.map { rotateCentered(it, center, angleRad) }
+}
+
+fun rotateCentered(point: Point, center: Point, angleRad: AngleRad): Point {
+    return Point(rotateCenteredX(point, center, angleRad), rotateCenteredY(point, center, angleRad))
+}
+
+fun rotateCenteredX(point: Point, center: Point, angleRad: AngleRad): Double {
+    return rotateCenteredX(point.x, point.y, center.x, center.y, angleRad)
+}
+
+fun rotateCenteredY(point: Point, center: Point, angleRad: AngleRad): Double {
+    return rotateCenteredY(point.x, point.y, center.x, center.y, angleRad)
+}
+
 fun rotateCenteredX(x: Double, y: Double, centerX: Double, centerY: Double, angleRad: AngleRad): Double {
     return centerX + (x - centerX) * cos(angleRad) - (y - centerY) * sin(angleRad)
 }
