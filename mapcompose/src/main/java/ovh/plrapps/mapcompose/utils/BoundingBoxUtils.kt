@@ -2,11 +2,11 @@ package ovh.plrapps.mapcompose.utils
 
 import ovh.plrapps.mapcompose.api.BoundingBox
 
-fun BoundingBox.scaleAxis(xAxisMultiplier: Double): BoundingBox {
+internal fun BoundingBox.scaleAxis(xAxisMultiplier: Double): BoundingBox {
     return BoundingBox(xLeft * xAxisMultiplier, yTop, xRight * xAxisMultiplier, yBottom)
 }
 
-fun BoundingBox.rotate(center: Point, angle: AngleRad): BoundingBox {
+internal fun BoundingBox.rotate(center: Point, angle: AngleRad): BoundingBox {
     val topLeft = Point(xLeft, yTop)
     val topRight = Point(xRight, yTop)
     val bottomLeft = Point(xLeft, yBottom)
