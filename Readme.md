@@ -51,7 +51,7 @@ implementation 'ovh.plrapps:mapcompose:1.0.6'
 MapCompose is optimized to display maps that have several levels, like this:
 
 <p align="center">
-<img src="doc/readme-files/pyramid.png">
+<img src="doc/readme-files/pyramid.png" width="400">
 </p>
 
 Each next level is twice bigger than the former, and provides more details. Overall, this looks like
