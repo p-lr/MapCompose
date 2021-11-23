@@ -30,3 +30,11 @@ fun MapState.disableFadeIn() {
 fun MapState.setColorFilterProvider(provider: ColorFilterProvider) {
     tileCanvasState.colorFilterProvider = provider
 }
+
+/**
+ * Enables a workaround preventing tiles from being drawn not completely touching each other, making
+ * the map background visible in-between tiles. The workaround incurs a slight performance cost.
+ */
+fun MapState.setTileBleedWorkaroundEnabled(enabled: Boolean) {
+    isTileBleedWorkaroundEnabled = enabled
+}

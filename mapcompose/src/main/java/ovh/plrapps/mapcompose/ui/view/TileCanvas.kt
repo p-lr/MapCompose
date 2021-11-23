@@ -25,7 +25,8 @@ internal fun TileCanvas(
     tileSize: Int,
     alphaTick: Float,
     colorFilterProvider: ColorFilterProvider?,
-    tilesToRender: List<Tile>
+    tilesToRender: List<Tile>,
+    isTileBleedWorkaroundEnabled: Boolean
 ) {
     Canvas(
         modifier = modifier
@@ -44,7 +45,8 @@ internal fun TileCanvas(
             )
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
-            for (withOverlap in listOf(true, false)) {
+            val drawingPasses = if (isTileBleedWorkaroundEnabled) listOf(true, false) else listOf(false)
+            for (withOverlap in drawingPasses) {
                 for (tile in tilesToRender) {
                     val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                         ?: continue
