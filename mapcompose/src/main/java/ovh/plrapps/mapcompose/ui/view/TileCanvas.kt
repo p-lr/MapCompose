@@ -30,7 +30,6 @@ internal fun TileCanvas(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
     ) {
         withTransform({
             /* Geometric transformations seem to be applied in reversed order of declaration */

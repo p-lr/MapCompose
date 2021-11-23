@@ -2,8 +2,9 @@
 
 package ovh.plrapps.mapcompose.api
 
-import ovh.plrapps.mapcompose.core.ColorFilterProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -29,4 +30,12 @@ fun MapState.disableFadeIn() {
  */
 fun MapState.setColorFilterProvider(provider: ColorFilterProvider) {
     tileCanvasState.colorFilterProvider = provider
+}
+
+/**
+ * Sets the background color visible before tiles are loaded or when the canvas outside of the
+ * map area is in view.
+ */
+fun MapState.setMapBackground(color: Color) {
+    mapBackground = color
 }

@@ -2,6 +2,8 @@ package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import ovh.plrapps.mapcompose.core.TileStreamProvider
@@ -56,6 +58,7 @@ class MapState(
     internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
+    internal var mapBackground by mutableStateOf(Color.White)
 
     /**
      * Cancels all internal tasks.
