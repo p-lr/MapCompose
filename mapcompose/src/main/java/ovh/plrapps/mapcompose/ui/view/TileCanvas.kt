@@ -1,17 +1,20 @@
 package ovh.plrapps.mapcompose.ui.view
 
+import android.graphics.Paint
+import android.graphics.Rect
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.asAndroidColorFilter
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.nativeCanvas
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
@@ -27,6 +30,13 @@ internal fun TileCanvas(
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>
 ) {
+    val dest = remember { Rect() }
+    val paint: Paint = remember {
+        Paint().apply {
+            isAntiAlias = false
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -49,16 +59,18 @@ internal fun TileCanvas(
                 val tileScaled = (tileSize / scaleForLevel).toInt()
                 val l = tile.col * tileScaled
                 val t = tile.row * tileScaled
-
-                val destOffset = IntOffset(l, t)
-                val destSize = IntSize(tileScaled, tileScaled)
+                val r = l + tileScaled
+                val b = t + tileScaled
+                dest.set(l, t, r, b)
 
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
-                drawImage(
-                    tile.bitmap.asImageBitmap(), dstOffset = destOffset, dstSize = destSize,
-                    alpha = tile.alpha, colorFilter = colorFilter
-                )
+                paint.alpha = (tile.alpha * 255).toInt()
+                paint.colorFilter = colorFilter?.asAndroidColorFilter()
+
+                drawIntoCanvas {
+                    it.nativeCanvas.drawBitmap(tile.bitmap, null, dest, paint)
+                }
 
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
                 if (tile.alpha < 1f) {
