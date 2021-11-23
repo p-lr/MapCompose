@@ -3,13 +3,11 @@ package ovh.plrapps.mapcompose.ui.view
 import android.graphics.Paint
 import android.graphics.Rect
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidColorFilter
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
@@ -28,7 +26,8 @@ internal fun TileCanvas(
     tileSize: Int,
     alphaTick: Float,
     colorFilterProvider: ColorFilterProvider?,
-    tilesToRender: List<Tile>
+    tilesToRender: List<Tile>,
+    isBitmapFilteringEnabled: Boolean
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
@@ -67,6 +66,7 @@ internal fun TileCanvas(
 
                 paint.alpha = (tile.alpha * 255).toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
+                paint.isFilterBitmap = isBitmapFilteringEnabled
 
                 drawIntoCanvas {
                     it.nativeCanvas.drawBitmap(tile.bitmap, null, dest, paint)
