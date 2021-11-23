@@ -44,26 +44,36 @@ internal fun TileCanvas(
             )
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
-            for (tile in tilesToRender) {
-                val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
-                    ?: continue
-                val tileScaled = (tileSize / scaleForLevel).toInt()
-                val l = tile.col * tileScaled
-                val t = tile.row * tileScaled
+            for (withOverlap in listOf(true, false)) {
+                for (tile in tilesToRender) {
+                    val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
+                        ?: continue
+                    val tileScaled = (tileSize / scaleForLevel).toInt()
+                    val l = tile.col * tileScaled
+                    val t = tile.row * tileScaled
 
-                val destOffset = IntOffset(l, t)
-                val destSize = IntSize(tileScaled, tileScaled)
+                    val destOffset = if (withOverlap) {
+                        IntOffset(l - 1, t - 1)
+                    } else {
+                        IntOffset(l, t)
+                    }
+                    val destSize = if (withOverlap) {
+                        IntSize(tileScaled + 2, tileScaled + 2)
+                    } else {
+                        IntSize(tileScaled, tileScaled)
+                    }
 
-                val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
+                    val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
-                drawImage(
-                    tile.bitmap.asImageBitmap(), dstOffset = destOffset, dstSize = destSize,
-                    alpha = tile.alpha, colorFilter = colorFilter
-                )
+                    drawImage(
+                        tile.bitmap.asImageBitmap(), dstOffset = destOffset, dstSize = destSize,
+                        alpha = tile.alpha, colorFilter = colorFilter
+                    )
 
-                /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
-                if (tile.alpha < 1f) {
-                    tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
+                    /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
+                    if (tile.alpha < 1f) {
+                        tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
+                    }
                 }
             }
         }
