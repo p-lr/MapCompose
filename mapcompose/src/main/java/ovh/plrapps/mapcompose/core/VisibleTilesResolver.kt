@@ -1,7 +1,7 @@
 package ovh.plrapps.mapcompose.core
 
-import ovh.plrapps.mapcompose.utils.rotateX
-import ovh.plrapps.mapcompose.utils.rotateY
+import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.rotate
 import kotlin.math.*
 
 /**
@@ -97,62 +97,30 @@ internal class VisibleTilesResolver(
         return if (viewport.angleRad == 0f) {
             makeVisibleTiles(viewport.left, viewport.top, viewport.right, viewport.bottom)
         } else {
-            val xTopLeft = viewport.left
-            val yTopLeft = viewport.top
+            val topLeft = Point(viewport.left, viewport.top)
+            val topRight = Point(viewport.right, viewport.top)
+            val bottomLeft = Point(viewport.left, viewport.bottom)
+            val bottomRight = Point(viewport.right, viewport.bottom)
+            val center = Point(
+                (viewport.right + viewport.left) / 2f,
+                (viewport.bottom + viewport.top) / 2f
+            )
 
-            val xTopRight = viewport.right
-            val yTopRight = viewport.top
+            val topLeftRotated = rotate(topLeft - center, viewport.angleRad) + center
+            val topRightRotated = rotate(topRight - center, viewport.angleRad) + center
+            val bottomLeftRotated = rotate(bottomLeft - center, viewport.angleRad) + center
+            val bottomRightRotated = rotate(bottomRight - center, viewport.angleRad) + center
 
-            val xBotLeft = viewport.left
-            val yBotLeft = viewport.bottom
-
-            val xBotRight = viewport.right
-            val yBotRight = viewport.bottom
-
-            val xCenter = (viewport.right + viewport.left).toDouble() / 2
-            val yCenter = (viewport.bottom + viewport.top).toDouble() / 2
-
-            val xTopLeftRot =
-                rotateX(xTopLeft - xCenter, yTopLeft - yCenter, viewport.angleRad) + xCenter
-            val yTopLeftRot =
-                rotateY(xTopLeft - xCenter, yTopLeft - yCenter, viewport.angleRad) + yCenter
-            var xLeftMost = xTopLeftRot
-            var yTopMost = yTopLeftRot
-            var xRightMost = xTopLeftRot
-            var yBotMost = yTopLeftRot
-
-            val xTopRightRot =
-                rotateX(xTopRight - xCenter, yTopRight - yCenter, viewport.angleRad) + xCenter
-            val yTopRightRot =
-                rotateY(xTopRight - xCenter, yTopRight - yCenter, viewport.angleRad) + yCenter
-            xLeftMost = xLeftMost.coerceAtMost(xTopRightRot)
-            yTopMost = yTopMost.coerceAtMost(yTopRightRot)
-            xRightMost = xRightMost.coerceAtLeast(xTopRightRot)
-            yBotMost = yBotMost.coerceAtLeast(yTopRightRot)
-
-            val xBotLeftRot =
-                rotateX(xBotLeft - xCenter, yBotLeft - yCenter, viewport.angleRad) + xCenter
-            val yBotLeftRot =
-                rotateY(xBotLeft - xCenter, yBotLeft - yCenter, viewport.angleRad) + yCenter
-            xLeftMost = xLeftMost.coerceAtMost(xBotLeftRot)
-            yTopMost = yTopMost.coerceAtMost(yBotLeftRot)
-            xRightMost = xRightMost.coerceAtLeast(xBotLeftRot)
-            yBotMost = yBotMost.coerceAtLeast(yBotLeftRot)
-
-            val xBotRightRot =
-                rotateX(xBotRight - xCenter, yBotRight - yCenter, viewport.angleRad) + xCenter
-            val yBotRightRot =
-                rotateY(xBotRight - xCenter, yBotRight - yCenter, viewport.angleRad) + yCenter
-            xLeftMost = xLeftMost.coerceAtMost(xBotRightRot)
-            yTopMost = yTopMost.coerceAtMost(yBotRightRot)
-            xRightMost = xRightMost.coerceAtLeast(xBotRightRot)
-            yBotMost = yBotMost.coerceAtLeast(yBotRightRot)
+            val xLeftMost = minOf(topLeftRotated.x, topRightRotated.x, bottomLeftRotated.x, bottomRightRotated.x)
+            val yTopMost = minOf(topLeftRotated.y, topRightRotated.y, bottomLeftRotated.y, bottomRightRotated.y)
+            val xRightMost = maxOf(topLeftRotated.x, topRightRotated.x, bottomLeftRotated.x, bottomRightRotated.x)
+            val yBottomMost = maxOf(topLeftRotated.y, topRightRotated.y, bottomLeftRotated.y, bottomRightRotated.y)
 
             makeVisibleTiles(
                 xLeftMost.toInt(),
                 yTopMost.toInt(),
                 xRightMost.toInt(),
-                yBotMost.toInt()
+                yBottomMost.toInt()
             )
         }
     }

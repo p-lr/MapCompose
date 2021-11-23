@@ -20,14 +20,14 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
-            onMarkerMove { id, x, y, _, _ ->
-                println("move $id $x $y")
+            onMarkerMove { id, position, _ ->
+                println("move $id $position")
             }
-            onMarkerClick { id, x, y ->
-                println("marker click $id $x $y")
+            onMarkerClick { id, position ->
+                println("marker click $id $position")
             }
-            onTap { x, y ->
-                println("on tap $x $y")
+            onTap { position ->
+                println("on tap $position")
             }
             enableRotation()
             scale = 0f // zoom-out to minimum scale

@@ -10,8 +10,8 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.ui.state.MarkerData
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
-import ovh.plrapps.mapcompose.utils.rotateCenteredX
-import ovh.plrapps.mapcompose.utils.rotateCenteredY
+import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.rotateCentered
 import ovh.plrapps.mapcompose.utils.toRad
 
 @Composable
@@ -44,32 +44,20 @@ internal fun MarkerLayout(
 
                 if (zoomPRState.rotation == 0f) {
                     placeable.place(
-                        x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
-                        y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt(),
+                        x = (data.position.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
+                        y = (data.position.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt(),
                         zIndex = data.zIndex
                     )
                 } else {
                     with(zoomPRState) {
                         val angleRad = rotation.toRad()
-                        val xFullPx = data.x * fullWidth * scale
-                        val yFullPx = data.y * fullHeight * scale
-                        val centerX = centroidX * fullWidth * scale
-                        val centerY = centroidY * fullHeight * scale
+                        val fullPx = data.position * (Point(fullWidth, fullHeight) * scale)
+                        val center = Point(centroidX * fullWidth * scale, centroidY * fullHeight * scale)
+                        val rotated = rotateCentered(fullPx, center, angleRad)
+                        val rotatedOffset = rotated + Point(widthOffset, heightOffset)
                         placeable.place(
-                            x = (rotateCenteredX(
-                                xFullPx,
-                                yFullPx,
-                                centerX,
-                                centerY,
-                                angleRad
-                            ) + widthOffset).toInt(),
-                            y = (rotateCenteredY(
-                                xFullPx,
-                                yFullPx,
-                                centerX,
-                                centerY,
-                                angleRad
-                            ) + heightOffset).toInt(),
+                            x = rotatedOffset.x.toInt(),
+                            y = rotatedOffset.y.toInt(),
                             zIndex = data.zIndex
                         )
                     }

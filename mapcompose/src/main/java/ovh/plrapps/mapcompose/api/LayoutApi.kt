@@ -18,8 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.rotate
-import ovh.plrapps.mapcompose.utils.rotateCenteredX
-import ovh.plrapps.mapcompose.utils.rotateCenteredY
+import ovh.plrapps.mapcompose.utils.rotateCentered
 import ovh.plrapps.mapcompose.utils.scaleAxis
 import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
@@ -269,7 +268,7 @@ val MapState.fullSize: IntSize
  * Note: the tap gesture is detected only after the [ViewConfiguration.doubleTapMinTimeMillis] has
  * passed, because the layout's gesture detector also detects double-tap gestures.
  */
-fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
+fun MapState.onTap(tapCb: (position: Point) -> Unit) {
     zoomPanRotateState.tapCb = tapCb
 }
 
@@ -329,50 +328,24 @@ suspend fun MapState.visibleArea(): VisibleArea {
         val xRight = centroidX + layoutSize.width / (2 * fullWidth * scale)
         val yBottom = centroidY + layoutSize.height / (2 * fullHeight * scale)
 
-        val xAxisScale = fullHeight / fullWidth.toDouble()
+        val xAxisScale = fullHeight / fullWidth.toFloat()
         val scaledCenterX = centroidX / xAxisScale
+        val scaledCentroid = Point(scaledCenterX, centroidY)
 
-        val p1x = rotateCenteredX(
-            xLeft / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
-        ) * xAxisScale
-        val p1y = rotateCenteredY(
-            xLeft / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
-        )
-
-        val p2x = rotateCenteredX(
-            xRight / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
-        ) * xAxisScale
-        val p2y = rotateCenteredY(
-            xRight / xAxisScale, yTop, scaledCenterX, centroidY, -rotation.toRad()
-        )
-
-        val p3x = rotateCenteredX(
-            xRight / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
-        ) * xAxisScale
-        val p3y = rotateCenteredY(
-            xRight / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
-        )
-
-        val p4x = rotateCenteredX(
-            xLeft / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
-        ) * xAxisScale
-        val p4y = rotateCenteredY(
-            xLeft / xAxisScale, yBottom, scaledCenterX, centroidY, -rotation.toRad()
-        )
+        val p1 = rotateCentered(Point(xLeft, yTop), scaledCentroid, -rotation.toRad(), xAxisScale)
+        val p2 = rotateCentered(Point(xRight, yTop), scaledCentroid, -rotation.toRad(), xAxisScale)
+        val p3 = rotateCentered(Point(xRight, yBottom), scaledCentroid, -rotation.toRad(), xAxisScale)
+        val p4 = rotateCentered(Point(xLeft, yBottom), scaledCentroid, -rotation.toRad(), xAxisScale)
 
         visibleAreaMutex.withLock {
             val area = visibleArea
             if (area == null) {
-                visibleArea = VisibleArea(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y)
+                visibleArea = VisibleArea(p1, p2, p3, p4)
             } else {
-                area._p1x = p1x
-                area._p1y = p1y
-                area._p2x = p2x
-                area._p2y = p2y
-                area._p3x = p3x
-                area._p3y = p3y
-                area._p4x = p4x
-                area._p4y = p4y
+                area._p1 = p1
+                area._p2 = p2
+                area._p3 = p3
+                area._p4 = p4
             }
             visibleArea as VisibleArea
         }
@@ -380,36 +353,22 @@ suspend fun MapState.visibleArea(): VisibleArea {
 }
 
 data class VisibleArea(
-    internal var _p1x: Double,
-    internal var _p1y: Double,
-    internal var _p2x: Double,
-    internal var _p2y: Double,
-    internal var _p3x: Double,
-    internal var _p3y: Double,
-    internal var _p4x: Double,
-    internal var _p4y: Double,
+    internal var _p1: Point,
+    internal var _p2: Point,
+    internal var _p3: Point,
+    internal var _p4: Point,
 ) {
-    val p1x: Double
-        get() = _p1x
-    val p1y: Double
-        get() = _p1y
-    val p2x: Double
-        get() = _p2x
-    val p2y: Double
-        get() = _p2y
-    val p3x: Double
-        get() = _p3x
-    val p3y: Double
-        get() = _p3y
-    val p4x: Double
-        get() = _p4x
-    val p4y: Double
-        get() = _p4y
+    val p1: Point
+        get() = _p1
+    val p2: Point
+        get() = _p2
+    val p3: Point
+        get() = _p3
+    val p4: Point
+        get() = _p4
 }
 
 /* Internally, we're working on a single VisibleArea instance, and we must ensure mutual exclusion
  * when creating the instance. */
 internal val visibleAreaMutex = Mutex()
 internal var visibleArea: VisibleArea? = null
-
-

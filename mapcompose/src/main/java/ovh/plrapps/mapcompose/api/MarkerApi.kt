@@ -13,8 +13,8 @@ import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.rotateX
-import ovh.plrapps.mapcompose.utils.rotateY
+import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.rotate
 import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
 
@@ -22,8 +22,7 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * Add a marker to the given position.
  *
  * @param id The id of the marker
- * @param x The normalized X position on the map, in range [0..1]
- * @param y The normalized Y position on the map, in range [0..1]
+ * @param position The normalized position on the map, in range [0..1]
  * @param relativeOffset The x-axis and y-axis positions of the marker will be respectively offset by
  * the width of the marker multiplied by the x value of the offset, and the height of the marker
  * multiplied by the y value of the offset.
@@ -37,15 +36,14 @@ import ovh.plrapps.mapcompose.utils.withRetry
  */
 fun MapState.addMarker(
     id: String,
-    x: Double,
-    y: Double,
+    position: Point,
     relativeOffset: Offset = Offset(-0.5f, -1f),
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
     clickable: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+    markerState.addMarker(id, position, relativeOffset, absoluteOffset, zIndex, clickable, c)
 }
 
 /**
@@ -62,7 +60,7 @@ fun MapState.hasMarker(id: String): Boolean {
  */
 fun MapState.getMarkerInfo(id: String): MarkerInfo? {
     return markerState.markers[id]?.let {
-        MarkerInfo(it.id, it.x, it.y, it.relativeOffset, it.absoluteOffset, it.zIndex)
+        MarkerInfo(it.id, it.position, it.relativeOffset, it.absoluteOffset, it.zIndex)
     }
 }
 
@@ -106,11 +104,10 @@ fun MapState.removeMarker(id: String): Boolean {
  * Move marker to the given position.
  *
  * @param id The id of the marker
- * @param x The normalized X position on the map, in range [0..1]
- * @param y The normalized Y position on the map, in range [0..1]
+ * @param position The normalized position on the map, in range [0..1]
  */
-fun MapState.moveMarker(id: String, x: Double, y: Double) {
-    markerState.moveMarkerTo(id, x, y)
+fun MapState.moveMarker(id: String, position: Point) {
+    markerState.moveMarkerTo(id, position)
 }
 
 /**
@@ -122,8 +119,8 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
  * your own custom logic).
  * The lambda receives 5 parameters:
  * * id: The id of the marker
- * * x, y: The current position in relative coordinates
- * * dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
+ * * position: The current position in relative coordinates
+ * * delta: The virtual displacement expressed in relative coordinates (not in pixels) that would
  * have been applied if there were no drag interceptor
  */
 fun MapState.enableMarkerDrag(id: String, dragInterceptor: DragInterceptor? = null) {
@@ -146,7 +143,7 @@ fun MapState.disableMarkerDrag(id: String) {
  * Register a callback which will be invoked for every marker move (API move and user drag).
  */
 fun MapState.onMarkerMove(
-    cb: (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+    cb: (id: String, position: Point, delta: Point) -> Unit
 ) {
     markerState.markerMoveCb = cb
 }
@@ -156,7 +153,7 @@ fun MapState.onMarkerMove(
  * Beware that this clicked listener will only be invoked if the marker is clickable, and when the
  * click gesture isn't already consumed by some other composable (like a button).
  */
-fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
+fun MapState.onMarkerClick(cb: (id: String, position: Point) -> Unit) {
     markerState.markerClickCb = cb
 }
 
@@ -168,7 +165,7 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
     return derivedStateOf {
         markerState.markers.values.map {
-            MarkerDataSnapshot(it.id, it.x, it.y)
+            MarkerDataSnapshot(it.id, it.position)
         }
     }
 }
@@ -179,19 +176,19 @@ fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
 fun MapState.markerSnapshotFlow(): Flow<List<MarkerDataSnapshot>> {
     return snapshotFlow {
         markerState.markers.values.map {
-            MarkerDataSnapshot(it.id, it.x, it.y)
+            MarkerDataSnapshot(it.id, it.position)
         }
     }
 }
 
-data class MarkerDataSnapshot(val id: String, val x: Double, val y: Double)
+data class MarkerDataSnapshot(val id: String, val position: Point)
 
 /**
  * Register a callback which will be invoked when a callout is tapped.
  * Beware that this click listener will only be invoked if the callout is clickable, and when the
  * click gesture isn't already consumed by some other composable (like a button).
  */
-fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
+fun MapState.onCalloutClick(cb: (id: String, position: Point) -> Unit) {
     markerState.calloutClickCb = cb
 }
 
@@ -203,15 +200,14 @@ fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
  * @param id The id of the marker
  * @param deltaPx The displacement amount in pixels
  */
-fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
+fun MapState.moveMarkerBy(id: String, deltaPx: Point) {
     val angle = -zoomPanRotateState.rotation.toRad()
-    val dx = rotateX(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
-    val dy = rotateY(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
-    markerState.moveMarkerBy(
-        id,
-        dx / (zoomPanRotateState.fullWidth * zoomPanRotateState.scale),
-        dy / (zoomPanRotateState.fullHeight * zoomPanRotateState.scale)
+    val delta: Point = rotate(deltaPx, angle)
+    val scale = Point(
+        zoomPanRotateState.fullWidth * zoomPanRotateState.scale,
+        zoomPanRotateState.fullHeight * zoomPanRotateState.scale
     )
+    markerState.moveMarkerBy(id, delta / scale)
 }
 
 /**
@@ -230,8 +226,8 @@ suspend fun MapState.centerOnMarker(
         markerState.markers[id]?.also {
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat()
+            val destScrollX = (it.position.x * fullWidth * destScaleCst - layoutSize.width / 2)
+            val destScrollY = (it.position.y * fullHeight * destScaleCst - layoutSize.height / 2)
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollAndScale(
@@ -258,8 +254,8 @@ suspend fun MapState.centerOnMarker(
     with(zoomPanRotateState) {
         markerState.markers[id]?.also {
             awaitLayout()
-            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
+            val destScrollX = (it.position.x * fullWidth * scale - layoutSize.width / 2)
+            val destScrollY = (it.position.y * fullHeight * scale - layoutSize.height / 2)
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollTo(destScrollX, destScrollY, animationSpec)
@@ -272,8 +268,7 @@ suspend fun MapState.centerOnMarker(
  * Add a callout to the given position.
  *
  * @param id The id of the callout
- * @param x The normalized X position on the map, in range [0..1]
- * @param y The normalized Y position on the map, in range [0..1]
+ * @param position The normalized position on the map, in range [0..1]
  * @param relativeOffset The x-axis and y-axis positions of the callout will be respectively offset by
  * the width of the marker multiplied by the x value of the offset, and the height of the marker
  * multiplied by the y value of the offset.
@@ -289,8 +284,7 @@ suspend fun MapState.centerOnMarker(
  */
 fun MapState.addCallout(
     id: String,
-    x: Double,
-    y: Double,
+    position: Point,
     relativeOffset: Offset = Offset(-0.5f, -1f),
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
@@ -298,7 +292,7 @@ fun MapState.addCallout(
     clickable: Boolean = false,
     c: @Composable () -> Unit
 ) {
-    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, autoDismiss, clickable, c)
+    markerState.addCallout(id, position, relativeOffset, absoluteOffset, zIndex, autoDismiss, clickable, c)
 }
 
 /**
@@ -327,8 +321,8 @@ fun MapState.removeCallout(id: String): Boolean {
  * Public data on a marker.
  */
 data class MarkerInfo(
-    val id: String, val x: Double,
-    val y: Double,
+    val id: String,
+    val position: Point,
     val relativeOffset: Offset,
     val absoluteOffset: Offset,
     val zIndex: Float

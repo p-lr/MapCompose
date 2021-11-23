@@ -19,6 +19,7 @@ import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 
 class CenteringOnMarkerVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {
@@ -28,7 +29,7 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
-            addMarker("parking", 0.2457938, 0.3746023) {
+            addMarker("parking", Point(0.2457938, 0.3746023)) {
                 Icon(
                     painter = painterResource(id = R.drawable.map_marker),
                     contentDescription = null,

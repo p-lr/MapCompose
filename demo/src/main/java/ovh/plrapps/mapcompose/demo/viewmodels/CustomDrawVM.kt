@@ -22,6 +22,7 @@ import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.screens.ScaleIndicatorController
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 
 /**
  * In this example, we're adding two markers with custom drag interceptors which update [p1x], [p1y],
@@ -34,10 +35,8 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     }
     private val tileStreamProvider = makeTileStreamProvider(appContext)
 
-    var p1x by mutableStateOf(0.6)
-    var p1y by mutableStateOf(0.6)
-    var p2x by mutableStateOf(0.4)
-    var p2y by mutableStateOf(0.4)
+    var p1 by mutableStateOf(Point(0.6, 0.6))
+    var p2 by mutableStateOf(Point(0.4, 0.4))
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
@@ -52,7 +51,7 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     val scaleIndicatorController = ScaleIndicatorController(450, state.scale)
 
     init {
-        state.addMarker("m1", p1x, p1y, Offset(-0.5f, -0.5f)) {
+        state.addMarker("m1", p1, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
@@ -60,7 +59,7 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
                     .clip(CircleShape)
             )
         }
-        state.addMarker("m2", p2x, p2y, Offset(-0.5f, -0.5f)) {
+        state.addMarker("m2", p2, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
@@ -68,15 +67,13 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
                     .clip(CircleShape)
             )
         }
-        state.enableMarkerDrag("m1") { id, x, y, dx, dy ->
-            p1x = x + dx
-            p1y = y + dy
-            state.moveMarker(id, p1x, p1y)
+        state.enableMarkerDrag("m1") { id, position, delta ->
+            p1 = position + delta
+            state.moveMarker(id, p1)
         }
-        state.enableMarkerDrag("m2") { id, x, y, dx, dy ->
-            p2x = x + dx
-            p2y = y + dy
-            state.moveMarker(id, p2x, p2y)
+        state.enableMarkerDrag("m2") { id, position, delta ->
+            p2 = position + delta
+            state.moveMarker(id, p2)
         }
         state.setStateChangeListener {
             scaleIndicatorController.onScaleChanged(scale)

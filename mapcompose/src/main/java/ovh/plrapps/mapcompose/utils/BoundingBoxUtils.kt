@@ -15,10 +15,10 @@ internal fun BoundingBox.rotate(center: Point, angle: AngleRad): BoundingBox {
     val points = listOf(topLeft, topRight, bottomLeft, bottomRight)
     val rotatedPoints = rotateCentered(points, center, angle)
 
-    val left = rotatedPoints.minOf { it.x }
-    val top = rotatedPoints.minOf { it.y }
-    val right = rotatedPoints.maxOf { it.x }
-    val bottom = rotatedPoints.maxOf { it.y }
+    val left = rotatedPoints.minOf { it.x }.toDouble()
+    val top = rotatedPoints.minOf { it.y }.toDouble()
+    val right = rotatedPoints.maxOf { it.x }.toDouble()
+    val bottom = rotatedPoints.maxOf { it.y }.toDouble()
 
     return BoundingBox(left, top, right, bottom)
 }

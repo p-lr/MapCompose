@@ -18,6 +18,7 @@ import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.widgets.Callout
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 
 class CalloutVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {
@@ -27,16 +28,16 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
 
     /* Define the markers data (id and position) */
     private val markers = listOf(
-        MarkerInfo("Callout #1", 0.45, 0.6),
-        MarkerInfo("Callout #2", 0.24, 0.1),
-        MarkerInfo(TAP_TO_DISMISS_ID, 0.4, 0.3)
+        MarkerInfo("Callout #1", Point(0.45, 0.6)),
+        MarkerInfo("Callout #2", Point(0.24, 0.1)),
+        MarkerInfo(TAP_TO_DISMISS_ID, Point(0.4, 0.3))
     )
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             /* Add all markers */
             for (marker in markers) {
-                addMarker(marker.id, marker.x, marker.y) {
+                addMarker(marker.id, marker.position) {
                     Icon(
                         painter = painterResource(id = R.drawable.map_marker),
                         contentDescription = null,
@@ -52,15 +53,15 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
              * On marker click, add a callout. If the id is [TAP_TO_DISMISS_ID], set auto-dismiss
              * to false. For this particular id, we programmatically remove the callout on tap.
              */
-            onMarkerClick { id, x, y ->
+            onMarkerClick { id, position ->
                 var shouldAnimate by mutableStateOf(true)
                 addCallout(
-                    id, x, y,
+                    id, position,
                     absoluteOffset = Offset(0f, -130f),
                     autoDismiss = id != TAP_TO_DISMISS_ID,
                     clickable = id == TAP_TO_DISMISS_ID
                 ) {
-                    Callout(x, y, title = id, shouldAnimate) {
+                    Callout(position, title = id, shouldAnimate) {
                         shouldAnimate = false
                     }
                 }
@@ -70,12 +71,12 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
              * Register a click listener on callouts. We don't need to remove the other callouts
              * because they automatically dismiss on touch down.
              */
-            onCalloutClick { id, _, _ ->
+            onCalloutClick { id, _ ->
                 if (id == TAP_TO_DISMISS_ID) removeCallout(TAP_TO_DISMISS_ID)
             }
         }
     )
 }
 
-private data class MarkerInfo(val id: String, val x: Double, val y: Double)
+private data class MarkerInfo(val id: String, val position: Point)
 private const val TAP_TO_DISMISS_ID = "Tap me to dismiss"

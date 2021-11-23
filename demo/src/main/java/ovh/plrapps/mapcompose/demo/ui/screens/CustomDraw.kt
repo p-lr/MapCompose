@@ -26,6 +26,7 @@ import ovh.plrapps.mapcompose.demo.utils.pxToDp
 import ovh.plrapps.mapcompose.demo.viewmodels.CustomDrawVM
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -64,16 +65,10 @@ fun CustomDraw(
                 mapState = viewModel.state,
                 color = Color(0xAAF44336),
                 p1 = with(viewModel) {
-                    Offset(
-                        (p1x * state.fullSize.width).toFloat(),
-                        (p1y * state.fullSize.height).toFloat()
-                    )
+                    (p1 * Point(state.fullSize.width, state.fullSize.height)).offset
                 },
                 p2 = with(viewModel) {
-                    Offset(
-                        (p2x * state.fullSize.width).toFloat(),
-                        (p2y * state.fullSize.height).toFloat()
-                    )
+                    (p2 * Point(state.fullSize.width, state.fullSize.height)).offset
                 }
             )
         }

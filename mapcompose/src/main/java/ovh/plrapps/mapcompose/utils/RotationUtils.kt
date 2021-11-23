@@ -18,12 +18,10 @@ fun AngleDegree.modulo(): AngleDegree {
     } else mod
 }
 
-fun rotateX(x: Double, y: Double, angleRad: AngleRad): Double {
-    return x * cos(angleRad) - y * sin(angleRad)
-}
-
-fun rotateY(x: Double, y: Double, angleRad: AngleRad): Double {
-    return x * sin(angleRad) + y * cos(angleRad)
+fun rotate(point: Point, angleRad: AngleRad): Point {
+    val x = point.x * cos(angleRad) - point.y * sin(angleRad)
+    val y = point.x * sin(angleRad) + point.y * cos(angleRad)
+    return Point(x, y)
 }
 
 fun rotateCentered(points: List<Point>, center: Point, angleRad: AngleRad): List<Point> {
@@ -31,21 +29,11 @@ fun rotateCentered(points: List<Point>, center: Point, angleRad: AngleRad): List
 }
 
 fun rotateCentered(point: Point, center: Point, angleRad: AngleRad): Point {
-    return Point(rotateCenteredX(point, center, angleRad), rotateCenteredY(point, center, angleRad))
+    val x = center.x + (point.x - center.x) * cos(angleRad) - (point.y - center.y) * sin(angleRad)
+    val y = center.y + (point.x - center.x) * sin(angleRad) + (point.y - center.y) * cos(angleRad)
+    return Point(x, y)
 }
 
-fun rotateCenteredX(point: Point, center: Point, angleRad: AngleRad): Double {
-    return rotateCenteredX(point.x, point.y, center.x, center.y, angleRad)
-}
-
-fun rotateCenteredY(point: Point, center: Point, angleRad: AngleRad): Double {
-    return rotateCenteredY(point.x, point.y, center.x, center.y, angleRad)
-}
-
-fun rotateCenteredX(x: Double, y: Double, centerX: Double, centerY: Double, angleRad: AngleRad): Double {
-    return centerX + (x - centerX) * cos(angleRad) - (y - centerY) * sin(angleRad)
-}
-
-fun rotateCenteredY(x: Double, y: Double, centerX: Double, centerY: Double, angleRad: AngleRad): Double {
-    return centerY + (x - centerX) * sin(angleRad) + (y - centerY) * cos(angleRad)
+fun rotateCentered(point: Point, center: Point, angleRad: AngleRad, xAxisScale: Float = 1f): Point {
+    return rotateCentered(point.scaleX(1 / xAxisScale), center, angleRad).scaleX(xAxisScale)
 }

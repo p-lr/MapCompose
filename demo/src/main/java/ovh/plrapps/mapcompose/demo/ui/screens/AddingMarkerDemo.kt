@@ -15,6 +15,7 @@ import ovh.plrapps.mapcompose.api.enableMarkerDrag
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.viewmodels.AddingMarkerVM
 import ovh.plrapps.mapcompose.ui.MapUI
+import ovh.plrapps.mapcompose.utils.Point
 
 @Composable
 fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM) {
@@ -28,7 +29,7 @@ fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Button(onClick = {
                 with(viewModel.state) {
-                    addMarker("marker$markerCount", 0.5, 0.5) {
+                    addMarker("marker$markerCount", Point(0.5, 0.5)) {
                         Icon(
                             painter = painterResource(id = R.drawable.map_marker),
                             contentDescription = null,

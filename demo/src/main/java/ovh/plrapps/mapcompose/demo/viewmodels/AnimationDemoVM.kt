@@ -16,6 +16,7 @@ import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.widgets.Marker
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 
 /**
  * This demo shows how animations can be chained one after another.
@@ -33,10 +34,10 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
         MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
-            addMarker("m0", 0.5, 0.5) { Marker() }
-            addMarker("m1", 0.78, 0.78) { Marker() }
-            addMarker("m2", 0.79, 0.79) { Marker() }
-            addMarker("m3", 0.785, 0.72) { Marker() }
+            addMarker("m0", Point(0.5, 0.5)) { Marker() }
+            addMarker("m1", Point(0.78, 0.78)) { Marker() }
+            addMarker("m2", Point(0.79, 0.79)) { Marker() }
+            addMarker("m3", Point(0.785, 0.72)) { Marker() }
             onTouchDown {
                 job?.cancel()
             }

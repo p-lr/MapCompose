@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
+import ovh.plrapps.mapcompose.utils.Point
 
 internal class MarkerState {
     internal val markers = mutableStateMapOf<String, MarkerData>()
@@ -12,19 +13,19 @@ internal class MarkerState {
     internal var calloutClickCb: MarkerClickCb? = null
 
     fun addMarker(
-        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        id: String, position: Point, relativeOffset: Offset, absoluteOffset: Offset,
         zIndex: Float, clickable: Boolean,
         c: @Composable () -> Unit
     ) {
-        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+        markers[id] = MarkerData(id, position, relativeOffset, absoluteOffset, zIndex, clickable, c)
     }
 
     fun addCallout(
-        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        id: String, position: Point, relativeOffset: Offset, absoluteOffset: Offset,
         zIndex: Float, autoDismiss: Boolean, clickable: Boolean,
         c: @Composable () -> Unit
     ) {
-        val markerData = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+        val markerData = MarkerData(id, position, relativeOffset, absoluteOffset, zIndex, clickable, c)
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
@@ -44,26 +45,23 @@ internal class MarkerState {
         }
     }
 
-    fun moveMarkerTo(id: String, x: Double, y: Double) {
+    fun moveMarkerTo(id: String, position: Point) {
         val marker = markers[id] ?: return
         with(marker) {
-            val prevX = x
-            val prevY = y
-            this.x = x.coerceIn(0.0, 1.0)
-            this.y = y.coerceIn(0.0, 1.0)
-            onMarkerMove(this, this.x - prevX, this.y - prevY)
+            val prev = position
+            this.position = position.coerceIn(0f, 1f)
+            onMarkerMove(this, position - prev)
         }
     }
 
     /**
      * Move a marker by the provided delta (normalized) coordinates.
      */
-    fun moveMarkerBy(id: String, deltaX: Double, deltaY: Double) {
+    fun moveMarkerBy(id: String, delta: Point) {
         markers[id]?.apply {
-            x = (x + deltaX).coerceIn(0.0, 1.0)
-            y = (y + deltaY).coerceIn(0.0, 1.0)
+            position = (position + delta).coerceIn(0f, 1f)
         }.also {
-            if (it != null) onMarkerMove(it, deltaX, deltaY)
+            if (it != null) onMarkerMove(it, delta)
         }
     }
 
@@ -74,30 +72,29 @@ internal class MarkerState {
         markers[id]?.isDraggable = draggable
     }
 
-    private fun onMarkerMove(data: MarkerData, dx: Double, dy: Double) {
-        markerMoveCb?.invoke(data.id, data.x, data.y, dx, dy)
+    private fun onMarkerMove(data: MarkerData, delta: Point) {
+        markerMoveCb?.invoke(data.id, data.position, delta)
     }
 
     internal fun onMarkerClick(data: MarkerData) {
-        markerClickCb?.invoke(data.id, data.x, data.y)
+        markerClickCb?.invoke(data.id, data.position)
     }
 
     internal fun onCalloutClick(data: MarkerData) {
-        calloutClickCb?.invoke(data.id, data.x, data.y)
+        calloutClickCb?.invoke(data.id, data.position)
     }
 }
 
 internal class MarkerData(
     val id: String,
-    x: Double, y: Double,
+    position: Point,
     val relativeOffset: Offset,
     val absoluteOffset: Offset,
     zIndex: Float,
     clickable: Boolean,
     val c: @Composable () -> Unit
 ) {
-    var x: Double by mutableStateOf(x)
-    var y: Double by mutableStateOf(y)
+    var position by mutableStateOf(position)
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
     var isClickable: Boolean by mutableStateOf(clickable)
@@ -110,22 +107,20 @@ internal class MarkerData(
         other as MarkerData
 
         if (id != other.id) return false
-        if (x != other.x) return false
-        if (y != other.y) return false
+        if (position != other.position) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + x.hashCode()
-        result = 31 * result + y.hashCode()
+        result = 31 * result + position.hashCode()
         return result
     }
 }
 
 internal data class CalloutData(val markerData: MarkerData, val autoDismiss: Boolean)
 
-internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
-internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit
-internal typealias DragInterceptor = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+internal typealias MarkerMoveCb = (id: String, position: Point, delta: Point) -> Unit
+internal typealias MarkerClickCb = (id: String, position: Point) -> Unit
+internal typealias DragInterceptor = (id: String, position: Point, delta: Point) -> Unit

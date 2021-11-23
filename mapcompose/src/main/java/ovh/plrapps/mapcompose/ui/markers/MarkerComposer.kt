@@ -17,8 +17,8 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.MarkerData
 import ovh.plrapps.mapcompose.ui.state.MarkerState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
-import ovh.plrapps.mapcompose.utils.rotateX
-import ovh.plrapps.mapcompose.utils.rotateY
+import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.rotate
 import ovh.plrapps.mapcompose.utils.toRad
 
 @Composable
@@ -53,9 +53,9 @@ internal fun MarkerComposer(
                                         change.consumeAllChanges()
                                         val interceptor = data.dragInterceptor
                                         if (interceptor != null) {
-                                            invokeDragInterceptor(data, zoomPRState, dragAmount)
+                                            invokeDragInterceptor(data, zoomPRState, Point(dragAmount))
                                         } else {
-                                            mapState.moveMarkerBy(data.id, dragAmount)
+                                            mapState.moveMarkerBy(data.id, Point(dragAmount))
                                         }
                                     }
                                 }
@@ -90,22 +90,15 @@ internal fun MarkerComposer(
 private fun invokeDragInterceptor(
     data: MarkerData,
     zoomPRState: ZoomPanRotateState,
-    deltaPx: Offset
+    deltaPx: Point
 ) {
     val angle = -zoomPRState.rotation.toRad()
-    val dx = rotateX(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
-    val dy = rotateY(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
+    val deltaRotated = rotate(deltaPx, angle)
 
-    val deltaX =
-        (data.x + dx / (zoomPRState.fullWidth * zoomPRState.scale)).coerceIn(0.0, 1.0) - data.x
-    val deltaY =
-        (data.y + dy / (zoomPRState.fullHeight * zoomPRState.scale)).coerceIn(0.0, 1.0) - data.y
+    val scale = Point(zoomPRState.fullWidth * zoomPRState.scale, zoomPRState.fullHeight * zoomPRState.scale)
+    val delta = (data.position + (deltaRotated / scale)).coerceIn(0f, 1f) - data.position
 
     with(data) {
-        dragInterceptor?.invoke(
-            id, x, y,
-            deltaX,
-            deltaY
-        )
+        dragInterceptor?.invoke(id, position, delta)
     }
 }

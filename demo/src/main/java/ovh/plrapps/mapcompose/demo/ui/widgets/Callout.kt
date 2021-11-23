@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ovh.plrapps.mapcompose.utils.Point
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -30,7 +31,7 @@ import java.text.DecimalFormat
  */
 @Composable
 fun Callout(
-    x: Double, y: Double,
+    position: Point,
     title: String,
     shouldAnimate: Boolean,
     onAnimationDone: () -> Unit
@@ -70,7 +71,7 @@ fun Callout(
                 color = Color.Black
             )
             Text(
-                text = "position ${df.format(x)} , ${df.format(y)}",
+                text = "position ${df.format(position.x)} , ${df.format(position.y)}",
                 modifier = Modifier
                     .align(alignment = Alignment.CenterHorizontally)
                     .padding(top = 4.dp),
