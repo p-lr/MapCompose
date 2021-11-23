@@ -59,6 +59,7 @@ class MapState(
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var mapBackground by mutableStateOf(Color.White)
+    internal var isBitmapFilteringEnabled by mutableStateOf(true)
 
     /**
      * Cancels all internal tasks.

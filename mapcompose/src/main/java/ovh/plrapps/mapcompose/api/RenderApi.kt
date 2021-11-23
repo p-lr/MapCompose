@@ -39,3 +39,13 @@ fun MapState.setColorFilterProvider(provider: ColorFilterProvider) {
 fun MapState.setMapBackground(color: Color) {
     mapBackground = color
 }
+
+/**
+ * Controls whether Bitmap filtering is enabled when drawing tiles. This is enabled by default.
+ * Disabling it is useful to achieve nearest-neighbor scaling, for cases when the art style of the
+ * displayed image benefits from it.
+ * @see [android.graphics.Paint.setFilterBitmap]
+ */
+fun MapState.setBitmapFilteringEnabled(enabled: Boolean) {
+    isBitmapFilteringEnabled = enabled
+}
