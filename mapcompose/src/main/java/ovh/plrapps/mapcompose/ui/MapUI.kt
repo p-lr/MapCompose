@@ -35,7 +35,7 @@ fun MapUI(
             alphaTick = state.tileCanvasState.alphaTick,
             colorFilterProvider = state.tileCanvasState.colorFilterProvider,
             tilesToRender = state.tileCanvasState.tilesToRender,
-            isBitmapFilteringEnabled = state.isBitmapFilteringEnabled
+            isFilteringBitmap = state.isFilteringBitmap
         )
 
         MarkerComposer(

@@ -47,5 +47,13 @@ fun MapState.setMapBackground(color: Color) {
  * @see [android.graphics.Paint.setFilterBitmap]
  */
 fun MapState.setBitmapFilteringEnabled(enabled: Boolean) {
-    isBitmapFilteringEnabled = enabled
+    setBitmapFilteringEnabled { enabled }
+}
+
+/**
+ * A version of [setBitmapFilteringEnabled] which allows for dynamic control of bitmap filtering
+ * depending on the current [MapState].
+ */
+fun MapState.setBitmapFilteringEnabled(predicate: (state: MapState) -> Boolean) {
+    isFilteringBitmap = { predicate(this) }
 }
