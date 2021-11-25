@@ -27,7 +27,7 @@ internal fun TileCanvas(
     alphaTick: Float,
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
-    isBitmapFilteringEnabled: Boolean
+    isFilteringBitmap: () -> Boolean
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
@@ -52,6 +52,8 @@ internal fun TileCanvas(
             )
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
+            paint.isFilterBitmap = isFilteringBitmap()
+
             for (tile in tilesToRender) {
                 val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                     ?: continue
@@ -66,7 +68,6 @@ internal fun TileCanvas(
 
                 paint.alpha = (tile.alpha * 255).toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
-                paint.isFilterBitmap = isBitmapFilteringEnabled
 
                 drawIntoCanvas {
                     it.nativeCanvas.drawBitmap(tile.bitmap, null, dest, paint)
