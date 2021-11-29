@@ -57,12 +57,12 @@ internal class TileCollector(
      * @param [tileSpecs] channel of [TileSpec], which capacity should be [Channel.RENDEZVOUS].
      * @param [tilesOutput] channel of [Tile], which should be set as [Channel.RENDEZVOUS].
      */
-    fun CoroutineScope.collectTiles(
+    suspend fun collectTiles(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
-        tileStreamProvider: TileStreamProvider,
+        layers: List<Layer>,
         bitmapFlow: Flow<Bitmap>
-    ) {
+    ) = coroutineScope {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
 
@@ -71,7 +71,7 @@ internal class TileCollector(
                 tilesToDownload,
                 tilesDownloadedFromWorker,
                 tilesOutput,
-                tileStreamProvider,
+                layers,
                 bitmapFlow
             )
         }
@@ -82,15 +82,18 @@ internal class TileCollector(
         tilesToDownload: ReceiveChannel<TileSpec>,
         tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
-        tileStreamProvider: TileStreamProvider,
+        layers: List<Layer>,
         bitmapFlow: Flow<Bitmap>
     ) = launch(dispatcher) {
 
         val bitmapLoadingOptions = BitmapFactory.Options()
         bitmapLoadingOptions.inPreferredConfig = bitmapConfig
 
+        /* For now, take the first provider */
+        val layer = layers.firstOrNull() ?: return@launch
+
         for (spec in tilesToDownload) {
-            val i = tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
+            val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
             if (spec.subSample > 0) {
                 bitmapLoadingOptions.inBitmap = null
@@ -104,7 +107,7 @@ internal class TileCollector(
 
             try {
                 val bitmap = BitmapFactory.decodeStream(i, null, bitmapLoadingOptions) ?: continue
-                val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample).apply {
+                val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, layer.id).apply {
                     this.bitmap = bitmap
                 }
                 tilesOutput.send(tile)

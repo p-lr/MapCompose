@@ -27,7 +27,6 @@ import kotlin.math.pow
 internal class TileCanvasState(
     parentScope: CoroutineScope, tileSize: Int,
     private val visibleTilesResolver: VisibleTilesResolver,
-    tileStreamProvider: TileStreamProvider,
     workerCount: Int, highFidelityColors: Boolean
 ) {
 
@@ -37,6 +36,9 @@ internal class TileCanvasState(
         parentScope.coroutineContext + singleThreadDispatcher
     )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
+
+    private val layerFlow = MutableStateFlow<List<Layer>>(listOf())
+
     private var hashOfPreviousRender: Int = 0
     private val renderTask = scope.throttle(wait = 34) {
         /* Quick comparison in order to avoid unnecessarily sorting the list of collected tiles.
@@ -58,7 +60,7 @@ internal class TileCanvasState(
     private val bitmapPool = Pool<Bitmap>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
-    private val visibleTilesFlow = MutableStateFlow<VisibleTiles?>(null)
+    private val visibleTilesFlow = MutableStateFlow<VisibleTilesForLayers?>(null)
     internal var alphaTick = 0.07f
         set(value) {
             field = value.coerceIn(0.01f, 1f)
@@ -84,8 +86,9 @@ internal class TileCanvasState(
         Bitmap.Config.RGB_565
     }
 
-    private var lastVisible: VisibleTiles? = null
-    private var lastVisibleCount: Int = 0
+    private val lastVisible: VisibleTiles?
+        get() = visibleTilesFlow.value?.visibleTiles
+
     private var idle = false
 
     /**
@@ -93,8 +96,9 @@ internal class TileCanvasState(
      */
     private val idleDebounced = scope.debounce<Unit>(400) {
         idle = true
-        val lastVisible = lastVisible ?: return@debounce
-        evictTiles(lastVisible)
+        visibleTilesFlow.value?.also {
+            evictTiles(it)
+        }
     }
 
     private val tilesCollected = mutableListOf<Tile>()
@@ -109,19 +113,25 @@ internal class TileCanvasState(
 
         /* Launch the TileCollector */
         tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)
-        with(tileCollector) {
-            scope.collectTiles(
-                visibleTileLocationsChannel,
-                tilesOutput,
-                tileStreamProvider,
-                bitmapFlow
-            )
+        scope.launch {
+            layerFlow.collectLatest {
+                tileCollector.collectTiles(
+                    visibleTileLocationsChannel,
+                    tilesOutput,
+                    it,
+                    bitmapFlow
+                )
+            }
         }
 
         /* Launch a coroutine to consume the produced tiles */
         scope.launch {
             consumeTiles(tilesOutput)
         }
+    }
+
+    fun setLayers(layers: List<Layer>) {
+        layerFlow.value = layers
     }
 
     fun shutdown() {
@@ -146,12 +156,11 @@ internal class TileCanvasState(
 
     private fun setVisibleTiles(visibleTiles: VisibleTiles) {
         /* Feed the tile processing machinery */
-        visibleTilesFlow.value = visibleTiles
+        val layerIds = layerFlow.value.map { it.id }
+        val visibleTilesForLayers = VisibleTilesForLayers(visibleTiles, layerIds)
+        visibleTilesFlow.value = visibleTilesForLayers
 
-        lastVisible = visibleTiles
-        lastVisibleCount = visibleTiles.count
-
-        evictTiles(visibleTiles)
+        evictTiles(visibleTilesForLayers)
 
         renderThrottled()
     }
@@ -179,14 +188,15 @@ internal class TileCanvasState(
      * the latest [VisibleTiles] element is processed right away.
      */
     private suspend fun collectNewTiles() {
-        visibleTilesFlow.collectLatest { visibleTiles ->
+        visibleTilesFlow.collectLatest { visibleTilesForLayers ->
+            val visibleTiles = visibleTilesForLayers?.visibleTiles
             if (visibleTiles != null) {
                 for (e in visibleTiles.tileMatrix) {
                     val row = e.key
                     val colRange = e.value
                     for (col in colRange) {
                         val alreadyProcessed = tilesCollected.any { tile ->
-                            tile.sameSpecAs(visibleTiles.level, row, col, visibleTiles.subSample)
+                            tile.sameSpecAs(visibleTiles.level, row, col, visibleTiles.subSample, visibleTilesForLayers.layerIds)
                         }
                         /* Only emit specs which haven't already been processed by the collector
                          * Doing this now results in less object allocations than filtering the flow
@@ -213,6 +223,7 @@ internal class TileCanvasState(
      */
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
+            // TODO: check that only tiles from current layers are kept in tilesCollected
             val lastVisible = lastVisible
             if ((lastVisible == null || lastVisible.contains(tile)) && !tilesCollected.contains(tile)) {
                 tile.prepare()
@@ -237,6 +248,10 @@ internal class TileCanvasState(
         if (level != tile.zoom) return false
         val colRange = tileMatrix[tile.row] ?: return false
         return subSample == tile.subSample && tile.col in colRange
+    }
+
+    private fun VisibleTilesForLayers.contains(tile: Tile): Boolean {
+        return visibleTiles.contains(tile) && tile.layerId in layerIds
     }
 
     private fun VisibleTiles.intersects(tile: Tile): Boolean {
@@ -274,7 +289,8 @@ internal class TileCanvasState(
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
-    private fun evictTiles(visibleTiles: VisibleTiles) {
+    private fun evictTiles(visibleTilesForLayers: VisibleTilesForLayers) {
+        val visibleTiles = visibleTilesForLayers.visibleTiles
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
@@ -284,8 +300,8 @@ internal class TileCanvasState(
             val tile = iterator.next()
             if (
                 tile.zoom == currentLevel
-                && tile.subSample == visibleTiles.subSample
-                && !visibleTiles.contains(tile)
+                && tile.subSample == currentSubSample
+                && !visibleTilesForLayers.contains(tile)
             ) {
                 iterator.remove()
                 tile.recycle()
@@ -335,6 +351,8 @@ internal class TileCanvasState(
         val nTilesAtCurrentLevel = tilesCollected.count {
             it.zoom == currentLevel && it.subSample == currentSubSample
         }
+
+        val lastVisibleCount = lastVisible?.count ?: 0
         if (nTilesAtCurrentLevel < lastVisibleCount) {
             return
         }
@@ -390,4 +408,6 @@ internal class TileCanvasState(
     private fun Int.maxAtGreaterLevel(n: Int): Int {
         return (this + 1) * 2.0.pow(n).toInt() - 1
     }
+
+    private data class VisibleTilesForLayers(val visibleTiles: VisibleTiles, val layerIds: List<String>)
 }

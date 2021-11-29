@@ -180,13 +180,13 @@ internal class VisibleTilesResolver(
  * is lower than the scale of the minimum level, [subSample] is greater than 0. Otherwise, [subSample]
  * equals 0.
  */
-data class VisibleTiles(
-    var level: Int,
+internal data class VisibleTiles(
+    val level: Int,
     val tileMatrix: TileMatrix,
     val count: Int,
     val subSample: Int = 0
 )
 
-typealias Row = Int
-typealias ColRange = IntRange
-typealias TileMatrix = Map<Row, ColRange>
+internal typealias Row = Int
+internal typealias ColRange = IntRange
+internal typealias TileMatrix = Map<Row, ColRange>

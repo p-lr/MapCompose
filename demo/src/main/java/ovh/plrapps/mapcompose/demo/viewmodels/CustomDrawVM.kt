@@ -18,6 +18,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.screens.ScaleIndicatorController
 import ovh.plrapps.mapcompose.ui.MapUI
@@ -40,7 +41,8 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     var p2y by mutableStateOf(0.4)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096).apply {
+            setLayer(Layer("main", tileStreamProvider))
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {

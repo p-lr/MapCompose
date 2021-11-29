@@ -6,10 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
-import ovh.plrapps.mapcompose.core.TileStreamProvider
-import ovh.plrapps.mapcompose.core.Viewport
+import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
-import ovh.plrapps.mapcompose.core.throttle
 import ovh.plrapps.mapcompose.utils.toRad
 
 /**
@@ -28,7 +26,6 @@ class MapState(
     levelCount: Int,
     fullWidth: Int,
     fullHeight: Int,
-    tileStreamProvider: TileStreamProvider,
     tileSize: Int = 256,
     workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
     magnifyingFactor: Int = 0
@@ -45,7 +42,6 @@ class MapState(
         scope,
         tileSize,
         visibleTilesResolver,
-        tileStreamProvider,
         workerCount,
         highFidelityColors = true
     )
@@ -60,6 +56,17 @@ class MapState(
     internal var touchDownCb: (() -> Unit)? = null
     internal var mapBackground by mutableStateOf(Color.White)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf({ true })
+
+
+    /**
+     * TODO: document
+     */
+    fun setLayer(layer: Layer) {
+        tileCanvasState.setLayers(listOf(layer))
+        scope.launch {
+            renderVisibleTiles()
+        }
+    }
 
     /**
      * Cancels all internal tasks.

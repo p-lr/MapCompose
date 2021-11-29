@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -18,7 +19,8 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(appContext)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096).apply {
+            setLayer(Layer("main", tileStreamProvider))
             enableRotation()
             setScrollOffsetRatio(0.3f, 0.3f)
             scale = 0f
