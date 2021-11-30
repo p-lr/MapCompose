@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import ovh.plrapps.mapcompose.api.mainLayerId
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
@@ -66,7 +67,10 @@ internal fun TileCanvas(
 
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
-                paint.alpha = (tile.alpha * 255).toInt()
+                paint.alpha = (tile.alpha * 255).toInt().let {
+                    // TODO: this is temporary way to test alpha
+                    if (tile.layerId != mainLayerId) it / 2 else it
+                }
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 
                 drawIntoCanvas {

@@ -8,9 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.enableRotation
-import ovh.plrapps.mapcompose.api.scrollTo
-import ovh.plrapps.mapcompose.api.shouldLoopScale
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -29,15 +27,15 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
                 scrollTo(0.5, 0.5, 1f)
             }
         }.apply {
-            setLayer(Layer("main", tileStreamProvider))
+            setTileStreamProvider(tileStreamProvider)
         }
     )
 
     init {
         viewModelScope.launch {
-            delay(6000)
+            delay(4000)
             val newProvider = makeTileStreamProvider(appContext, "mont_blanc_satellite")
-            state.setLayer(Layer("new", newProvider))
+            state.setLayers(listOf(Layer(mainLayerId, tileStreamProvider), Layer("new", newProvider)))
         }
     }
 

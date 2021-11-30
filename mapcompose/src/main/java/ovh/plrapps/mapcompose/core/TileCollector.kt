@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The engine of the MapView. The view-model uses two channels to communicate with the [TileCollector]:
- * * one to send [TileSpec]s (a [SendChannel])
- * * one to receive [Tile]s (a [ReceiveChannel])
+ * * one to send [WorkerSpec]s (a [SendChannel])
+ * * one to receive [WorkerSpec]s (a [ReceiveChannel])
  *
  * The [TileCollector] encapsulates all the complexity that transforms a [TileSpec] into a [Tile].
  * ```
@@ -28,11 +28,11 @@ import java.util.concurrent.TimeUnit
  *              ---------------- [*********] <----------------------------------------------------- | | worker | |   |
  *             |                               |                                                    |  --------  |   |
  *             ↓                               |                                                    |  ________  |   |
- *  _____________________                      |                                  tileSpecs         | | worker | |   |
+ *  _____________________                      |                                  workerSpecs       | | worker | |   |
  * | TileCanvasViewModel |                     |    _____________________  <---- [**********] <---- |  --------  |   |
  *  ---------------------  ----> [*********] ----> | tileCollectorKernel |                          |  ________  |   |
  *                                tileSpecs    |    ---------------------  ----> [**********] ----> | | worker | |   |
- *                                             |                                  tileSpecs         |  --------  |   |
+ *                                             |                                  workerSpecs       |  --------  |   |
  *                                             |                                                    |____________|   |
  *                                             |                                                      worker pool    |
  *                                             |                                                                     |
@@ -63,37 +63,42 @@ internal class TileCollector(
         layers: List<Layer>,
         bitmapFlow: Flow<Bitmap>
     ) = coroutineScope {
-        val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
-        val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
+        val layerIds = layers.map { it.id }
+        val tilesToDownload = Channel<WorkerSpec>(capacity = Channel.RENDEZVOUS)
+        val tilesDownloadedFromWorker = Channel<WorkerSpec>(capacity = layerIds.size)
 
         repeat(workerCount) {
             worker(
                 tilesToDownload,
                 tilesDownloadedFromWorker,
                 tilesOutput,
-                layers,
+                layers.associateBy { it.id },
                 bitmapFlow
             )
         }
-        tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
+        tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker, layerIds)
     }
 
     private fun CoroutineScope.worker(
-        tilesToDownload: ReceiveChannel<TileSpec>,
-        tilesDownloaded: SendChannel<TileSpec>,
+        tilesToDownload: ReceiveChannel<WorkerSpec>,
+        tilesDownloaded: SendChannel<WorkerSpec>,
         tilesOutput: SendChannel<Tile>,
-        layers: List<Layer>,
+        layersForId: Map<String, Layer>,
         bitmapFlow: Flow<Bitmap>
     ) = launch(dispatcher) {
 
         val bitmapLoadingOptions = BitmapFactory.Options()
         bitmapLoadingOptions.inPreferredConfig = bitmapConfig
 
-        /* For now, take the first provider */
-        val layer = layers.firstOrNull() ?: return@launch
+        for (workerSpec in tilesToDownload) {
+            val spec = workerSpec.tileSpec
+            val tileStreamProvider = layersForId[workerSpec.layerId]?.tileStreamProvider
+            if (tileStreamProvider == null) {
+                tilesDownloaded.send(workerSpec)
+                continue
+            }
 
-        for (spec in tilesToDownload) {
-            val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
+            val i = tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
             if (spec.subSample > 0) {
                 bitmapLoadingOptions.inBitmap = null
@@ -107,7 +112,7 @@ internal class TileCollector(
 
             try {
                 val bitmap = BitmapFactory.decodeStream(i, null, bitmapLoadingOptions) ?: continue
-                val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, layer.id).apply {
+                val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, workerSpec.layerId).apply {
                     this.bitmap = bitmap
                 }
                 tilesOutput.send(tile)
@@ -116,7 +121,7 @@ internal class TileCollector(
             } catch (e: Exception) {
                 // maybe retry
             } finally {
-                tilesDownloaded.send(spec)
+                tilesDownloaded.send(workerSpec)
                 i?.close()
             }
         }
@@ -124,24 +129,31 @@ internal class TileCollector(
 
     private fun CoroutineScope.tileCollectorKernel(
         tileSpecs: ReceiveChannel<TileSpec>,
-        tilesToDownload: SendChannel<TileSpec>,
-        tilesDownloadedFromWorker: ReceiveChannel<TileSpec>
+        tilesToDownload: SendChannel<WorkerSpec>,
+        tilesDownloadedFromWorker: ReceiveChannel<WorkerSpec>,
+        layerIds: List<String>
     ) = launch(Dispatchers.Default) {
 
-        val tilesBeingProcessed = mutableListOf<TileSpec>()
+        val specsBeingProcessed = mutableMapOf<TileSpec, MutableList<String>>()
 
         while (true) {
             select<Unit> {
                 tilesDownloadedFromWorker.onReceive {
-                    tilesBeingProcessed.remove(it)
+                    val ids = specsBeingProcessed[it.tileSpec] ?: return@onReceive
+                    ids.remove(it.layerId)
+                    if (ids.isEmpty()) {
+                        specsBeingProcessed.remove(it.tileSpec)
+                    }
                 }
                 tileSpecs.onReceive {
-                    if (!tilesBeingProcessed.any { spec -> spec == it }) {
+                    if (it !in specsBeingProcessed.keys) {
                         /* Add it to the list of locations being processed */
-                        tilesBeingProcessed.add(it)
+                        specsBeingProcessed[it] = layerIds.toMutableList()
 
-                        /* Now download the tile */
-                        tilesToDownload.send(it)
+                        /* Download tiles for each layer */
+                        for (layerId in layerIds) {
+                            tilesToDownload.send(WorkerSpec(it, layerId))
+                        }
                     }
                 }
             }
@@ -170,3 +182,5 @@ internal class TileCollector(
     }
     private val dispatcher = executor.asCoroutineDispatcher()
 }
+
+private data class WorkerSpec(val tileSpec: TileSpec, val layerId: String)

@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.*
-import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -21,7 +20,7 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
-            setLayer(Layer("main", tileStreamProvider))
+            setTileStreamProvider(tileStreamProvider)
             onMarkerMove { id, x, y, _, _ ->
                 println("move $id $x $y")
             }

@@ -10,12 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.demo.viewmodels.CenteringOnMarkerVM
 import ovh.plrapps.mapcompose.ui.MapUI
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun CenteringOnMarkerDemo(
     modifier: Modifier = Modifier,
-    viewModel: CenteringOnMarkerVM,
-    onCenter: () -> Unit
+    viewModel: CenteringOnMarkerVM = viewModel(),
+    onCenter: () -> Unit = viewModel::onCenter
 ) {
     Column(modifier.fillMaxSize()) {
         MapUI(

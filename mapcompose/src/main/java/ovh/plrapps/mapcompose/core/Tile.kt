@@ -19,8 +19,8 @@ internal data class Tile(val zoom: Int, val row: Int, val col: Int, val subSampl
 
 internal data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
-internal fun Tile.sameSpecAs(zoom: Int, row: Int, col: Int, subSample: Int, layerIds: List<String>): Boolean {
-    return this.zoom == zoom && this.row == row && this.col == col && this.subSample == subSample && this.layerId in layerIds
+internal fun Tile.sameSpecAs(zoom: Int, row: Int, col: Int, subSample: Int): Boolean {
+    return this.zoom == zoom && this.row == row && this.col == col && this.subSample == subSample
 }
 
 internal fun Tile.samePositionAs(tile: Tile): Boolean {

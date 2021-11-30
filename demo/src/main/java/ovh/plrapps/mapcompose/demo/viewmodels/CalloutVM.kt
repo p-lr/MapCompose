@@ -14,7 +14,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.*
-import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.widgets.Callout
@@ -35,7 +34,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
-            setLayer(Layer("main", tileStreamProvider))
+            setTileStreamProvider(tileStreamProvider)
 
             /* Add all markers */
             for (marker in markers) {

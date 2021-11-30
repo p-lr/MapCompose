@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.setTileStreamProvider
 import ovh.plrapps.mapcompose.api.shouldLoopScale
-import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.BufferedInputStream
@@ -21,7 +21,7 @@ class HttpTilesVM : ViewModel() {
     val state: MapState by mutableStateOf(
         /* Notice how we increase the worker count when performing HTTP requests */
         MapState(4, 4096, 4096, workerCount = 16).apply {
-            setLayer(Layer("main", tileStreamProvider))
+            setTileStreamProvider(tileStreamProvider)
             scale = 0f
             shouldLoopScale = true
         }

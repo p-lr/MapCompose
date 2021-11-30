@@ -43,7 +43,7 @@ class MapState(
         tileSize,
         visibleTilesResolver,
         workerCount,
-        highFidelityColors = true
+        highFidelityColors = false
     )
 
     private val throttledTask: SendChannel<Unit> = scope.throttle(wait = 18) {
@@ -61,8 +61,8 @@ class MapState(
     /**
      * TODO: document
      */
-    fun setLayer(layer: Layer) {
-        tileCanvasState.setLayers(listOf(layer))
+    fun setLayers(layers: List<Layer>) {
+        tileCanvasState.setLayers(layers)
         scope.launch {
             renderVisibleTiles()
         }
