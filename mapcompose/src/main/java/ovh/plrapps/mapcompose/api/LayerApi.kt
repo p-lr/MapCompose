@@ -15,9 +15,9 @@ fun MapState.setPrimaryLayer(tileStreamProvider: TileStreamProvider) {
 }
 
 /**
- * Set layers drawn above the primary layer. Layers are drawn in the same order as they're provided
- * in the list. For example, the last layer of [layers] will be drawn last and will appear above all
- * the other layers.
+ * Define layers which are drawn above the primary layer. Layers are drawn in the same order as
+ * they're provided in the list. For example, the last layer of [layers] will be drawn last and will
+ * appear above all the other layers.
  */
 fun MapState.setLayers(layers: List<Layer>) {
     tileCanvasState.setLayers(layers)

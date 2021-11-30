@@ -198,7 +198,6 @@ internal class TileCanvasState(
      */
     private suspend fun collectNewTiles() {
         visibleTilesFlow.collectLatest { visibleTilesForLayers ->
-            println("collect new")
             val visibleTiles = visibleTilesForLayers?.visibleTiles
             if (visibleTiles != null) {
                 for (e in visibleTiles.tileMatrix) {
@@ -306,7 +305,7 @@ internal class TileCanvasState(
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
-                && !(visibleTiles.contains(tile) && tile.layerId in layerIds)
+                && !(tile.layerId in layerIds && visibleTiles.contains(tile))
             ) {
                 iterator.remove()
                 tile.recycle()
