@@ -40,8 +40,7 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     var p2y by mutableStateOf(0.4)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            setTileStreamProvider(tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {

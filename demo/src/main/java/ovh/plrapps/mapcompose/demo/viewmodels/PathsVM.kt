@@ -25,8 +25,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(appContext)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            setTileStreamProvider(tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {

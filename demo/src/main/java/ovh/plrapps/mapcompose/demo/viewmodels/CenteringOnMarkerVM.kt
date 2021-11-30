@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.scale
-import ovh.plrapps.mapcompose.api.setTileStreamProvider
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -28,8 +27,7 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
     private val tileStreamProvider = makeTileStreamProvider(appContext)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            setTileStreamProvider(tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
 
             addMarker("parking", 0.2457938, 0.3746023) {
                 Icon(

@@ -19,8 +19,7 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
     var markerCount by mutableStateOf(0)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            setTileStreamProvider(tileStreamProvider)
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
             onMarkerMove { id, x, y, _, _ ->
                 println("move $id $x $y")
             }

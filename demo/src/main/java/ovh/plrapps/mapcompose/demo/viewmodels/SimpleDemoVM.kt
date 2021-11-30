@@ -20,14 +20,12 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(appContext, "mont_blanc")
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
+        MapState(4, 4096, 4096, tileStreamProvider).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
-        }.apply {
-            setTileStreamProvider(tileStreamProvider)
         }
     )
 
@@ -35,7 +33,11 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             delay(4000)
             val newProvider = makeTileStreamProvider(appContext, "mont_blanc_satellite")
-            state.setLayers(listOf(Layer(mainLayerId, tileStreamProvider), Layer("new", newProvider)))
+            state.setLayers(listOf(Layer("new", newProvider)))
+            delay(4000)
+            state.removeLayers()
+//            state.setPrimaryLayer(newProvider)
+//            state.setLayers(listOf(Layer("new", tileStreamProvider)))
         }
     }
 

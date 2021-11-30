@@ -13,10 +13,10 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
-import ovh.plrapps.mapcompose.api.mainLayerId
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
+import ovh.plrapps.mapcompose.core.mainLayerId
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
 @Composable

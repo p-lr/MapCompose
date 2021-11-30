@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.core.*
+import java.lang.IllegalStateException
 import java.util.concurrent.Executors
 import kotlin.math.pow
 
@@ -136,8 +137,16 @@ internal class TileCanvasState(
         }
     }
 
+    fun setPrimaryLayer(tileStreamProvider: TileStreamProvider) {
+        layerFlow.value = listOf(Layer(mainLayerId, tileStreamProvider)) + layerFlow.value.filterNot {
+            it.id.startsWith(mainLayerId)
+        }
+    }
+
     fun setLayers(layers: List<Layer>) {
-        layerFlow.value = layers
+        /* The primary layer should always be the first one */
+        layerFlow.value = (layerFlow.value.firstOrNull()?.let { listOf(it) }
+            ?: throw IllegalStateException("A primary layer must be defined")) + layers
     }
 
     fun shutdown() {
@@ -189,6 +198,7 @@ internal class TileCanvasState(
      */
     private suspend fun collectNewTiles() {
         visibleTilesFlow.collectLatest { visibleTilesForLayers ->
+            println("collect new")
             val visibleTiles = visibleTilesForLayers?.visibleTiles
             if (visibleTiles != null) {
                 for (e in visibleTiles.tileMatrix) {
