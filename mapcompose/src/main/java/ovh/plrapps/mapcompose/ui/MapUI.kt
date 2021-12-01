@@ -2,6 +2,9 @@ package ovh.plrapps.mapcompose.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.zIndex
@@ -20,9 +23,15 @@ fun MapUI(
     val zoomPRState = state.zoomPanRotateState
     val markerState = state.markerState
     val pathState = state.pathState
+    val layers by state.tileCanvasState.layerFlow.collectAsState()
+    val layersById by derivedStateOf {
+        layers.associateBy { it.id }
+    }
 
     ZoomPanRotate(
-        modifier = modifier.clipToBounds().background(state.mapBackground),
+        modifier = modifier
+            .clipToBounds()
+            .background(state.mapBackground),
         gestureListener = zoomPRState,
         layoutSizeChangeListener = zoomPRState,
         padding = zoomPRState.padding,
@@ -35,7 +44,8 @@ fun MapUI(
             alphaTick = state.tileCanvasState.alphaTick,
             colorFilterProvider = state.tileCanvasState.colorFilterProvider,
             tilesToRender = state.tileCanvasState.tilesToRender,
-            isFilteringBitmap = state.isFilteringBitmap
+            isFilteringBitmap = state.isFilteringBitmap,
+            layersById = layersById
         )
 
         MarkerComposer(

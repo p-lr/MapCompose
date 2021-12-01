@@ -13,10 +13,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
-import ovh.plrapps.mapcompose.core.ColorFilterProvider
-import ovh.plrapps.mapcompose.core.Tile
-import ovh.plrapps.mapcompose.core.VisibleTilesResolver
-import ovh.plrapps.mapcompose.core.mainLayerId
+import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
 @Composable
@@ -28,7 +25,8 @@ internal fun TileCanvas(
     alphaTick: Float,
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
-    isFilteringBitmap: () -> Boolean
+    isFilteringBitmap: () -> Boolean,
+    layersById: Map<String, Layer>
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
@@ -67,10 +65,10 @@ internal fun TileCanvas(
 
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
-                paint.alpha = (tile.alpha * 255).toInt().let {
-                    // TODO: this is temporary way to test alpha
-                    if (tile.layerId != mainLayerId) it / 2 else it
-                }
+                val alpha = layersById[tile.layerId]?.alpha?.value ?: 0f
+                paint.alpha = (tile.alpha * 255).let {
+                    if (tile.layerId != mainLayerId) it * alpha else it
+                }.toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 
                 drawIntoCanvas {

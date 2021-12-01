@@ -38,7 +38,8 @@ internal class TileCanvasState(
     )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
 
-    private val layerFlow = MutableStateFlow<List<Layer>>(listOf())
+    private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
+    internal val layerFlow = _layerFlow.asStateFlow()
 
     private val bitmapPool = Pool<Bitmap>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
@@ -121,7 +122,7 @@ internal class TileCanvasState(
         /* Launch the TileCollector */
         tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)
         scope.launch {
-            layerFlow.collectLatest {
+            _layerFlow.collectLatest {
                 tileCollector.collectTiles(
                     visibleTileLocationsChannel,
                     tilesOutput,
@@ -138,14 +139,14 @@ internal class TileCanvasState(
     }
 
     fun setPrimaryLayer(tileStreamProvider: TileStreamProvider) {
-        layerFlow.value = listOf(Layer(mainLayerId, tileStreamProvider)) + layerFlow.value.filterNot {
+        _layerFlow.value = listOf(Layer(mainLayerId, tileStreamProvider)) + _layerFlow.value.filterNot {
             it.id.startsWith(mainLayerId)
         }
     }
 
     fun setLayers(layers: List<Layer>) {
         /* The primary layer should always be the first one */
-        layerFlow.value = (layerFlow.value.firstOrNull()?.let { listOf(it) }
+        _layerFlow.value = (_layerFlow.value.firstOrNull()?.let { listOf(it) }
             ?: throw IllegalStateException("A primary layer must be defined")) + layers
     }
 
@@ -167,7 +168,7 @@ internal class TileCanvasState(
 
     private fun setVisibleTiles(visibleTiles: VisibleTiles) {
         /* Feed the tile processing machinery */
-        val layerIds = layerFlow.value.map { it.id }
+        val layerIds = _layerFlow.value.map { it.id }
         val visibleTilesForLayers = VisibleTilesForLayers(visibleTiles, layerIds)
         visibleTilesFlow.value = visibleTilesForLayers
 
