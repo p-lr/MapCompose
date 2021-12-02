@@ -96,9 +96,9 @@ internal class TileCanvasState(
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others, and order by layers. */
         val tilesToRenderCopy = tilesCollected.sortedBy {
-            layerIds.indexOf(it.layerId)
-        }.sortedBy {
-            it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample
+            val priority =
+                if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
+            priority + layerIds.indexOf(it.layerId)
         }
         //TODO: remove
         println("rendering ${tilesToRenderCopy.size} tiles")
@@ -139,9 +139,10 @@ internal class TileCanvasState(
     }
 
     fun setPrimaryLayer(tileStreamProvider: TileStreamProvider) {
-        _layerFlow.value = listOf(Layer(mainLayerId, tileStreamProvider)) + _layerFlow.value.filterNot {
-            it.id.startsWith(mainLayerId)
-        }
+        _layerFlow.value =
+            listOf(Layer(mainLayerId, tileStreamProvider)) + _layerFlow.value.filterNot {
+                it.id.startsWith(mainLayerId)
+            }
     }
 
     fun setLayers(layers: List<Layer>) {
@@ -295,7 +296,11 @@ internal class TileCanvasState(
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
-    private fun evictTiles(visibleTiles: VisibleTiles, layerIds: List<String>, aggressive: Boolean = false) {
+    private fun evictTiles(
+        visibleTiles: VisibleTiles,
+        layerIds: List<String>,
+        aggressive: Boolean = false
+    ) {
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
@@ -416,5 +421,8 @@ internal class TileCanvasState(
         return (this + 1) * 2.0.pow(n).toInt() - 1
     }
 
-    private data class VisibleTilesForLayers(val visibleTiles: VisibleTiles, val layerIds: List<String>)
+    private data class VisibleTilesForLayers(
+        val visibleTiles: VisibleTiles,
+        val layerIds: List<String>
+    )
 }
