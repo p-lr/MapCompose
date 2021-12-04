@@ -77,8 +77,14 @@ internal class TileCanvasState(
     /**
      * So long as this debounced channel is offered a message, the lambda isn't called.
      */
-    private val idleDebounced = scope.debounce<Unit>(400) {
+    private val idleDebounced = scope.debounce<Unit>(100) {
         visibleTilesFlow.value?.also { (visibleTiles, layerIds) ->
+            /* If tiles aren't all fully rendered, abort and re-schedule */
+            if (!tilesCollected.all { it.alpha == 1f}) {
+                fullEvictionDebounced()
+                return@also
+            }
+
             evictTiles(visibleTiles, layerIds, aggressive = true)
             renderTiles(visibleTiles, layerIds)
         }
@@ -174,6 +180,7 @@ internal class TileCanvasState(
         visibleTilesFlow.value = visibleTilesForLayers
 
         renderThrottled()
+        fullEvictionDebounced()
     }
 
     fun clearVisibleTiles() = scope.launch {
@@ -239,12 +246,15 @@ internal class TileCanvasState(
             if ((lastVisible == null || lastVisible.contains(tile)) && !tilesCollected.contains(tile)) {
                 tile.prepare()
                 tilesCollected.add(tile)
-                idleDebounced.trySend(Unit)
                 renderThrottled()
             } else {
                 tile.recycle()
             }
         }
+    }
+
+    private fun fullEvictionDebounced() {
+        idleDebounced.trySend(Unit)
     }
 
     /**
@@ -321,7 +331,7 @@ internal class TileCanvasState(
         partialEviction(visibleTiles)
 
         if (aggressive) {
-            aggressiveEviction(currentLevel, currentSubSample, layerIds.size)
+            aggressiveEviction(currentLevel, currentSubSample)
         }
     }
 
@@ -355,20 +365,7 @@ internal class TileCanvasState(
      * currently visible tiles).
      * Only triggered after the [idleDebounced] fires.
      */
-    private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int, layerCount: Int) {
-        /**
-         * If not all tiles at current level (or also current sub-sample) are fetched, don't go
-         * further.
-         */
-        val nTilesAtCurrentLevel = tilesCollected.count {
-            it.zoom == currentLevel && it.subSample == currentSubSample
-        }
-
-        val lastVisibleCount = lastVisible?.count ?: 0
-        if (nTilesAtCurrentLevel < lastVisibleCount * layerCount) {
-            return
-        }
-
+    private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int) {
         val otherTilesNotSubSampled = tilesCollected.filter {
             it.zoom != currentLevel && it.subSample == 0
         }
