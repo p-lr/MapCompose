@@ -1,30 +1,29 @@
 package ovh.plrapps.mapcompose.core
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 
 /**
  * Limit the rate at which a [block] is called.
- * The [block] execution is triggered upon reception of [Unit] from the returned [SendChannel].
+ * The [block] execution is triggered upon reception of [Unit] from the returned [MutableSharedFlow].
  *
  * @param wait The time in ms between each [block] call.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
-fun CoroutineScope.throttle(wait: Long, block: suspend () -> Unit): SendChannel<Unit> {
+fun CoroutineScope.throttle(wait: Long, block: suspend () -> Unit): MutableSharedFlow<Unit> {
+    val flow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
 
-    val channel = Channel<Unit>(capacity = 1)
-    val flow = channel.receiveAsFlow()
     launch {
-        flow.collectLatest {
+        flow.sample(wait).collect {
             block()
             delay(wait)
         }
     }
-    return channel
+    return flow
 }

@@ -48,7 +48,7 @@ class MapState(
         highFidelityColors = false
     )
 
-    private val throttledTask: SendChannel<Unit> = scope.throttle(wait = 18) {
+    private val throttledTask = scope.throttle(wait = 18) {
         renderVisibleTiles()
     }
     private val viewport = Viewport()
@@ -102,7 +102,7 @@ class MapState(
     }
 
     private fun renderVisibleTilesThrottled() {
-        throttledTask.trySend(Unit)
+        throttledTask.tryEmit(Unit)
     }
 
     private suspend fun renderVisibleTiles() {
