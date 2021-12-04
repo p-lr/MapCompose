@@ -18,6 +18,7 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
     }
     private val tileStreamProvider = makeTileStreamProvider(appContext, "mont_blanc")
     private val satelliteProvider = makeTileStreamProvider(appContext, "mont_blanc_satellite")
+    private val ignV2Provider = makeTileStreamProvider(appContext, "mont_blanc_ignv2")
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096, tileStreamProvider).apply {
@@ -27,7 +28,10 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
                 scrollTo(0.5, 0.5, 1f)
             }
         }.apply {
-            setLayers(listOf(Layer(satelliteId, satelliteProvider)))
+            setLayers(listOf(
+                Layer(satelliteId, satelliteProvider),
+                Layer(ignV2Id, ignV2Provider, 0.5f)
+            ))
         }
     )
 
@@ -43,6 +47,11 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
     fun setSatelliteOpacity(opacity: Float) {
         state.setLayerOpacity(satelliteId, opacity)
     }
+
+    fun setIgnV2Opacity(opacity: Float) {
+        state.setLayerOpacity(ignV2Id, opacity)
+    }
 }
 
 private const val satelliteId = "satellite"
+private const val ignV2Id = "ignV2"
