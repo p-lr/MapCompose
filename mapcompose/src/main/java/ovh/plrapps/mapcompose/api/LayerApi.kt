@@ -1,10 +1,8 @@
 package ovh.plrapps.mapcompose.api
 
-import ovh.plrapps.mapcompose.core.AboveAll
-import ovh.plrapps.mapcompose.core.Layer
-import ovh.plrapps.mapcompose.core.LayerPlacement
-import ovh.plrapps.mapcompose.core.TileStreamProvider
+import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.*
 
 /**
  * Change of primary layer. When creating the [MapState] instance, a primary layer is automatically
@@ -28,15 +26,59 @@ fun MapState.setLayers(layers: List<Layer>) {
 }
 
 fun MapState.addLayer(layer: Layer, aboveLayer: LayerPlacement = AboveAll) {
-    // TODO
+    val layers = tileCanvasState.layerFlow.value.toMutableList()
+
+    val newLayers = when (aboveLayer) {
+        AboveAll -> {
+            layers.add(0, layer)
+            layers
+        }
+        is AboveLayer -> {
+            val existingLayerIndex = layers.indexOfFirst { it.id == aboveLayer.layerId }
+            if (existingLayerIndex != -1 && existingLayerIndex < layers.lastIndex) {
+                layers.add(existingLayerIndex + 1, layer)
+            }
+            layers
+        }
+        BelowAll -> {
+            layers + layer
+        }
+        is BelowLayer -> {
+            val existingLayerIndex = layers.indexOfFirst { it.id == aboveLayer.layerId }
+            if (existingLayerIndex != -1) {
+                layers.add(existingLayerIndex, layer)
+            }
+            layers
+        }
+    }
+
+    tileCanvasState.setLayers(newLayers)
 }
 
 fun MapState.moveLayerUp(layerId: String) {
-    // TODO
+    val layers = tileCanvasState.layerFlow.value.toMutableList()
+
+    val index = layers.indexOfFirst {
+        it.id == layerId
+    }
+
+    if (index > 0 && index < layers.lastIndex) {
+        Collections.swap(layers, index + 1, index)
+        tileCanvasState.setLayers(layers)
+    }
 }
 
 fun MapState.moveLayerDown(layerId: String) {
-    // TODO
+    val layers = tileCanvasState.layerFlow.value.toMutableList()
+
+    val index = layers.indexOfFirst {
+        it.id == layerId
+    }
+
+    if (index > 0) {
+        Collections.swap(layers, index - 1, index)
+        tileCanvasState.setLayers(layers)
+    }
 }
 
 /**
@@ -44,7 +86,12 @@ fun MapState.moveLayerDown(layerId: String) {
  * Existing layers not included in the provided list will be removed
  */
 fun MapState.reorderLayers(layerIds: List<String>) {
-    // TODO
+    val layerForId = tileCanvasState.layerFlow.value.filter {
+        it.id in layerIds
+    }.associateBy { it.id }
+    val layers = layerIds.mapNotNull { layerForId[it] }
+
+    tileCanvasState.setLayers(layers)
 }
 
 /**

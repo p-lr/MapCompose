@@ -22,6 +22,9 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.MAP_ALONE.name) {
                 MapDemoSimple()
             }
+            composable(MainDestinations.LAYERS_DEMO.name) {
+                LayersDemoSimple()
+            }
             composable(MainDestinations.MAP_WITH_ROTATION_CONTROLS.name) {
                 RotationDemo()
             }
