@@ -58,7 +58,7 @@ internal class TileCanvasState(
     private val bitmapPool = Pool<Bitmap>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
-    private val visibleTilesFlow = MutableStateFlow<VisibleTiles?>(null)
+    private val visibleTilesFlow = MutableSharedFlow<VisibleTiles?>()
     internal var alphaTick = 0.07f
         set(value) {
             field = value.coerceIn(0.01f, 1f)
@@ -144,9 +144,9 @@ internal class TileCanvasState(
         }
     }
 
-    private fun setVisibleTiles(visibleTiles: VisibleTiles) {
+    private suspend fun setVisibleTiles(visibleTiles: VisibleTiles) {
         /* Feed the tile processing machinery */
-        visibleTilesFlow.value = visibleTiles
+        visibleTilesFlow.emit(visibleTiles)
 
         lastVisible = visibleTiles
         lastVisibleCount = visibleTiles.count
@@ -162,7 +162,7 @@ internal class TileCanvasState(
         /**
          * Reset the [visibleTilesFlow] state so that any new [VisibleTiles] value will trigger and
          * update. */
-        visibleTilesFlow.value = null
+        visibleTilesFlow.emit(null)
     }
 
     /**
@@ -179,7 +179,7 @@ internal class TileCanvasState(
      * the latest [VisibleTiles] element is processed right away.
      */
     private suspend fun collectNewTiles() {
-        visibleTilesFlow.collectLatest { visibleTiles ->
+        visibleTilesFlow.distinctUntilChanged().collectLatest { visibleTiles ->
             if (visibleTiles != null) {
                 for (e in visibleTiles.tileMatrix) {
                     val row = e.key
