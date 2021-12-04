@@ -106,8 +106,8 @@ internal class TileCanvasState(
                 if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
             priority + layerIds.indexOf(it.layerId)
         }
-        //TODO: remove
-        println("rendering ${tilesToRenderCopy.size} tiles")
+        //TODO: remove - for debugging purpose
+//        println("rendering ${tilesToRenderCopy.size} tiles")
 //        tilesToRenderCopy.forEach {
 //            println(it)
 //        }

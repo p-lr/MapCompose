@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.core.*
@@ -25,6 +27,9 @@ fun MapState.setLayers(layers: List<Layer>) {
     refresh()
 }
 
+/**
+ * TODO: document
+ */
 fun MapState.addLayer(layer: Layer, aboveLayer: LayerPlacement = AboveAll) {
     val layers = tileCanvasState.layerFlow.value.toMutableList()
 
@@ -53,8 +58,13 @@ fun MapState.addLayer(layer: Layer, aboveLayer: LayerPlacement = AboveAll) {
     }
 
     tileCanvasState.setLayers(newLayers)
+    refresh()
 }
 
+/**
+ * Moves a layer up in the layer stack, making it drawn on top of the layer that was previously
+ * above it.
+ */
 fun MapState.moveLayerUp(layerId: String) {
     val layers = tileCanvasState.layerFlow.value.toMutableList()
 
@@ -65,9 +75,14 @@ fun MapState.moveLayerUp(layerId: String) {
     if (index > 0 && index < layers.lastIndex) {
         Collections.swap(layers, index + 1, index)
         tileCanvasState.setLayers(layers)
+        refresh()
     }
 }
 
+/**
+ * Moves a layer down in the layer stack, making it drawn on below of the layer that was previously
+ * below it.
+ */
 fun MapState.moveLayerDown(layerId: String) {
     val layers = tileCanvasState.layerFlow.value.toMutableList()
 
@@ -78,11 +93,13 @@ fun MapState.moveLayerDown(layerId: String) {
     if (index > 0) {
         Collections.swap(layers, index - 1, index)
         tileCanvasState.setLayers(layers)
+        refresh()
     }
 }
 
 /**
- * Reorder layers in the order of the provided list of ids.
+ * Reorder layers in the order of the provided list of ids. Layers listed first will be drawn before
+ * subsequent layers (so the later will be above).
  * Existing layers not included in the provided list will be removed
  */
 fun MapState.reorderLayers(layerIds: List<String>) {
@@ -92,6 +109,7 @@ fun MapState.reorderLayers(layerIds: List<String>) {
     val layers = layerIds.mapNotNull { layerForId[it] }
 
     tileCanvasState.setLayers(layers)
+    refresh()
 }
 
 /**
