@@ -152,9 +152,13 @@ internal class ZoomPanRotateState(
         /* We don't have to stop scrolling animation while doing that */
         return invokeAndCheckSuccess {
             val currRotation = this@ZoomPanRotateState.rotation
+            var targetAngle = (angle % 360)
+            if (abs(targetAngle - currRotation) > 180) {
+                targetAngle += if (targetAngle > currRotation) -360 else 360
+            }
             apiAnimatable.snapTo(0f)
             apiAnimatable.animateTo(1f, animationSpec) {
-                setRotation(lerp(currRotation, angle, value))
+                setRotation(lerp(currRotation, targetAngle, value))
             }
         }
     }
