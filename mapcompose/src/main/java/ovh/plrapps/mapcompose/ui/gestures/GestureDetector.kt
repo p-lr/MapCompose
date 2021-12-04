@@ -86,7 +86,9 @@ suspend fun PointerInputScope.detectGestures(
                 }
             } while (!canceled && event.changes.fastAny { it.pressed })
 
-            val velocity = velocityTracker.calculateVelocity()
+            val velocity = runCatching {
+                velocityTracker.calculateVelocity()
+            }.getOrDefault(Velocity.Zero)
             val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
             val velocityCapped = Velocity(
                 velocity.x.coerceIn(flingVelocityMaxRange),
