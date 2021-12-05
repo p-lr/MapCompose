@@ -397,7 +397,7 @@ internal class TileCanvasState(
      * Post a new value to the observable. The view should update its UI.
      */
     private fun renderThrottled() {
-        renderTask.tryEmit(Unit)
+        renderTask.trySend(Unit)
     }
 
     /**

@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.SendChannel
 import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.utils.toRad
@@ -45,7 +44,7 @@ class MapState(
         tileSize,
         visibleTilesResolver,
         workerCount,
-        highFidelityColors = false
+        highFidelityColors = true
     )
 
     private val throttledTask = scope.throttle(wait = 18) {
@@ -102,7 +101,7 @@ class MapState(
     }
 
     private fun renderVisibleTilesThrottled() {
-        throttledTask.tryEmit(Unit)
+        throttledTask.trySend(Unit)
     }
 
     private suspend fun renderVisibleTiles() {
