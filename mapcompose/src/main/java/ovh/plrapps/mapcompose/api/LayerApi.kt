@@ -28,7 +28,8 @@ fun MapState.setLayers(layers: List<Layer>) {
 }
 
 /**
- * TODO: document
+ * Add a layer. By default, the layer is added on top of the layer stack (see [AboveAll]).
+ * Optionally, the layer can be added at the bottom of the stack, or above / below an existing layer.
  */
 fun MapState.addLayer(layer: Layer, aboveLayer: LayerPlacement = AboveAll) {
     val layers = tileCanvasState.layerFlow.value.toMutableList()
@@ -80,7 +81,7 @@ fun MapState.moveLayerUp(layerId: String) {
 }
 
 /**
- * Moves a layer down in the layer stack, making it drawn on below of the layer that was previously
+ * Moves a layer down in the layer stack, making it drawn below the layer that was previously
  * below it.
  */
 fun MapState.moveLayerDown(layerId: String) {
@@ -90,7 +91,8 @@ fun MapState.moveLayerDown(layerId: String) {
         it.id == layerId
     }
 
-    if (index > 0) {
+    /* The primary layer should remain first */
+    if (index > 1) {
         Collections.swap(layers, index - 1, index)
         tileCanvasState.setLayers(layers)
         refresh()

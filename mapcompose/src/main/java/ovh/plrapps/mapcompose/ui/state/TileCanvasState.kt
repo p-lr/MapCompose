@@ -80,7 +80,7 @@ internal class TileCanvasState(
     private val idleDebounced = scope.debounce<Unit>(100) {
         visibleTilesFlow.value?.also { (visibleTiles, layerIds) ->
             /* If tiles aren't all fully rendered, abort and re-schedule */
-            if (!tilesCollected.all { it.alpha == 1f}) {
+            if (!tilesCollected.all { it.alpha == 1f }) {
                 fullEvictionDebounced()
                 return@also
             }
@@ -153,8 +153,12 @@ internal class TileCanvasState(
 
     fun setLayers(layers: List<Layer>) {
         /* The primary layer should always be the first one */
-        _layerFlow.value = (_layerFlow.value.firstOrNull()?.let { listOf(it) }
-            ?: throw IllegalStateException("A primary layer must be defined")) + layers
+        val primaryLayer = _layerFlow.value.firstOrNull()
+            ?: throw IllegalStateException("A primary layer must be defined")
+
+        _layerFlow.value = listOf(primaryLayer) + layers.filterNot {
+            it.id == mainLayerId
+        }
     }
 
     fun shutdown() {

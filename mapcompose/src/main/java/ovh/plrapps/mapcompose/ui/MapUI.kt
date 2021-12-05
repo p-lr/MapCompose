@@ -1,10 +1,7 @@
 package ovh.plrapps.mapcompose.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.zIndex
@@ -24,9 +21,6 @@ fun MapUI(
     val markerState = state.markerState
     val pathState = state.pathState
     val layers by state.tileCanvasState.layerFlow.collectAsState()
-    val layersById by derivedStateOf {
-        layers.associateBy { it.id }
-    }
 
     ZoomPanRotate(
         modifier = modifier
@@ -45,7 +39,7 @@ fun MapUI(
             colorFilterProvider = state.tileCanvasState.colorFilterProvider,
             tilesToRender = state.tileCanvasState.tilesToRender,
             isFilteringBitmap = state.isFilteringBitmap,
-            layersById = layersById
+            layers = layers
         )
 
         MarkerComposer(

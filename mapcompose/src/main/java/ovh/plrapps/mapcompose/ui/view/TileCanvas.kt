@@ -26,7 +26,7 @@ internal fun TileCanvas(
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
     isFilteringBitmap: () -> Boolean,
-    layersById: Map<String, Layer>
+    layers: List<Layer>
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
@@ -34,6 +34,9 @@ internal fun TileCanvas(
             isAntiAlias = false
         }
     }
+
+    // TODO: hoist this as a state
+    val layersById = layers.associateBy { it.id }
 
     Canvas(
         modifier = modifier
