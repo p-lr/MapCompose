@@ -35,8 +35,9 @@ internal fun TileCanvas(
         }
     }
 
-    // TODO: hoist this as a state
-    val layersById = layers.associateBy { it.id }
+    val layersById = remember(layers) {
+        layers.associateBy { it.id }
+    }
 
     Canvas(
         modifier = modifier
