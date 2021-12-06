@@ -71,7 +71,7 @@ internal fun TileCanvas(
 
                 val alpha = layersById[tile.layerId]?.alpha?.value ?: 0f
                 paint.alpha = (tile.alpha * 255).let {
-                    if (tile.layerId != mainLayerId) it * alpha else it
+                    if (tile.layerId.isMainLayer()) it * alpha else it
                 }.toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 

@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.core
 
 import androidx.compose.runtime.mutableStateOf
+import java.util.*
 
 data class Layer(
     val id: String,
@@ -16,4 +17,7 @@ object BelowAll : LayerPlacement
 data class AboveLayer(val layerId: String) : LayerPlacement
 data class BelowLayer(val layerId: String) : LayerPlacement
 
-internal const val mainLayerId: String = "mainLayer#!@"
+private const val mainLayerPrefix = "mainLayer"
+internal fun makeMainLayerId(): String = mainLayerPrefix + UUID.randomUUID()
+internal fun String.isMainLayer(): Boolean = startsWith(mainLayerPrefix)
+

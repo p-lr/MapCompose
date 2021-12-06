@@ -41,6 +41,9 @@ internal class TileCanvasState(
     private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
     internal val layerFlow = _layerFlow.asStateFlow()
 
+    private val mainLayerId: String
+        get() = layerFlow.value.first().id
+
     private val bitmapPool = Pool<Bitmap>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
@@ -145,9 +148,11 @@ internal class TileCanvasState(
     }
 
     fun setPrimaryLayer(tileStreamProvider: TileStreamProvider) {
+        val mainLayerId = makeMainLayerId()
+
         _layerFlow.value =
             listOf(Layer(mainLayerId, tileStreamProvider)) + _layerFlow.value.filterNot {
-                it.id.startsWith(mainLayerId)
+                it.id.isMainLayer()
             }
     }
 
@@ -247,7 +252,11 @@ internal class TileCanvasState(
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
             val lastVisible = lastVisible
-            if ((lastVisible == null || lastVisible.contains(tile)) && !tilesCollected.contains(tile)) {
+            if (
+                (lastVisible == null || lastVisible.contains(tile))
+                && !tilesCollected.contains(tile)
+                && tile.layerId == mainLayerId
+            ) {
                 tile.prepare()
                 tilesCollected.add(tile)
                 renderThrottled()

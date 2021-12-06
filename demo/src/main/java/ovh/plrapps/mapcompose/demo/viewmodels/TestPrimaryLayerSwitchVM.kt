@@ -24,7 +24,7 @@ class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(appl
     private val tileStreamProvider = makeTileStreamProvider(appContext, type)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096, tileStreamProvider, workerCount = 64).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
@@ -54,7 +54,7 @@ class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(appl
         /* Pay attention to how type is captured and immutable in the context of the TileStreamProvider */
         return TileStreamProvider { row, col, _ ->
             runCatching {
-                Thread.sleep((40L..100L).random())
+                Thread.sleep((100L..200L).random())
                 appContext.assets?.open("tiles/test/tile_${type}_${col}_$row.png")
             }.getOrNull()
         }

@@ -115,7 +115,6 @@ internal class TileCollector(
                 val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, workerSpec.layerId).apply {
                     this.bitmap = bitmap
                 }
-                yield()
                 tilesOutput.send(tile)
             } catch (e: OutOfMemoryError) {
                 // no luck
