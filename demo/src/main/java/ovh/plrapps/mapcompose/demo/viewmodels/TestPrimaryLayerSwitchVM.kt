@@ -56,8 +56,6 @@ class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(appl
             runCatching {
                 Thread.sleep((40L..100L).random())
                 appContext.assets?.open("tiles/test/tile_${type}_${col}_$row.png")
-            }.onFailure {
-                it.printStackTrace()
             }.getOrNull()
         }
     }

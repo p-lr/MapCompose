@@ -99,7 +99,6 @@ internal class TileCollector(
             }
 
             val i = tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
-            ensureActive()
 
             if (spec.subSample > 0) {
                 bitmapLoadingOptions.inBitmap = null
@@ -116,14 +115,13 @@ internal class TileCollector(
                 val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, workerSpec.layerId).apply {
                     this.bitmap = bitmap
                 }
-                ensureActive()
+                yield()
                 tilesOutput.send(tile)
             } catch (e: OutOfMemoryError) {
                 // no luck
             } catch (e: Exception) {
                 // maybe retry
             } finally {
-                ensureActive()
                 tilesDownloaded.send(workerSpec)
                 i?.close()
             }
@@ -141,7 +139,6 @@ internal class TileCollector(
 
         while (true) {
             select<Unit> {
-                ensureActive()
                 tilesDownloadedFromWorker.onReceive {
                     val ids = specsBeingProcessed[it.tileSpec] ?: return@onReceive
                     ids.remove(it.layerId)
