@@ -54,6 +54,7 @@ class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(appl
         /* Pay attention to how type is captured and immutable in the context of the TileStreamProvider */
         return TileStreamProvider { row, col, _ ->
             runCatching {
+                Thread.sleep((40L..100L).random())
                 appContext.assets?.open("tiles/test/tile_${type}_${col}_$row.png")
             }.onFailure {
                 it.printStackTrace()
