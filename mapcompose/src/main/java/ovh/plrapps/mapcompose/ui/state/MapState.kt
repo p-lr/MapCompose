@@ -74,7 +74,11 @@ class MapState(
     /**
      * Public API to programmatically trigger a redraw of the tiles.
      */
-    @Suppress("unused")
+    @Deprecated(
+        "This API encourages mutating an existing instance of TileStreamProvider, and then " +
+                "invoke redrawTiles(). This can cause pernicious problems as a TileStreamProvider " +
+                "instance shall remain immutable. This API will be made internal in the next major release.",
+        replaceWith = ReplaceWith("setPrimaryLayer"))
     fun redrawTiles() {
         tileCanvasState.clearVisibleTiles().invokeOnCompletion {
             scope.launch {

@@ -12,5 +12,6 @@ enum class MainDestinations(val title: String) {
     CUSTOM_DRAW("Map with custom drawings"),
     CALLOUT_DEMO("Callout (tap markers)"),
     ANIMATION_DEMO("Animation demo"),
-    HTTP_TILES_DEMO("Remote HTTP tiles")
+    HTTP_TILES_DEMO("Remote HTTP tiles"),
+    TEST_PRIMARY_LAYER_SWITCH("Test primary layer switch")
 }
