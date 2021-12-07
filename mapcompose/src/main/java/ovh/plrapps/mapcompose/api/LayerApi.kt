@@ -50,8 +50,7 @@ fun MapState.addLayer(
         }
     }
 
-    tileCanvasState.setLayers(newLayers)
-    refresh()
+    setLayers(newLayers)
 
     return id
 }
@@ -76,8 +75,7 @@ fun MapState.replaceLayer(
 
     return if (index != -1) {
         layers[index] = Layer(id, tileStreamProvider, initialOpacity)
-        tileCanvasState.setLayers(layers)
-        refresh()
+        setLayers(layers)
         id
     } else null
 }
@@ -95,8 +93,7 @@ fun MapState.moveLayerUp(layerId: String) {
 
     if (index < layers.lastIndex) {
         Collections.swap(layers, index + 1, index)
-        tileCanvasState.setLayers(layers)
-        refresh()
+        setLayers(layers)
     }
 }
 
@@ -113,8 +110,7 @@ fun MapState.moveLayerDown(layerId: String) {
 
     if (index > 0) {
         Collections.swap(layers, index - 1, index)
-        tileCanvasState.setLayers(layers)
-        refresh()
+        setLayers(layers)
     }
 }
 
@@ -127,16 +123,14 @@ fun MapState.reorderLayers(layerIds: List<String>) {
     val layerForId = tileCanvasState.layerFlow.value.associateBy { it.id }
     val layers = layerIds.mapNotNull { layerForId[it] }
 
-    tileCanvasState.setLayers(layers)
-    refresh()
+    setLayers(layers)
 }
 
 /**
  * Remove all layers.
  */
 fun MapState.removeAllLayers() {
-    tileCanvasState.setLayers(listOf())
-    refresh()
+    setLayers(listOf())
 }
 
 /**
@@ -146,8 +140,7 @@ fun MapState.removeLayers(layerIds: List<String>) {
     val remainingLayers = tileCanvasState.layerFlow.value.filterNot {
         it.id in layerIds
     }
-    tileCanvasState.setLayers(remainingLayers)
-    refresh()
+    setLayers(remainingLayers)
 }
 
 /**
@@ -157,8 +150,7 @@ fun MapState.removeLayer(layerId: String) {
     val remainingLayers = tileCanvasState.layerFlow.value.filterNot {
         it.id == layerId
     }
-    tileCanvasState.setLayers(remainingLayers)
-    refresh()
+    setLayers(remainingLayers)
 }
 
 /**
@@ -171,3 +163,10 @@ fun MapState.setLayerOpacity(layerId: String, opacity: Float) {
     }
 }
 
+/**
+ * Utility function to automatically refresh tiles after a change of layers.
+ */
+private fun MapState.setLayers(layers: List<Layer>) {
+    tileCanvasState.setLayers(layers)
+    refresh()
+}
