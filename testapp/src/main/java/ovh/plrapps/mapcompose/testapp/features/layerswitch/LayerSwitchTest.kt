@@ -1,14 +1,11 @@
-package ovh.plrapps.mapcompose.demo.ui.screens
+package ovh.plrapps.mapcompose.testapp.features.layerswitch
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ovh.plrapps.mapcompose.demo.viewmodels.TestLayerSwitchVM
 import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
-fun TestLayerSwitch(
-    modifier: Modifier = Modifier, viewModel: TestLayerSwitchVM = viewModel()
-) {
+fun LayerSwitchTest(modifier: Modifier = Modifier, viewModel: LayerSwitchViewModel = viewModel()) {
     MapUI(modifier, state = viewModel.state)
 }

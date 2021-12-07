@@ -1,4 +1,4 @@
-package ovh.plrapps.mapcompose.demo.viewmodels
+package ovh.plrapps.mapcompose.testapp.features.layerswitch
 
 import android.app.Application
 import android.content.Context
@@ -12,7 +12,7 @@ import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
-class TestLayerSwitchVM(application: Application) : AndroidViewModel(application) {
+class LayerSwitchViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }

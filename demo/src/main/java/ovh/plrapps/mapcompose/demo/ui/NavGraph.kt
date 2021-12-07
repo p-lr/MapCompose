@@ -13,5 +13,4 @@ enum class MainDestinations(val title: String) {
     CALLOUT_DEMO("Callout (tap markers)"),
     ANIMATION_DEMO("Animation demo"),
     HTTP_TILES_DEMO("Remote HTTP tiles"),
-    TEST_LAYER_SWITCH("Test layer switch")
 }

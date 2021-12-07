@@ -49,9 +49,6 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.HTTP_TILES_DEMO.name) {
                 HttpTilesDemo()
             }
-            composable(MainDestinations.TEST_LAYER_SWITCH.name) {
-                TestLayerSwitch()
-            }
         }
     }
 }

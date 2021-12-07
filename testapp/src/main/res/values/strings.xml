@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MapCompose Test App</string>
+    <string name="layers_switch_test">Layers switch stress test</string>
+</resources>
