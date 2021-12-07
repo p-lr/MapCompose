@@ -17,7 +17,4 @@ object BelowAll : LayerPlacement
 data class AboveLayer(val layerId: String) : LayerPlacement
 data class BelowLayer(val layerId: String) : LayerPlacement
 
-private const val mainLayerPrefix = "mainLayer"
-internal fun makeMainLayerId(): String = mainLayerPrefix + UUID.randomUUID()
-internal fun String.isMainLayer(): Boolean = startsWith(mainLayerPrefix)
-
+internal fun makeLayerId() : String = UUID.randomUUID().toString()

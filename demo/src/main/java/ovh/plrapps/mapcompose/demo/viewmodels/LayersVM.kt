@@ -8,7 +8,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
-import ovh.plrapps.mapcompose.core.Layer
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -20,18 +19,20 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
     private val satelliteProvider = makeTileStreamProvider(appContext, "mont_blanc_satellite")
     private val ignV2Provider = makeTileStreamProvider(appContext, "mont_blanc_ignv2")
 
+    private var satelliteId: String? = null
+    private var ignV2Id: String? = null
+
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
         }.apply {
-            setLayers(listOf(
-                Layer(satelliteId, satelliteProvider),
-                Layer(ignV2Id, ignV2Provider, 0.5f)
-            ))
+            addLayer(tileStreamProvider)
+            satelliteId = addLayer(satelliteProvider)
+            ignV2Id = addLayer(ignV2Provider, 0.5f)
         }
     )
 
@@ -45,13 +46,15 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
         }
 
     fun setSatelliteOpacity(opacity: Float) {
-        state.setLayerOpacity(satelliteId, opacity)
+        satelliteId?.also { id ->
+            state.setLayerOpacity(id, opacity)
+        }
+
     }
 
     fun setIgnV2Opacity(opacity: Float) {
-        state.setLayerOpacity(ignV2Id, opacity)
+        ignV2Id?.also { id ->
+            state.setLayerOpacity(id, opacity)
+        }
     }
 }
-
-private const val satelliteId = "satellite"
-private const val ignV2Id = "ignV2"

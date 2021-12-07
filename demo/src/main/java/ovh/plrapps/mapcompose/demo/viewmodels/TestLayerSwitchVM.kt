@@ -8,28 +8,28 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.enableRotation
-import ovh.plrapps.mapcompose.api.scrollTo
-import ovh.plrapps.mapcompose.api.setPrimaryLayer
-import ovh.plrapps.mapcompose.api.shouldLoopScale
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
-class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(application) {
+class TestLayerSwitchVM(application: Application) : AndroidViewModel(application) {
     private val appContext: Context by lazy {
         getApplication<Application>().applicationContext
     }
 
     private var type = 0
     private val tileStreamProvider = makeTileStreamProvider(appContext, type)
+    private var currentLayerId: String? = null
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider, workerCount = 64).apply {
+        MapState(4, 4096, 4096, workerCount = 64).apply {
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
+        }.apply {
+            currentLayerId = addLayer(tileStreamProvider)
         }
     )
 
@@ -47,7 +47,9 @@ class TestPrimaryLayerSwitchVM(application: Application) : AndroidViewModel(appl
     private fun changeMapType() {
         type = ((0..2) - type).random()
         val tileStreamProvider = makeTileStreamProvider(appContext, type)
-        state.setPrimaryLayer(tileStreamProvider)
+        currentLayerId?.also { id ->
+            currentLayerId = state.replaceLayer(id, tileStreamProvider)
+        }
     }
 
     private fun makeTileStreamProvider(appContext: Context, type: Int): TileStreamProvider {

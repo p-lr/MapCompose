@@ -38,6 +38,9 @@ internal fun TileCanvas(
     val layersById = remember(layers) {
         layers.associateBy { it.id }
     }
+    val lowestLayerId = remember(layers) {
+        layers.firstOrNull()?.id ?: return
+    }
 
     Canvas(
         modifier = modifier
@@ -71,7 +74,7 @@ internal fun TileCanvas(
 
                 val alpha = layersById[tile.layerId]?.alpha?.value ?: 0f
                 paint.alpha = (tile.alpha * 255).let {
-                    if (!tile.layerId.isMainLayer()) it * alpha else it
+                    if (tile.layerId != lowestLayerId) it * alpha else it
                 }.toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 

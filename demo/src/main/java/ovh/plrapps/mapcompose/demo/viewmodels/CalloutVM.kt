@@ -33,7 +33,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
     )
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096).apply {
 
             /* Add all markers */
             for (marker in markers) {
@@ -74,6 +74,8 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
             onCalloutClick { id, _, _ ->
                 if (id == TAP_TO_DISMISS_ID) removeCallout(TAP_TO_DISMISS_ID)
             }
+        }.apply {
+            addLayer(tileStreamProvider)
         }
     )
 }

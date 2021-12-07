@@ -16,7 +16,6 @@ import ovh.plrapps.mapcompose.utils.toRad
  * @param levelCount The number of levels in the pyramid.
  * @param fullWidth The width in pixels of the map at scale 1f.
  * @param fullHeight The height in pixels of the map at scale 1f.
- * @param tileStreamProvider The tile provider of the primary layer.
  * @param tileSize The size in pixels of tiles, which are expected to be squared. Defaults to 256.
  * @param workerCount The thread count used to fetch tiles. Defaults to the number of cores minus
  * one, which works well for tiles in the file system or in a local database. However, that number
@@ -26,7 +25,6 @@ class MapState(
     levelCount: Int,
     fullWidth: Int,
     fullHeight: Int,
-    tileStreamProvider: TileStreamProvider,
     tileSize: Int = 256,
     workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
     magnifyingFactor: Int = 0
@@ -58,10 +56,6 @@ class MapState(
     internal var mapBackground by mutableStateOf(Color.White)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf({ true })
 
-    init {
-        tileCanvasState.setPrimaryLayer(tileStreamProvider)
-    }
-
     /**
      * Cancels all internal tasks.
      * After this call, this [MapState] is unusable.
@@ -69,22 +63,6 @@ class MapState(
     fun shutdown() {
         scope.cancel()
         tileCanvasState.shutdown()
-    }
-
-    /**
-     * Public API to programmatically trigger a redraw of the tiles.
-     */
-    @Deprecated(
-        "This API encourages mutating an existing instance of TileStreamProvider, and then " +
-                "invoke redrawTiles(). This can cause pernicious problems as a TileStreamProvider " +
-                "instance shall remain immutable. This API will be made internal in the next major release.",
-        replaceWith = ReplaceWith("setPrimaryLayer"))
-    fun redrawTiles() {
-        tileCanvasState.clearVisibleTiles().invokeOnCompletion {
-            scope.launch {
-                renderVisibleTiles()
-            }
-        }
     }
 
     internal fun refresh() = scope.launch {
