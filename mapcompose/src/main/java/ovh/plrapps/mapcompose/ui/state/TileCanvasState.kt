@@ -236,7 +236,7 @@ internal class TileCanvasState(
             if (
                 (lastVisible == null || lastVisible.contains(tile))
                 && !tilesCollected.contains(tile)
-                && tile.layerId in layerFlow.value.map { it.id }
+                && layerFlow.value.any { it.id == tile.layerId }
             ) {
                 tile.prepare()
                 tilesCollected.add(tile)

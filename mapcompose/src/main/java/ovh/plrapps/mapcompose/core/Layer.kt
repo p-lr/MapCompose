@@ -3,7 +3,7 @@ package ovh.plrapps.mapcompose.core
 import androidx.compose.runtime.mutableStateOf
 import java.util.*
 
-data class Layer(
+internal data class Layer(
     val id: String,
     val tileStreamProvider: TileStreamProvider,
     val initialOpacity: Float = 1f

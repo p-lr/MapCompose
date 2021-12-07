@@ -20,6 +20,11 @@ import ovh.plrapps.mapcompose.utils.toRad
  * @param workerCount The thread count used to fetch tiles. Defaults to the number of cores minus
  * one, which works well for tiles in the file system or in a local database. However, that number
  * should be increased to 16 or more for remote tiles (HTTP requests).
+ * @param highFidelityColors By default, bitmaps are loaded using ARGB_8888, which is best suited
+ * for most usages. However, if you're only loading images without alpha channel and high fidelity
+ * color isn't a requirement, RGB_565 can be used instead for less memory usage.
+ * Beware, however, that some types of images can't be loaded using RGB_565 (such as PNGs with alpha
+ * channel). Unless you know what you're doing, let this parameter to true.
  */
 class MapState(
     levelCount: Int,
@@ -27,7 +32,8 @@ class MapState(
     fullHeight: Int,
     tileSize: Int = 256,
     workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
-    magnifyingFactor: Int = 0
+    magnifyingFactor: Int = 0,
+    highFidelityColors: Boolean = true
 ) : ZoomPanRotateStateListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
@@ -42,7 +48,7 @@ class MapState(
         tileSize,
         visibleTilesResolver,
         workerCount,
-        highFidelityColors = true
+        highFidelityColors
     )
 
     private val throttledTask = scope.throttle(wait = 18) {
