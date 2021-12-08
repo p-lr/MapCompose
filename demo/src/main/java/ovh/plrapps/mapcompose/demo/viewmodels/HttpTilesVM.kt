@@ -21,10 +21,9 @@ class HttpTilesVM : ViewModel() {
     val state: MapState by mutableStateOf(
         /* Notice how we increase the worker count when performing HTTP requests */
         MapState(4, 4096, 4096, workerCount = 16).apply {
+            addLayer(tileStreamProvider)
             scale = 0f
             shouldLoopScale = true
-        }.apply {
-            addLayer(tileStreamProvider)
         }
     )
 }

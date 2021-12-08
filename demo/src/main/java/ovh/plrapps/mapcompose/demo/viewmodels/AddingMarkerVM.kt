@@ -20,6 +20,7 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
+            addLayer(tileStreamProvider)
             onMarkerMove { id, x, y, _, _ ->
                 println("move $id $x $y")
             }
@@ -31,8 +32,6 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
             }
             enableRotation()
             scale = 0f // zoom-out to minimum scale
-        }.apply {
-            addLayer(tileStreamProvider)
         }
     )
 

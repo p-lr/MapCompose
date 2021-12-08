@@ -29,7 +29,7 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
-
+            addLayer(tileStreamProvider)
             addMarker("parking", 0.2457938, 0.3746023) {
                 Icon(
                     painter = painterResource(id = R.drawable.map_marker),
@@ -39,8 +39,6 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
                 )
             }
             scale = 1f
-        }.apply {
-            addLayer(tileStreamProvider)
         }
     )
 

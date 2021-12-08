@@ -18,7 +18,8 @@ val tileStreamProvider =
     }
 
 val state: MapState by mutableStateOf(
-    MapState(4, 4096, 4096, tileStreamProvider).apply {
+    MapState(4, 4096, 4096).apply {
+        addLayer(tileStreamProvider)
         enableRotation()
         scrollTo(0.5, 0.5)
     }
@@ -84,18 +85,29 @@ details on the `MapState` class, and give examples of how to add markers, callou
 
 ### MapState
 
-The `MapState` class expects four parameters for its construction:
+The `MapState` class expects three parameters for its construction:
 * `levelCount`: The number of levels of the map,
 * `fullWidth`: The width of the map at scale 1.0, which is the width of last level,
-* `fullHeight`: The height of the map at scale 1.0, which is the height of last level,
-* `tileStreamProvider`: Your implementation of this interface (see below) provides `InputStream`s of
-image files (png, jpg). MapCompose will request tiles using the convention that the origin is at the
-top-left corner. For example, the tile requested with `row` = 0, and `col = 0` will be positioned at
-the top-left corner.
+* `fullHeight`: The height of the map at scale 1.0, which is the height of last level
+
+### Layers
+
+MapCompose supports layers though the ability to add several tile pyramids. Each level is made of
+the superposition of tiles from all pyramids for the given level. For example, at the second level
+(starting from the lowest scale), tiles would look like the image below when three layers are added.
+
+<p align="center">
+<img src="doc/readme-files/layer.png" width="300">
+</p>
+
+Your implementation of the `TileStreamProvider` interface (see below) is what defines a tile
+pyramid. It provides `InputStream`s of image files (png, jpg). MapCompose will request tiles using
+the convention that the origin is at the top-left corner. For example, the tile requested with
+`row` = 0, and `col = 0` will be positioned at the top-left corner.
 
 ```kotlin
 fun interface TileStreamProvider {
-    fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
 }
 ```
 
@@ -106,6 +118,9 @@ case of HTTP requests, it's advised to create a `MapState` with a higher than de
 That optional parameter defines the size of the dedicated thread pool for fetching tiles, and defaults
 to the number of cores minus one. Typically, you would want to set `workerCount` to 16 when performing
 HTTP requests. Otherwise, you can safely leave it to its default.
+
+To add a layer, use the `addLayer` on your `MapState` instance. There are others APIs for reordering,
+removing, setting alpha - all dynamically.
 
 ### Markers
 

@@ -28,7 +28,6 @@ class LayerSwitchViewModel(application: Application) : AndroidViewModel(applicat
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
-        }.apply {
             currentLayerId = addLayer(tileStreamProvider)
         }
     )

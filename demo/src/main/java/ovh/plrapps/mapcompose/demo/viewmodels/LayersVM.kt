@@ -29,7 +29,7 @@ class LayersVM (application: Application) : AndroidViewModel(application) {
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
-        }.apply {
+
             addLayer(tileStreamProvider)
             satelliteId = addLayer(satelliteProvider)
             ignV2Id = addLayer(ignV2Provider, 0.5f)

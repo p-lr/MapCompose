@@ -19,13 +19,12 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
+            addLayer(tileStreamProvider)
             shouldLoopScale = true
             enableRotation()
             viewModelScope.launch {
                 scrollTo(0.5, 0.5, 1f)
             }
-        }.apply {
-            addLayer(tileStreamProvider)
         }
     )
 }
