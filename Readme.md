@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.0.5-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.1.0)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 # MapCompose
 
@@ -93,7 +93,7 @@ The `MapState` class expects three parameters for its construction:
 ### Layers
 
 MapCompose supports layers though the ability to add several tile pyramids. Each level is made of
-the superposition of tiles from all pyramids for the given level. For example, at the second level
+the superposition of tiles from all pyramids at the given level. For example, at the second level
 (starting from the lowest scale), tiles would look like the image below when three layers are added.
 
 <p align="center">
