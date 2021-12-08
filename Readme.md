@@ -97,7 +97,7 @@ the superposition of tiles from all pyramids for the given level. For example, a
 (starting from the lowest scale), tiles would look like the image below when three layers are added.
 
 <p align="center">
-<img src="doc/readme-files/layer.png" width="300">
+<img src="doc/readme-files/layer.png" width="200">
 </p>
 
 Your implementation of the `TileStreamProvider` interface (see below) is what defines a tile
