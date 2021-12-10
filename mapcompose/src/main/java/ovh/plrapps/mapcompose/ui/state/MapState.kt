@@ -35,7 +35,7 @@ class MapState(
     magnifyingFactor: Int = 0,
     highFidelityColors: Boolean = true
 ) : ZoomPanRotateStateListener {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal val zoomPanRotateState = ZoomPanRotateState(fullWidth, fullHeight, this)
     internal val markerState = MarkerState()
     internal val pathState = PathState()
@@ -71,10 +71,6 @@ class MapState(
         tileCanvasState.shutdown()
     }
 
-    internal fun refresh() = scope.launch {
-        renderVisibleTiles()
-    }
-
     override fun onStateChanged() {
         renderVisibleTilesThrottled()
         stateChangeListener?.invoke(this)
@@ -88,7 +84,7 @@ class MapState(
         markerState.removeAllAutoDismissCallouts()
     }
 
-    private fun renderVisibleTilesThrottled() {
+    internal fun renderVisibleTilesThrottled() {
         throttledTask.trySend(Unit)
     }
 

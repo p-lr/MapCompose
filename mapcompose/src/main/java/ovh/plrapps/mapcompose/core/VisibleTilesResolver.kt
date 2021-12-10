@@ -24,7 +24,7 @@ import kotlin.math.*
 internal class VisibleTilesResolver(
     private val levelCount: Int, private val fullWidth: Int,
     private val fullHeight: Int, private val tileSize: Int = 256,
-    private val magnifyingFactor: Int = 0,
+    var magnifyingFactor: Int = 0,
     private val scaleProvider: ScaleProvider
 ) {
 

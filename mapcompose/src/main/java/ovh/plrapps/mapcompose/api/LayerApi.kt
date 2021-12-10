@@ -168,5 +168,5 @@ fun MapState.setLayerOpacity(layerId: String, opacity: Float) {
  */
 private fun MapState.setLayers(layers: List<Layer>) {
     tileCanvasState.setLayers(layers)
-    refresh()
+    renderVisibleTilesThrottled()
 }
