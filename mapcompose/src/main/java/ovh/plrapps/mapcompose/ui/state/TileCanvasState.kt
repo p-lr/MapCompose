@@ -105,11 +105,6 @@ internal class TileCanvasState(
                 if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
             priority + layerIds.indexOf(it.layerId)
         }
-        //TODO: remove - for debugging purpose
-//        println("rendering ${tilesToRenderCopy.size} tiles")
-//        tilesToRenderCopy.forEach {
-//            println(it)
-//        }
 
         tilesToRender = tilesToRenderCopy
     }
@@ -171,15 +166,6 @@ internal class TileCanvasState(
 
         renderThrottled()
         fullEvictionDebounced()
-    }
-
-    fun clearVisibleTiles() = scope.launch {
-        tilesCollected.clear()
-
-        /**
-         * Reset the [visibleTilesFlow] state so that any new [VisibleTiles] value will trigger and
-         * update. */
-        visibleTilesFlow.value = null
     }
 
     /**
