@@ -55,7 +55,7 @@ class MapState(
         renderVisibleTiles()
     }
     private val viewport = Viewport()
-    private var padding: Int = 0
+    internal var padding: Int = 0
     internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null

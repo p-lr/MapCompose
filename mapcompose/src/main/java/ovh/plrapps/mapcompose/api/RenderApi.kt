@@ -57,3 +57,12 @@ fun MapState.setBitmapFilteringEnabled(enabled: Boolean) {
 fun MapState.setBitmapFilteringEnabled(predicate: (state: MapState) -> Boolean) {
     isFilteringBitmap = { predicate(this) }
 }
+
+/**
+ * Virtually increase the size of the screen by a padding in pixel amount.
+ * With the appropriate value, this can be used to produce a seamless tile loading effect.
+ */
+fun MapState.setPadding(pixels: Int) {
+    padding = pixels.coerceAtLeast(0)
+    refresh()
+}
