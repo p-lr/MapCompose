@@ -39,8 +39,8 @@ internal fun TileCanvas(
         layers.associateBy { it.id }
     }
     val lowestLayerId = remember(layers) {
-        layers.firstOrNull()?.id ?: return
-    }
+        layers.firstOrNull()?.id
+    } ?: return
 
     Canvas(
         modifier = modifier
