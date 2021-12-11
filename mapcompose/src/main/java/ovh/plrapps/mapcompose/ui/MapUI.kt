@@ -22,39 +22,41 @@ fun MapUI(
     val pathState = state.pathState
     val layers by state.tileCanvasState.layerFlow.collectAsState()
 
-    ZoomPanRotate(
-        modifier = modifier
-            .clipToBounds()
-            .background(state.mapBackground),
-        gestureListener = zoomPRState,
-        layoutSizeChangeListener = zoomPRState,
-        padding = zoomPRState.padding,
-    ) {
-        TileCanvas(
-            modifier = Modifier,
-            zoomPRState = zoomPRState,
-            visibleTilesResolver = state.visibleTilesResolver,
-            tileSize = state.tileSize,
-            alphaTick = state.tileCanvasState.alphaTick,
-            colorFilterProvider = state.tileCanvasState.colorFilterProvider,
-            tilesToRender = state.tileCanvasState.tilesToRender,
-            isFilteringBitmap = state.isFilteringBitmap,
-            layers = layers
-        )
+    key(state) {
+        ZoomPanRotate(
+            modifier = modifier
+                .clipToBounds()
+                .background(state.mapBackground),
+            gestureListener = zoomPRState,
+            layoutSizeChangeListener = zoomPRState,
+            padding = zoomPRState.padding,
+        ) {
+            TileCanvas(
+                modifier = Modifier,
+                zoomPRState = zoomPRState,
+                visibleTilesResolver = state.visibleTilesResolver,
+                tileSize = state.tileSize,
+                alphaTick = state.tileCanvasState.alphaTick,
+                colorFilterProvider = state.tileCanvasState.colorFilterProvider,
+                tilesToRender = state.tileCanvasState.tilesToRender,
+                isFilteringBitmap = state.isFilteringBitmap,
+                layers = layers
+            )
 
-        MarkerComposer(
-            modifier = Modifier.zIndex(1f),
-            zoomPRState = zoomPRState,
-            markerState = markerState,
-            mapState = state
-        )
+            MarkerComposer(
+                modifier = Modifier.zIndex(1f),
+                zoomPRState = zoomPRState,
+                markerState = markerState,
+                mapState = state
+            )
 
-        PathComposer(
-            modifier = Modifier,
-            zoomPRState = zoomPRState,
-            pathState = pathState
-        )
+            PathComposer(
+                modifier = Modifier,
+                zoomPRState = zoomPRState,
+                pathState = pathState
+            )
 
-        content()
+            content()
+        }
     }
 }
