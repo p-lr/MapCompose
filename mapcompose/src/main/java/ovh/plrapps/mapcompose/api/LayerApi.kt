@@ -130,7 +130,7 @@ fun MapState.reorderLayers(layerIds: List<String>) {
  * Remove all layers.
  */
 fun MapState.removeAllLayers() {
-    setLayers(listOf())
+    setLayers(emptyList())
 }
 
 /**
@@ -154,8 +154,8 @@ fun MapState.removeLayer(layerId: String) {
 }
 
 /**
- * Dynamically update the opacity of a layer. If the layer is the lowest one or the only one, this
- * API is a no-op.
+ * Dynamically update the opacity of a layer. If the layer is the lowest one or the only one, the
+ * new opacity won't have effect until a layer is added below it.
  */
 fun MapState.setLayerOpacity(layerId: String, opacity: Float) {
     tileCanvasState.layerFlow.value.firstOrNull { it.id == layerId}?.apply {
