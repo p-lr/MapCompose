@@ -130,7 +130,7 @@ fun MapState.reorderLayers(layerIds: List<String>) {
  * Remove all layers.
  */
 fun MapState.removeAllLayers() {
-    setLayers(listOf())
+    setLayers(emptyList())
 }
 
 /**
