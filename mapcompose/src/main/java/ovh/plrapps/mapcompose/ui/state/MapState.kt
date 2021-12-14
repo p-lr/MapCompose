@@ -81,10 +81,8 @@ class MapState(
     override fun onStateChanged() {
         /* Apply initial values once */
         initialValues?.also {
-            if (zoomPanRotateState.layoutSize != IntSize.Zero) {
-                initialValues = null
-                applyInitialValues(it)
-            }
+            initialValues = null
+            applyInitialValues(it)
         }
 
         renderVisibleTilesThrottled()

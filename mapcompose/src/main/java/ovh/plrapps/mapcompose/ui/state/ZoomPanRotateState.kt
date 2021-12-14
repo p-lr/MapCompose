@@ -387,11 +387,14 @@ internal class ZoomPanRotateState(
         scope = composableScope
 
         /* When the size changes, typically on device rotation, the scroll needs to be adapted so
-         * that we keep the same location at the center of the screen. */
-        setScroll(
-            scrollX = scrollX + (layoutSize.width - size.width) / 2,
-            scrollY = scrollY + (layoutSize.height - size.height) / 2
-        )
+         * that we keep the same location at the center of the screen. Don't do that when layout
+         * hasn't been done yet. */
+        if (layoutSize != IntSize.Zero) {
+            setScroll(
+                scrollX = scrollX + (layoutSize.width - size.width) / 2,
+                scrollY = scrollY + (layoutSize.height - size.height) / 2
+            )
+        }
 
         layoutSize = size
         recalculateMinScale()
