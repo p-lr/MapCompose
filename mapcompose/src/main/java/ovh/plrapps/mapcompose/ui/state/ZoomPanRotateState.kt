@@ -101,11 +101,11 @@ internal class ZoomPanRotateState(
         SplineBasedFloatDecayAnimationSpec(Density(2f)).generateDecayAnimationSpec<Offset>()
 
     @Suppress("unused")
-    fun setScale(scale: Float) {
+    fun setScale(scale: Float, notify: Boolean = true) {
         this.scale = constrainScale(scale)
         updatePadding()
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        if (notify) notifyStateChanged()
     }
 
     @Suppress("unused")
@@ -113,14 +113,14 @@ internal class ZoomPanRotateState(
         this.scrollX = constrainScrollX(scrollX)
         this.scrollY = constrainScrollY(scrollY)
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        notifyStateChanged()
     }
 
     @Suppress("unused")
-    fun setRotation(angle: AngleDegree) {
+    fun setRotation(angle: AngleDegree, notify: Boolean = true) {
         this.rotation = angle.modulo()
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        if (notify) notifyStateChanged()
     }
 
     /**
@@ -456,6 +456,12 @@ internal class ZoomPanRotateState(
             layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
         }
         padding = IntOffset(paddingX, paddingY)
+    }
+
+    private fun notifyStateChanged() {
+        if (layoutSize != IntSize.Zero) {
+            stateChangeListener.onStateChanged()
+        }
     }
 }
 

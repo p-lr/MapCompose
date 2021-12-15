@@ -5,10 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntSize
-import kotlinx.coroutines.*
-import ovh.plrapps.mapcompose.core.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
+import ovh.plrapps.mapcompose.core.throttle
+import ovh.plrapps.mapcompose.ui.layout.Fit
+import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.utils.toRad
 
 /**
@@ -67,6 +72,9 @@ class MapState(
 
     init {
         this.initialValues = initialValues
+        if (initialValues != null) {
+            applyStaticInitialValues(initialValues)
+        }
     }
 
     /**
@@ -79,10 +87,10 @@ class MapState(
     }
 
     override fun onStateChanged() {
-        /* Apply initial values once */
+        /* Consume initial values */
         initialValues?.also {
             initialValues = null
-            applyInitialValues(it)
+            applyDynamicInitialValues(it)
         }
 
         renderVisibleTilesThrottled()
@@ -117,30 +125,46 @@ class MapState(
         }
     }
 
-    private fun applyInitialValues(initialValues: InitialValues) = with(initialValues) {
-        /* Apply scale */
-        zoomPanRotateState.setScale(scale)
+    /**
+     * Apply "static" initial values - e.g, those which don't depend on the layout size.
+     * These are the scale, rotation, minimum scale mode, and magnifying factor.
+     */
+    private fun applyStaticInitialValues(initialValues: InitialValues) {
+        visibleTilesResolver.magnifyingFactor = initialValues.magnifyingFactor
 
-        /* Apply scroll */
+        initialValues.minimumScaleMode?.also {
+            zoomPanRotateState.minimumScaleMode = it
+        }
+
+        initialValues.scale?.also { scale ->
+            zoomPanRotateState.setScale(scale, notify = false)
+        }
+
+        initialValues.rotation?.also { rotation ->
+            zoomPanRotateState.setRotation(rotation, notify = false)
+        }
+    }
+
+    /**
+     * Apply "dynamic" initial values - e.g, those which depend on the layout size.
+     * For the moment, the scroll is the only one.
+     */
+    private fun applyDynamicInitialValues(initialValues: InitialValues) {
         with(zoomPanRotateState) {
-            val offsetX = screenOffset.x * layoutSize.width
-            val offsetY = screenOffset.y * layoutSize.height
+            val offsetX = initialValues.screenOffset.x * layoutSize.width
+            val offsetY = initialValues.screenOffset.y * layoutSize.height
 
-            val destScrollX = (x * fullWidth * scale + offsetX).toFloat()
-            val destScrollY = (y * fullHeight * scale + offsetY).toFloat()
+            val destScrollX = (initialValues.x * fullWidth * scale + offsetX).toFloat()
+            val destScrollY = (initialValues.y * fullHeight * scale + offsetY).toFloat()
 
             setScroll(destScrollX, destScrollY)
         }
-
-        /* Apply magnifying factor */
-        visibleTilesResolver.magnifyingFactor = magnifyingFactor
     }
 }
 
 /**
  * Builder for initial values.
- * Note that initial values are constrained. When constraints apis such as minimum scale or max scale
- * are applied right after [MapState] creation, these constraints are taken into account.
+ * Changes made after the `MapState` instance creation take precedence over initial values.
  * In the following example, the init scale will be 4f since the max scale is later set to 4f.
  *
  * ```
@@ -155,23 +179,40 @@ class MapState(
 class InitialValues {
     internal var x = 0.0
     internal var y = 0.0
-    internal var screenOffset: Offset = Offset(-0.5f, -0.5f)
-    internal var scale = 1f
+    internal var screenOffset: Offset = Offset.Zero
+    internal var scale: Float? = null
+    internal var minimumScaleMode: MinimumScaleMode? = null
+    internal var rotation: Float? = null
     internal var magnifyingFactor = 0
 
-    fun scroll(x: Double, y: Double): InitialValues {
+    /**
+     * Init the scroll position. Defaults to centering on the provided scroll destination.
+     *
+     * @param x The normalized X position on the map, in range [0..1]
+     * @param y The normalized Y position on the map, in range [0..1]
+     * @param screenOffset Offset of the screen relatively to its dimension. Default is
+     * Offset(-0.5f, -0.5f), so moving the screen by half the width left and by half the height top,
+     * effectively centering on the scroll destination.
+     */
+    fun scroll(x: Double, y: Double, screenOffset: Offset = Offset(-0.5f, -0.5f)): InitialValues {
+        this.screenOffset = screenOffset
         this.x = x
         this.y = y
         return this
     }
 
-    fun scroll(x: Double, y: Double, screenOffset: Offset): InitialValues {
-        this.screenOffset = screenOffset
-        return scroll(x, y)
+    /**
+     * Set the initial scale. If necessary, the initial [MinimumScaleMode] can be specified (the
+     * default is [Fit]).
+     */
+    fun scale(scale: Float, minimumScaleMode: MinimumScaleMode = Fit): InitialValues {
+        this.minimumScaleMode = minimumScaleMode
+        this.scale = scale
+        return this
     }
 
-    fun scale(scale: Float): InitialValues {
-        this.scale = scale
+    fun rotation(rotation: Float): InitialValues {
+        this.rotation = rotation
         return this
     }
 
