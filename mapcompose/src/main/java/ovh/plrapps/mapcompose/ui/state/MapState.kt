@@ -136,6 +136,10 @@ class MapState(
             zoomPanRotateState.minimumScaleMode = it
         }
 
+        initialValues.maxScale?.also {
+            zoomPanRotateState.maxScale = it
+        }
+
         initialValues.scale?.also { scale ->
             zoomPanRotateState.setScale(scale, notify = false)
         }
@@ -182,6 +186,7 @@ class InitialValues {
     internal var screenOffset: Offset = Offset.Zero
     internal var scale: Float? = null
     internal var minimumScaleMode: MinimumScaleMode? = null
+    internal var maxScale: Float? = null
     internal var rotation: Float? = null
     internal var magnifyingFactor = 0
 
@@ -205,8 +210,13 @@ class InitialValues {
      * Set the initial scale. If necessary, the initial [MinimumScaleMode] can be specified (the
      * default is [Fit]).
      */
-    fun scale(scale: Float, minimumScaleMode: MinimumScaleMode = Fit): InitialValues {
+    fun scale(
+        scale: Float,
+        minimumScaleMode: MinimumScaleMode = minimumScaleModeDefault,
+        maxScale: Float = maxScaleDefault
+    ): InitialValues {
         this.minimumScaleMode = minimumScaleMode
+        this.maxScale = maxScale
         this.scale = scale
         return this
     }

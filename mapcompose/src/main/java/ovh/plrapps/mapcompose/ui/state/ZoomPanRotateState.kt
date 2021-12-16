@@ -38,7 +38,7 @@ internal class ZoomPanRotateState(
         }
     }
 
-    internal var minimumScaleMode: MinimumScaleMode = Fit
+    internal var minimumScaleMode: MinimumScaleMode = minimumScaleModeDefault
         set(value) {
             field = value
             recalculateMinScale()
@@ -63,7 +63,7 @@ internal class ZoomPanRotateState(
             setScale(scale)
         }
 
-    var maxScale = 2f
+    var maxScale = maxScaleDefault
         set(value) {
             field = value
             setScale(scale)
