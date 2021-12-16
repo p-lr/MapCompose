@@ -67,12 +67,11 @@ fun MapState.setBitmapFilteringEnabled(predicate: (state: MapState) -> Boolean) 
  * Virtually increase the size of the screen by a padding in pixel amount.
  * With the appropriate value, this can be used to produce a seamless tile loading effect.
  */
-fun MapState.setPadding(pixels: Int) {
+fun MapState.setPreloadingPadding(pixels: Int) {
     scope.launch {
-        padding = pixels.coerceAtLeast(0)
+        preloadingPadding = pixels.coerceAtLeast(0)
         renderVisibleTilesThrottled()
     }
-
 }
 
 /**
