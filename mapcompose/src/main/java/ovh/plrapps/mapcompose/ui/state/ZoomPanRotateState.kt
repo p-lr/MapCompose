@@ -19,7 +19,11 @@ import kotlin.math.*
 internal class ZoomPanRotateState(
     val fullWidth: Int,
     val fullHeight: Int,
-    private val stateChangeListener: ZoomPanRotateStateListener
+    private val stateChangeListener: ZoomPanRotateStateListener,
+    minimumScaleMode: MinimumScaleMode,
+    maxScale: Float,
+    scale: Float,
+    rotation: AngleDegree
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
@@ -38,7 +42,7 @@ internal class ZoomPanRotateState(
         }
     }
 
-    internal var minimumScaleMode: MinimumScaleMode = minimumScaleModeDefault
+    internal var minimumScaleMode: MinimumScaleMode = minimumScaleMode
         set(value) {
             field = value
             recalculateMinScale()
@@ -47,8 +51,8 @@ internal class ZoomPanRotateState(
     internal var isRotationEnabled = false
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
-    internal var scale by mutableStateOf(1f)
-    internal var rotation: AngleDegree by mutableStateOf(0f)
+    internal var scale by mutableStateOf(scale)
+    internal var rotation: AngleDegree by mutableStateOf(rotation)
     internal var scrollX by mutableStateOf(0f)
     internal var scrollY by mutableStateOf(0f)
 
@@ -63,7 +67,7 @@ internal class ZoomPanRotateState(
             setScale(scale)
         }
 
-    var maxScale = maxScaleDefault
+    var maxScale = maxScale
         set(value) {
             field = value
             setScale(scale)
