@@ -9,8 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import ovh.plrapps.mapcompose.api.rotateTo
-import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.core.throttle
@@ -26,11 +24,17 @@ import ovh.plrapps.mapcompose.utils.toRad
  * @param levelCount The number of levels in the pyramid.
  * @param fullWidth The width in pixels of the map at scale 1f.
  * @param fullHeight The height in pixels of the map at scale 1f.
+ * @param tileSize The size in pixels of tiles, which are expected to be squared. Defaults to 256.
+ * @param workerCount The thread count used to fetch tiles. Defaults to the number of cores minus
+ * one, which works well for tiles in the file system or in a local database. However, that number
+ * should be increased to 16 or more for remote tiles (HTTP requests).
  */
 class MapState(
     levelCount: Int,
     fullWidth: Int,
     fullHeight: Int,
+    tileSize: Int = 256,
+    workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
     initialValues: InitialValues = InitialValues()
 ) : ZoomPanRotateStateListener {
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -41,8 +45,7 @@ class MapState(
         minimumScaleMode = initialValues.minimumScaleMode,
         maxScale = initialValues.maxScale,
         scale = initialValues.scale,
-        rotation = initialValues.rotation,
-        isRotationEnabled = initialValues.isRotationEnabled
+        rotation = initialValues.rotation
     )
     internal val markerState = MarkerState()
     internal val pathState = PathState()
@@ -51,16 +54,16 @@ class MapState(
             levelCount = levelCount,
             fullWidth = fullWidth,
             fullHeight = fullHeight,
-            tileSize = initialValues.tileSize,
+            tileSize = tileSize,
             magnifyingFactor = initialValues.magnifyingFactor
         ) {
             zoomPanRotateState.scale
         }
     internal val tileCanvasState = TileCanvasState(
         scope,
-        initialValues.tileSize,
+        tileSize,
         visibleTilesResolver,
-        initialValues.workerCount,
+        workerCount,
         initialValues.highFidelityColors
     )
 
@@ -69,7 +72,7 @@ class MapState(
     }
     private val viewport = Viewport()
     internal var preloadingPadding: Int = initialValues.preloadingPadding
-    internal val tileSize by mutableStateOf(initialValues.tileSize)
+    internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var mapBackground by mutableStateOf(Color.White)
@@ -126,6 +129,30 @@ class MapState(
     }
 
     /**
+     * Apply "static" initial values - e.g, those which don't depend on the layout size.
+     * These are the scale, rotation, minimum scale mode, and magnifying factor.
+     */
+    private fun applyStaticInitialValues(initialValues: InitialValues) {
+        visibleTilesResolver.magnifyingFactor = initialValues.magnifyingFactor
+
+        initialValues.minimumScaleMode?.also {
+            zoomPanRotateState.minimumScaleMode = it
+        }
+
+        initialValues.maxScale?.also {
+            zoomPanRotateState.maxScale = it
+        }
+
+        initialValues.scale?.also { scale ->
+            zoomPanRotateState.setScale(scale, notify = false)
+        }
+
+        initialValues.rotation?.also { rotation ->
+            zoomPanRotateState.setRotation(rotation, notify = false)
+        }
+    }
+
+    /**
      * Apply "dynamic" initial values - e.g, those which depend on the layout size.
      * For the moment, the scroll is the only one.
      */
@@ -165,15 +192,12 @@ class InitialValues {
     internal var maxScale: Float = 2f
     internal var rotation: AngleDegree = 0f
     internal var magnifyingFactor = 0
-    internal var tileSize: Int = 256
-    internal var workerCount: Int = Runtime.getRuntime().availableProcessors() - 1
     internal var highFidelityColors: Boolean = true
-    internal var isRotationEnabled: Boolean = false
     internal var preloadingPadding: Int = 0
     internal var isFilteringBitmap: (MapState) -> Boolean = { true }
 
     /**
-     * Initial scroll position. Defaults to centering on the provided scroll destination.
+     * Init the scroll position. Defaults to centering on the provided scroll destination.
      *
      * @param x The normalized X position on the map, in range [0..1]
      * @param y The normalized Y position on the map, in range [0..1]
@@ -188,28 +212,28 @@ class InitialValues {
     }
 
     /**
-     * Initial scale. Defaults to 1f.
+     * Set the initial scale. Defaults to 1f.
      */
     fun scale(scale: Float) = apply {
         this.scale = scale
     }
 
     /**
-     * [MinimumScaleMode]. Defaults to [Fit].
+     * Set the [MinimumScaleMode]. Defaults to [Fit].
      */
     fun minimumScaleMode(minimumScaleMode: MinimumScaleMode) = apply {
         this.minimumScaleMode = minimumScaleMode
     }
 
     /**
-     * Maximum allowed scale. Defaults to 2f.
+     * Set the maximum allowed scale. Defaults to 2f.
      */
     fun maxScale(maxScale: Float) = apply {
         this.maxScale = maxScale
     }
 
     /**
-     * Initial rotation. Defaults to 0° (no rotation).
+     * Set the initial rotation. Defaults to 0° (no rotation).
      */
     fun rotation(rotation: AngleDegree) = apply {
         this.rotation = rotation
@@ -226,22 +250,6 @@ class InitialValues {
     }
 
     /**
-     * The size in pixels of tiles, which are expected to be square. Defaults to 256.
-     */
-    fun tileSize(tileSize: Int) = apply {
-        this.tileSize = tileSize
-    }
-
-    /**
-     * The thread count used to fetch tiles. Defaults to the number of cores minus one, which
-     * works well for tiles in the file system or in a local database. However, that number
-     * should be increased to 16 or more for remote tiles (HTTP requests).
-     */
-    fun workerCount(workerCount: Int) = apply {
-        this.workerCount = workerCount
-    }
-
-    /**
      * By default, bitmaps are loaded using ARGB_8888, which is best suited for most usages.
      * However, if you're only loading images without alpha channel and high fidelity color isn't
      * a requirement, RGB_565 can be used instead for less memory usage (by setting this to false).
@@ -253,19 +261,13 @@ class InitialValues {
     }
 
     /**
-     * Controls if the map can be rotated by user gestures. The map can always be programmatically
-     * rotated using APIs such as [rotateTo] or [rotation].
-     */
-    fun rotationEnabled(enabled: Boolean) = apply {
-        this.isRotationEnabled = enabled
-    }
-
-    /**
      * By default, only visible tiles are loaded. By adding a preloadingPadding additional tiles
      * will be loaded, which can be used to produce a seamless tile loading effect.
+     *
+     * @param padding in pixels
      */
-    fun preloadingPadding(preloadingPadding: Int) = apply {
-        this.preloadingPadding = preloadingPadding.coerceAtLeast(0)
+    fun preloadingPadding(padding: Int) = apply {
+        this.preloadingPadding = padding.coerceAtLeast(0)
     }
 
     /**

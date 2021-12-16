@@ -23,8 +23,7 @@ internal class ZoomPanRotateState(
     minimumScaleMode: MinimumScaleMode,
     maxScale: Float,
     scale: Float,
-    rotation: AngleDegree,
-    internal var isRotationEnabled: Boolean
+    rotation: AngleDegree
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
@@ -48,6 +47,8 @@ internal class ZoomPanRotateState(
             field = value
             recalculateMinScale()
         }
+
+    internal var isRotationEnabled = false
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(scale)
