@@ -2,6 +2,8 @@
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![](https://img.shields.io/badge/Compose-1.1.0)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
+🎉 New v2.0.0 has layers support
+
 # MapCompose
 
 MapCompose is a fast, memory efficient Jetpack compose library to display tiled maps with minimal effort.
@@ -253,4 +255,9 @@ parameters.
 * A lot of things which couldn't change after MapView configuration can now be changed dynamically
 in MapCompose. For example, the `zIndex` of a marker, or the minimum scale mode can be changed at
 runtime.
+
+## Contributors
+
+Marcin (@Nohus) has contributed and fixed some issues. He also thoroughly tested the new layers 
+feature – which made `MapCompose` better.
 
