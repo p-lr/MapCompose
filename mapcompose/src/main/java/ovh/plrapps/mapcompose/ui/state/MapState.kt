@@ -184,7 +184,7 @@ class MapState(
  * }
  * ```
  */
-class InitialValues {
+class InitialValues internal constructor() {
     internal var x = 0.0
     internal var y = 0.0
     internal var screenOffset: Offset = Offset.Zero
