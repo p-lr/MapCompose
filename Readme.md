@@ -22,7 +22,9 @@ val tileStreamProvider =
 val state: MapState by mutableStateOf(
     MapState(
         4, 4096, 4096,
-        initialValues = InitialValues().scroll(0.5, 0.5)
+        initialValues = initialValues {
+           scroll(0.5, 0.5)
+        }
     ).apply {
         addLayer(tileStreamProvider)
         enableRotation()

@@ -14,6 +14,7 @@ import ovh.plrapps.mapcompose.ui.layout.Fill
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
+import ovh.plrapps.mapcompose.ui.state.InitialValues
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import ovh.plrapps.mapcompose.utils.AngleDegree
@@ -64,6 +65,24 @@ suspend fun MapState.setScroll(offset: Offset) {
         awaitLayout()
 
         setScroll(offset.x, offset.y)
+    }
+}
+
+/**
+ * Set initial values (see [InitialValues]) at [MapState] construction. Example:
+ * ```
+ * MapState(
+ *  4, 4096, 4096,
+ *  initialValues = initialValues {
+ *    scroll(0.5, 0.5)
+ *    scale(1.2f)
+ *  }
+ * )
+ * ```
+ */
+fun initialValues(block: InitialValues.() -> Unit): InitialValues {
+    return InitialValues().apply {
+        block()
     }
 }
 
