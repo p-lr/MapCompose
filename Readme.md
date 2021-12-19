@@ -37,7 +37,7 @@ fun MapContainer(
 }
 ```
 
-Inspired by [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
+Inspired by [MapView](https://github.com/p-lr/MapView), every aspects of the library have
 been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
 This project holds the source code of this library, plus a demo app (which is useful to get started).
@@ -127,7 +127,7 @@ removing, setting alpha - all dynamically.
 
 ### Markers
 
-To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
+To add a marker, use the [addMarker](https://github.com/p-lr/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
 API, like so:
 
 ```kotlin
@@ -156,15 +156,15 @@ point, and align at the bottom edge (like a typical map pin would do), you'd pas
 If necessary, an absolute offset expressed in pixels can be applied, in addition to the
 relative offset.
 
-Markers can be moved, removed, and be draggable. See the following APIs: [moveMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L72),
-[removeMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L61),
-[enableMarkerDrag](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L89).
+Markers can be moved, removed, and be draggable. See the following APIs: [moveMarker](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L72),
+[removeMarker](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L61),
+[enableMarkerDrag](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L89).
 
 ### Callouts
 
 Callouts are typically message popups which are, like markers, attached to a specific position.
 However, they automatically dismiss on touch down (this is the default behavior, which can be
-changed). To add a callout, use [addCallout](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
+changed). To add a callout, use [addCallout](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
 
 <p align="center">
 <img src="doc/readme-files/callout.png">
@@ -192,7 +192,7 @@ mapState.addPath("pathName", pathData, color = Color(0xFF448AFF), width = 12.dp)
 
 It's important to note that the only way to get a `PathDataBuilder` is by using the
 `makePathDataBuilder` function. Once you've built your `PathData` instance, you can use the
-use the [addPath](https://github.com/peterLaurence/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
+use the [addPath](https://github.com/p-lr/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
 API.
 
 <p align="center">
@@ -221,13 +221,13 @@ the map.
 
 When animating the scale, we generally do so while maintaining the center of the screen at
 a specific position. When animating the scroll position, we can do so with or without animating the
-scale altogether. There's one API to handle both scenario:
-[scrollTo](https://github.com/peterLaurence/MapCompose/blob/cf69d55a8ca9eb279ab07011c4c7a003b5c4266f/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L138)
+scale altogether, using [scrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L188)
+and [snapScrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L161).
 
 *rotation animation*
 
 For animating the rotation while keeping the current scale and scroll, use the
-[rotateTo](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L130) API.
+[rotateTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L149) API.
 
 Both `scrollTo` and `rotateTo` are suspending functions. That means you know exactly when
 an animation finishes, and you can easily chain animations inside a coroutine.

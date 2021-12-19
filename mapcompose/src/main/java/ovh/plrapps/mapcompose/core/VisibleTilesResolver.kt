@@ -19,7 +19,7 @@ import kotlin.math.*
  * @param scaleProvider Since the component which invokes [getVisibleTiles] isn't likely to be the
  * component which owns the scale state, we provide it here as a loosely coupled reference.
  *
- * @author peterLaurence on 25/05/2019
+ * @author p-lr on 25/05/2019
  */
 internal class VisibleTilesResolver(
     private val levelCount: Int, private val fullWidth: Int,

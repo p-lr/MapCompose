@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 
 
 /**
- * The engine of the MapView. The view-model uses two channels to communicate with the [TileCollector]:
+ * The engine of MapCompose. The view-model uses two channels to communicate with the [TileCollector]:
  * * one to send [WorkerSpec]s (a [SendChannel])
  * * one to receive [WorkerSpec]s (a [ReceiveChannel])
  *
@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit
  * ```
  * This architecture is an example of Communicating Sequential Processes (CSP).
  *
- * @author peterLaurence on 22/06/19
+ * @author p-lr on 22/06/19
  */
 internal class TileCollector(
     private val workerCount: Int,
