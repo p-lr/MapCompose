@@ -53,7 +53,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
      */
     private fun addTrack(trackName: String, color: Color? = null) {
         with(state) {
-            val lines = appContext.assets?.open("tracks/$trackName.txt")?.bufferedReader()?.lines()
+            val lines = appContext.assets?.open("tracks/$trackName.txt")?.bufferedReader()?.lineSequence()
                 ?: return@with
             val builder = makePathDataBuilder()
             for (line in lines) {
