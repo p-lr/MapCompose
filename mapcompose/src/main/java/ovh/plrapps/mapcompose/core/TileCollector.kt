@@ -2,12 +2,14 @@ package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
@@ -17,8 +19,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The engine of MapCompose. The view-model uses two channels to communicate with the [TileCollector]:
- * * one to send [WorkerSpec]s (a [SendChannel])
- * * one to receive [WorkerSpec]s (a [ReceiveChannel])
+ * * one to send [TileSpec]s (a [SendChannel])
+ * * one to receive [TileSpec]s (a [ReceiveChannel])
  *
  * The [TileCollector] encapsulates all the complexity that transforms a [TileSpec] into a [Tile].
  * ```
@@ -28,11 +30,11 @@ import java.util.concurrent.TimeUnit
  *              ---------------- [*********] <----------------------------------------------------- | | worker | |   |
  *             |                               |                                                    |  --------  |   |
  *             ↓                               |                                                    |  ________  |   |
- *  _____________________                      |                                  workerSpecs       | | worker | |   |
+ *  _____________________                      |                                   tileSpecs        | | worker | |   |
  * | TileCanvasViewModel |                     |    _____________________  <---- [**********] <---- |  --------  |   |
  *  ---------------------  ----> [*********] ----> | tileCollectorKernel |                          |  ________  |   |
  *                                tileSpecs    |    ---------------------  ----> [**********] ----> | | worker | |   |
- *                                             |                                  workerSpecs       |  --------  |   |
+ *                                             |                                   tileSpecs        |  --------  |   |
  *                                             |                                                    |____________|   |
  *                                             |                                                      worker pool    |
  *                                             |                                                                     |
@@ -44,7 +46,8 @@ import java.util.concurrent.TimeUnit
  */
 internal class TileCollector(
     private val workerCount: Int,
-    private val bitmapConfig: Bitmap.Config
+    private val bitmapConfig: Bitmap.Config,
+    private val tileSize: Int
 ) {
 
     /**
@@ -61,99 +64,126 @@ internal class TileCollector(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapFlow: Flow<Bitmap>
+        bitmapFlow: Flow<Bitmap>,
     ) = coroutineScope {
-        val layerIds = layers.map { it.id }
-        val tilesToDownload = Channel<WorkerSpec>(capacity = Channel.RENDEZVOUS)
-        val tilesDownloadedFromWorker = Channel<WorkerSpec>(capacity = layerIds.size)
+        val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
+        val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
 
         repeat(workerCount) {
             worker(
                 tilesToDownload,
                 tilesDownloadedFromWorker,
                 tilesOutput,
-                layers.associateBy { it.id },
+                layers,
                 bitmapFlow
             )
         }
-        tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker, layerIds)
+        tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
     }
 
     private fun CoroutineScope.worker(
-        tilesToDownload: ReceiveChannel<WorkerSpec>,
-        tilesDownloaded: SendChannel<WorkerSpec>,
+        tilesToDownload: ReceiveChannel<TileSpec>,
+        tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
-        layersForId: Map<String, Layer>,
+        layers: List<Layer>,
         bitmapFlow: Flow<Bitmap>
     ) = launch(dispatcher) {
 
-        val bitmapLoadingOptions = BitmapFactory.Options()
-        bitmapLoadingOptions.inPreferredConfig = bitmapConfig
-
-        for (workerSpec in tilesToDownload) {
-            val spec = workerSpec.tileSpec
-            val tileStreamProvider = layersForId[workerSpec.layerId]?.tileStreamProvider
-            if (tileStreamProvider == null) {
-                tilesDownloaded.send(workerSpec)
-                continue
+        val layerIds = layers.map { it.id }
+        val bitmapLoadingOptionsForLayer = layerIds.associateWith {
+            BitmapFactory.Options().apply {
+                inPreferredConfig = bitmapConfig
             }
+        }
+        val bitmapForLayer = layerIds.associateWith {
+            Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
+        }
+        val canvas = Canvas()
+        val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
-            val i = tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
-
+        suspend fun getBitmap(
+            spec: TileSpec,
+            layer: Layer,
+            inBitmapForced: Bitmap? = null
+        ): BitmapForLayer {
+            val bitmapLoadingOptions =
+                bitmapLoadingOptionsForLayer[layer.id] ?: return BitmapForLayer(null, layer)
             if (spec.subSample > 0) {
                 bitmapLoadingOptions.inBitmap = null
                 bitmapLoadingOptions.inScaled = true
                 bitmapLoadingOptions.inSampleSize = spec.subSample
             } else {
                 bitmapLoadingOptions.inScaled = false
-                bitmapLoadingOptions.inBitmap = bitmapFlow.singleOrNull()
+                bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
                 bitmapLoadingOptions.inSampleSize = 0
             }
 
-            try {
-                val bitmap = BitmapFactory.decodeStream(i, null, bitmapLoadingOptions) ?: continue
-                val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample, workerSpec.layerId).apply {
-                    this.bitmap = bitmap
-                }
-                tilesOutput.send(tile)
-            } catch (e: OutOfMemoryError) {
-                // no luck
-            } catch (e: Exception) {
-                // maybe retry
-            } finally {
-                tilesDownloaded.send(workerSpec)
-                i?.close()
+            val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
+
+            return i.use {
+                val bitmap = runCatching {
+                    BitmapFactory.decodeStream(i, null, bitmapLoadingOptions)
+                }.getOrNull()
+                BitmapForLayer(bitmap, layer)
             }
+        }
+
+        for (spec in tilesToDownload) {
+            if (layers.isEmpty()) {
+                tilesDownloaded.send(spec)
+                continue
+            }
+
+            val resultBitmap = bitmapFlow.single()
+
+            val bitmapForLayers = layers.mapIndexed { index, layer ->
+                async {
+                    getBitmap(spec, layer, if (index == 0) resultBitmap else null)
+                }
+            }.awaitAll()
+
+            canvas.setBitmap(resultBitmap)
+
+            for (result in bitmapForLayers.drop(1)) {
+                paint.alpha = (255f * result.layer.alpha).toInt()
+                if (result.bitmap == null) continue
+                canvas.drawBitmap(result.bitmap, 0f, 0f, paint)
+            }
+
+            val tile = Tile(
+                spec.zoom,
+                spec.row,
+                spec.col,
+                spec.subSample,
+                layerIds,
+                layers.map { it.alpha }).apply {
+                this.bitmap = resultBitmap
+            }
+            tilesOutput.send(tile)
+            tilesDownloaded.send(spec)
         }
     }
 
     private fun CoroutineScope.tileCollectorKernel(
         tileSpecs: ReceiveChannel<TileSpec>,
-        tilesToDownload: SendChannel<WorkerSpec>,
-        tilesDownloadedFromWorker: ReceiveChannel<WorkerSpec>,
-        layerIds: List<String>
+        tilesToDownload: SendChannel<TileSpec>,
+        tilesDownloadedFromWorker: ReceiveChannel<TileSpec>,
     ) = launch(Dispatchers.Default) {
 
-        val specsBeingProcessed = mutableMapOf<TileSpec, MutableList<String>>()
+        val specsBeingProcessed = mutableListOf<TileSpec>()
 
         while (true) {
             select<Unit> {
                 tilesDownloadedFromWorker.onReceive {
-                    val ids = specsBeingProcessed[it.tileSpec] ?: return@onReceive
-                    ids.remove(it.layerId)
-                    if (ids.isEmpty()) {
-                        specsBeingProcessed.remove(it.tileSpec)
-                    }
+                    specsBeingProcessed.remove(it)
                 }
                 tileSpecs.onReceive {
-                    if (it !in specsBeingProcessed.keys) {
+                    if (it !in specsBeingProcessed) {
                         /* Add it to the list of locations being processed */
-                        specsBeingProcessed[it] = layerIds.toMutableList()
+                        specsBeingProcessed.add(it)
 
-                        /* Download tiles for each layer */
-                        for (layerId in layerIds) {
-                            tilesToDownload.send(WorkerSpec(it, layerId))
-                        }
+                        /* Now download the tile */
+                        tilesToDownload.send(it)
                     }
                 }
             }
@@ -183,4 +213,4 @@ internal class TileCollector(
     private val dispatcher = executor.asCoroutineDispatcher()
 }
 
-private data class WorkerSpec(val tileSpec: TileSpec, val layerId: String)
+private data class BitmapForLayer(val bitmap: Bitmap?, val layer: Layer)

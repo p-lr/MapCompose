@@ -150,7 +150,7 @@ A marker is composable which you supply (in the example above, it's an `Icon`). 
 whatever composable you like. A marker does not scale, but it's position updates as the map scales,
 so it's always attached to the original position. A marker has an anchor point defined - the point
 which is fixed relatively to the map. This anchor point is defined using relative offsets, which are
-applied to with and height of the marker. For example, to have a marker center horizontally to a
+applied to the width and height of the marker. For example, to have a marker center horizontally to a
 point, and align at the bottom edge (like a typical map pin would do), you'd pass -0.5f and -1.0f
 (thus, left position is offset by half the width, and top is offset by the full height).
 If necessary, an absolute offset expressed in pixels can be applied, in addition to the

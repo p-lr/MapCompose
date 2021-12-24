@@ -26,7 +26,6 @@ internal fun TileCanvas(
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
     isFilteringBitmap: () -> Boolean,
-    layers: List<Layer>
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
@@ -34,13 +33,6 @@ internal fun TileCanvas(
             isAntiAlias = false
         }
     }
-
-    val layersById = remember(layers) {
-        layers.associateBy { it.id }
-    }
-    val lowestLayerId = remember(layers) {
-        layers.firstOrNull()?.id
-    } ?: return
 
     Canvas(
         modifier = modifier
@@ -72,10 +64,7 @@ internal fun TileCanvas(
 
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
-                val alpha = layersById[tile.layerId]?.alpha?.value ?: 0f
-                paint.alpha = (tile.alpha * 255).let {
-                    if (tile.layerId != lowestLayerId) it * alpha else it
-                }.toInt()
+                paint.alpha = (tile.alpha * 255).toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 
                 drawIntoCanvas {

@@ -158,9 +158,12 @@ fun MapState.removeLayer(layerId: String) {
  * new opacity won't have effect until a layer is added below it.
  */
 fun MapState.setLayerOpacity(layerId: String, opacity: Float) {
-    tileCanvasState.layerFlow.value.firstOrNull { it.id == layerId}?.apply {
-        alpha.value = opacity.coerceIn(0f..1f)
+    val newLayers = tileCanvasState.layerFlow.value.map {
+        if (it.id == layerId) {
+            it.copy(alpha = opacity.coerceIn(0f..1f))
+        } else it
     }
+    setLayers(newLayers)
 }
 
 /**
