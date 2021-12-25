@@ -37,7 +37,7 @@ class MapState(
     workerCount: Int = Runtime.getRuntime().availableProcessors() - 1,
     initialValuesBuilder: InitialValues.() -> Unit = {}
 ) : ZoomPanRotateStateListener {
-    internal val initialValues = InitialValues().apply(initialValuesBuilder)
+    private val initialValues = InitialValues().apply(initialValuesBuilder)
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal val zoomPanRotateState = ZoomPanRotateState(
         fullWidth = fullWidth,
@@ -76,7 +76,7 @@ class MapState(
     internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
-    internal var mapBackground by mutableStateOf(Color.White)
+    internal var mapBackground by mutableStateOf(Color.Transparent)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
         { initialValues.isFilteringBitmap(this) }
     )
@@ -89,6 +89,7 @@ class MapState(
      * Cancels all internal tasks.
      * After this call, this [MapState] is unusable.
      */
+    @Suppress("unused")
     fun shutdown() {
         scope.cancel()
         tileCanvasState.shutdown()
@@ -130,30 +131,6 @@ class MapState(
     }
 
     /**
-     * Apply "static" initial values - e.g, those which don't depend on the layout size.
-     * These are the scale, rotation, minimum scale mode, and magnifying factor.
-     */
-    private fun applyStaticInitialValues(initialValues: InitialValues) {
-        visibleTilesResolver.magnifyingFactor = initialValues.magnifyingFactor
-
-        initialValues.minimumScaleMode?.also {
-            zoomPanRotateState.minimumScaleMode = it
-        }
-
-        initialValues.maxScale?.also {
-            zoomPanRotateState.maxScale = it
-        }
-
-        initialValues.scale?.also { scale ->
-            zoomPanRotateState.setScale(scale, notify = false)
-        }
-
-        initialValues.rotation?.also { rotation ->
-            zoomPanRotateState.setRotation(rotation, notify = false)
-        }
-    }
-
-    /**
      * Apply "dynamic" initial values - e.g, those which depend on the layout size.
      * For the moment, the scroll is the only one.
      */
@@ -184,6 +161,7 @@ class MapState(
  * }
  * ```
  */
+@Suppress("unused")
 class InitialValues internal constructor() {
     internal var x = 0.0
     internal var y = 0.0
