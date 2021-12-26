@@ -108,15 +108,10 @@ internal class TileCollector(
         ): BitmapForLayer {
             val bitmapLoadingOptions =
                 bitmapLoadingOptionsForLayer[layer.id] ?: return BitmapForLayer(null, layer)
-            if (spec.subSample > 0) {
-                bitmapLoadingOptions.inBitmap = null
-                bitmapLoadingOptions.inScaled = true
-                bitmapLoadingOptions.inSampleSize = spec.subSample
-            } else {
-                bitmapLoadingOptions.inScaled = false
-                bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
-                bitmapLoadingOptions.inSampleSize = 0
-            }
+
+            bitmapLoadingOptions.inMutable = true
+            bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
+            bitmapLoadingOptions.inSampleSize = spec.subSample
 
             val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
@@ -134,14 +129,14 @@ internal class TileCollector(
                 continue
             }
 
-            val resultBitmap = bitmapFlow.single()
-
             val bitmapForLayers = layers.mapIndexed { index, layer ->
                 async {
-                    getBitmap(spec, layer, if (index == 0) resultBitmap else null)
+                    /* Attempt to reuse an existing bitmap for the first layer */
+                    getBitmap(spec, layer, if (index == 0) bitmapFlow.single() else null)
                 }
             }.awaitAll()
 
+            val resultBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: continue
             canvas.setBitmap(resultBitmap)
 
             for (result in bitmapForLayers.drop(1)) {
