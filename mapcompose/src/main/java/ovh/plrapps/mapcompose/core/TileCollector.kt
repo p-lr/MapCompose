@@ -136,7 +136,12 @@ internal class TileCollector(
                 }
             }.awaitAll()
 
-            val resultBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: continue
+            val resultBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: run {
+                /* If the decoding of the first layer failed, skip the rest */
+                tilesDownloaded.send(spec)
+                null
+            } ?: continue
+
             canvas.setBitmap(resultBitmap)
 
             for (result in bitmapForLayers.drop(1)) {
