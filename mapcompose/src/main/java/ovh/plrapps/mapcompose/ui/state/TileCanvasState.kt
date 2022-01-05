@@ -305,7 +305,7 @@ internal class TileCanvasState(
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
-                && (!visibleTiles.contains(tile) || tile.layerIds != layerIds || tile.opacities != opacities)
+                && (!visibleTiles.contains(tile) || !shouldKeepTile(tile, layerIds, opacities))
             ) {
                 iterator.remove()
                 tile.recycle()
@@ -316,6 +316,14 @@ internal class TileCanvasState(
 
         if (aggressive) {
             aggressiveEviction(currentLevel, currentSubSample)
+        }
+    }
+
+    private fun shouldKeepTile(tile: Tile, layerIds: List<String>, opacities: List<Float>): Boolean {
+        return if (tile.layerIds != layerIds) {
+            layerIds.containsAll(tile.layerIds) || tile.layerIds.containsAll(layerIds)
+        } else {
+            tile.opacities == opacities
         }
     }
 
