@@ -78,12 +78,6 @@ internal class TileCanvasState(
      */
     private val idleDebounced = scope.debounce<Unit>(100) {
         visibleStateFlow.value?.also { (visibleTiles, layerIds, opacities) ->
-            /* If tiles aren't all fully rendered, abort and re-schedule */
-            if (!tilesCollected.all { it.alpha == 1f }) {
-                fullEvictionDebounced()
-                return@also
-            }
-
             evictTiles(visibleTiles, layerIds, opacities, aggressive = true)
             renderTiles(visibleTiles, layerIds)
         }
@@ -166,7 +160,6 @@ internal class TileCanvasState(
         visibleStateFlow.value = visibleTilesForLayers
 
         renderThrottled()
-        fullEvictionDebounced()
     }
 
     /**
@@ -238,6 +231,7 @@ internal class TileCanvasState(
             } else {
                 tile.recycle()
             }
+            fullEvictionDebounced()
         }
     }
 
@@ -303,14 +297,15 @@ internal class TileCanvasState(
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
-        /* Always remove tiles that aren't visible at current level */
+        /* Always remove tiles that aren't visible at current level, or tiles from current level
+         * which aren't made of current layers */
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
-                && !visibleTiles.contains(tile)
+                && (!visibleTiles.contains(tile) || tile.layerIds != layerIds || tile.opacities != opacities)
             ) {
                 iterator.remove()
                 tile.recycle()
@@ -320,7 +315,7 @@ internal class TileCanvasState(
         partialEviction(visibleTiles)
 
         if (aggressive) {
-            aggressiveEviction(currentLevel, currentSubSample, layerIds, opacities)
+            aggressiveEviction(currentLevel, currentSubSample)
         }
     }
 
@@ -357,9 +352,18 @@ internal class TileCanvasState(
     private fun aggressiveEviction(
         currentLevel: Int,
         currentSubSample: Int,
-        layerIds: List<String>,
-        opacities: List<Float>,
     ) {
+        /**
+         * If not all tiles at current level (or also current sub-sample) are fetched, don't go
+         * further.
+         */
+        val nTilesAtCurrentLevel = tilesCollected.count {
+            it.zoom == currentLevel && it.subSample == currentSubSample
+        }
+        if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
+            return
+        }
+
         val otherTilesNotSubSampled = tilesCollected.filter {
             it.zoom != currentLevel && it.subSample == 0
         }
@@ -371,16 +375,6 @@ internal class TileCanvasState(
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
-
-            /* Remove tiles from current level which aren't made of current layers */
-            if (
-                tile.zoom == currentLevel
-                && tile.subSample == currentSubSample
-                && (tile.layerIds != layerIds || tile.opacities != opacities)
-            ) {
-                iterator.remove()
-                tile.recycle()
-            }
 
             val found = otherTilesNotSubSampled.any {
                 it.samePositionAs(tile)
