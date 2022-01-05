@@ -76,7 +76,7 @@ internal class TileCanvasState(
     /**
      * So long as this debounced channel is offered a message, the lambda isn't called.
      */
-    private val idleDebounced = scope.debounce<Unit>(100) {
+    private val idleDebounced = scope.debounce<Unit>(400) {
         visibleStateFlow.value?.also { (visibleTiles, layerIds, opacities) ->
             evictTiles(visibleTiles, layerIds, opacities, aggressive = true)
             renderTiles(visibleTiles, layerIds)
@@ -358,7 +358,7 @@ internal class TileCanvasState(
          * further.
          */
         val nTilesAtCurrentLevel = tilesCollected.count {
-            it.zoom == currentLevel && it.subSample == currentSubSample
+            it.zoom == currentLevel && it.subSample == currentSubSample && it.alpha == 1f
         }
         if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
             return
