@@ -320,6 +320,7 @@ internal class TileCanvasState(
     }
 
     private fun shouldKeepTile(tile: Tile, layerIds: List<String>, opacities: List<Float>): Boolean {
+        if (layerIds.isEmpty()) return false
         return if (tile.layerIds != layerIds) {
             layerIds.containsAll(tile.layerIds) || tile.layerIds.containsAll(layerIds)
         } else {
