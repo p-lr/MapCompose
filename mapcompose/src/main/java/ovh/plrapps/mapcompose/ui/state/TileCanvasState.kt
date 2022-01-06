@@ -78,7 +78,7 @@ internal class TileCanvasState(
      */
     private val idleDebounced = scope.debounce<Unit>(400) {
         visibleStateFlow.value?.also { (visibleTiles, layerIds, opacities) ->
-            evictTiles(visibleTiles, layerIds, opacities, aggressive = true)
+            evictTiles(visibleTiles, layerIds, opacities, aggressiveAttempt = true)
             renderTiles(visibleTiles, layerIds)
         }
     }
@@ -133,7 +133,12 @@ internal class TileCanvasState(
     }
 
     fun setLayers(layers: List<Layer>) {
+        /* If there's nothing in common with current layers, the canvas will be cleared */
+        val clear = layers.intersect(_layerFlow.value.toSet()).isEmpty()
         _layerFlow.value = layers
+        if (clear) {
+            evictAll()
+        }
     }
 
     fun shutdown() {
@@ -292,16 +297,53 @@ internal class TileCanvasState(
         visibleTiles: VisibleTiles,
         layerIds: List<String>,
         opacities: List<Float>,
-        aggressive: Boolean = false
+        aggressiveAttempt: Boolean = false
     ) {
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
-        /* Always remove tiles that aren't visible at current level, or tiles from current level
-         * which aren't made of current layers */
+        /* Always perform partial eviction */
+        partialEviction(visibleTiles, layerIds, opacities)
+
+        if (aggressiveAttempt) {
+            /**
+             * If not all tiles at current level (or also current sub-sample) are fetched, abort
+             * the attempt.
+             */
+            val nTilesAtCurrentLevel = tilesCollected.count {
+                it.zoom == currentLevel && it.subSample == currentSubSample && it.alpha == 1f
+                        && it.layerIds == layerIds
+            }
+            if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
+                return
+            }
+            aggressiveEviction(currentLevel, currentSubSample, layerIds)
+        }
+    }
+
+    /**
+     * Evict:
+     * * tiles of levels different than the current one, that aren't visible,
+     * * tiles that aren't visible at current level, and tiles from current level which aren't made
+     * of current layers
+     */
+    private fun partialEviction(
+        visibleTiles: VisibleTiles,
+        layerIds: List<String>,
+        opacities: List<Float>
+    ) {
+        val currentLevel = visibleTiles.level
+        val currentSubSample = visibleTiles.subSample
+
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
+
+            if (tile.zoom != currentLevel && !visibleTiles.intersects(tile)) {
+                iterator.remove()
+                tile.recycle()
+            }
+
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
@@ -311,45 +353,18 @@ internal class TileCanvasState(
                 tile.recycle()
             }
         }
-
-        partialEviction(visibleTiles)
-
-        if (aggressive) {
-            aggressiveEviction(currentLevel, currentSubSample)
-        }
     }
 
-    private fun shouldKeepTile(tile: Tile, layerIds: List<String>, opacities: List<Float>): Boolean {
+    private fun shouldKeepTile(
+        tile: Tile,
+        layerIds: List<String>,
+        opacities: List<Float>
+    ): Boolean {
         if (layerIds.isEmpty()) return false
         return if (tile.layerIds != layerIds) {
             layerIds.containsAll(tile.layerIds) || tile.layerIds.containsAll(layerIds)
         } else {
             tile.opacities == opacities
-        }
-    }
-
-    /**
-     * Evict tiles for levels different than the current one, that aren't visible.
-     */
-    private fun partialEviction(visibleTiles: VisibleTiles) {
-        val currentLevel = visibleTiles.level
-
-        /* First, deal with tiles of other levels */
-        val otherTilesNotSubSampled = tilesCollected.filter {
-            it.zoom != currentLevel
-        }
-        val evictList = mutableListOf<Tile>()
-        if (otherTilesNotSubSampled.isNotEmpty()) {
-            otherTilesNotSubSampled.forEach {
-                if (!visibleTiles.intersects(it)) {
-                    evictList.add(it)
-                }
-            }
-        }
-
-        for (tile in evictList) {
-            tilesCollected.remove(tile)
-            tile.recycle()
         }
     }
 
@@ -361,43 +376,38 @@ internal class TileCanvasState(
     private fun aggressiveEviction(
         currentLevel: Int,
         currentSubSample: Int,
+        layerIds: List<String>
     ) {
-        /**
-         * If not all tiles at current level (or also current sub-sample) are fetched, don't go
-         * further.
-         */
-        val nTilesAtCurrentLevel = tilesCollected.count {
-            it.zoom == currentLevel && it.subSample == currentSubSample && it.alpha == 1f
-        }
-        if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
-            return
-        }
-
-        val otherTilesNotSubSampled = tilesCollected.filter {
-            it.zoom != currentLevel && it.subSample == 0
-        }
-
-        val subSampledTiles = tilesCollected.filter {
-            it.zoom == 0 && it.subSample != currentSubSample
-        }
-
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
 
-            val found = otherTilesNotSubSampled.any {
-                it.samePositionAs(tile)
-            }
-            if (found) {
+            /* Remove tiles at the same level but from other layers */
+            if (
+                tile.zoom == currentLevel
+                && tile.subSample == currentSubSample
+                && tile.layerIds != layerIds
+            ) {
                 iterator.remove()
                 tile.recycle()
-                continue
             }
 
-            if (subSampledTiles.contains(tile)) {
+            /* Remove other tiles at different level and sub-sample */
+            if ((tile.zoom != currentLevel && tile.subSample == 0)
+                || (tile.zoom == 0 && tile.subSample != currentSubSample)
+            ) {
                 iterator.remove()
                 tile.recycle()
             }
+        }
+    }
+
+    private fun evictAll() {
+        val iterator = tilesCollected.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+            iterator.remove()
+            tile.recycle()
         }
     }
 

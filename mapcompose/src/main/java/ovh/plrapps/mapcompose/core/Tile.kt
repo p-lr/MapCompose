@@ -37,7 +37,3 @@ internal fun Tile.sameSpecAs(
     return this.zoom == zoom && this.row == row && this.col == col && this.subSample == subSample
             && this.layerIds == layerIds && this.opacities == opacities
 }
-
-internal fun Tile.samePositionAs(tile: Tile): Boolean {
-    return zoom == tile.zoom && row == tile.row && col == tile.col
-}
