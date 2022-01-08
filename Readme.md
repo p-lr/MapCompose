@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.1.0)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.1.0--rc01-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 🎉 New v2.0.0 has layers support
 
@@ -47,7 +47,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.0.0-beta02'
+implementation 'ovh.plrapps:mapcompose:2.0.0-rc01'
 ```
 
 ## Basics
@@ -256,6 +256,21 @@ parameters.
 * A lot of things which couldn't change after MapView configuration can now be changed dynamically
 in MapCompose. For example, the `zIndex` of a marker, or the minimum scale mode can be changed at
 runtime.
+
+## Difference with `1.x` version
+
+* There's now a way to set initial values for various properties such as scroll, scale, etc using
+the `InitialValuesBuilder` in the `MapState` constructor. To produce similar behavior in 1.x, one
+had to launch a coroutine right after `MapState` creation - which wasn't perfect since some
+undesired tile loading could happen between the initialization and the destination state.
+
+* Having a `TileStreamProvider` at `MapState` construction is no longer mandatory.
+`TileStreamProvider`s are now added using the `addLayer` api, which is completely dynamic.
+
+* While 1.x version had a non-suspending `TileStreamProvider`, 2.x greatly benefits from the new
+suspend version. If you're using a library like Retrofit to perform remote http fetch (and suspend
+calls), tile loading will be optimal since all layers are fetched concurrently. That was already the
+case in 1.x, but not thanks to suspending calls.
 
 ## Contributors
 
