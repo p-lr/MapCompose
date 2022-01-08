@@ -12,8 +12,6 @@ import kotlinx.coroutines.launch
  * So long as the returned [SendChannel] receives [T] elements, the provided [block] function isn't
  * executed until a time-span of [timeoutMillis] elapses.
  * When [block] is executed, it's provided with the last [T] value sent to the channel.
- *
- * @author peterLaurence
  */
 fun <T> CoroutineScope.debounce(
     timeoutMillis: Long,

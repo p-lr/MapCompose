@@ -30,7 +30,8 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
     private val spec = TweenSpec<Float>(2000, easing = FastOutSlowInEasing)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, tileStreamProvider).apply {
+        MapState(4, 4096, 4096).apply {
+            addLayer(tileStreamProvider)
             shouldLoopScale = true
             enableRotation()
             addMarker("m0", 0.5, 0.5) { Marker() }

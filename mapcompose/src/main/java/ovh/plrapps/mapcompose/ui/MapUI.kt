@@ -24,7 +24,9 @@ fun MapUI(
 
     key(state) {
         ZoomPanRotate(
-            modifier = modifier.clipToBounds().background(state.mapBackground),
+            modifier = modifier
+                .clipToBounds()
+                .background(state.mapBackground),
             gestureListener = zoomPRState,
             layoutSizeChangeListener = zoomPRState,
             padding = zoomPRState.padding,
@@ -37,7 +39,7 @@ fun MapUI(
                 alphaTick = state.tileCanvasState.alphaTick,
                 colorFilterProvider = state.tileCanvasState.colorFilterProvider,
                 tilesToRender = state.tileCanvasState.tilesToRender,
-                isFilteringBitmap = state.isFilteringBitmap
+                isFilteringBitmap = state.isFilteringBitmap,
             )
 
             MarkerComposer(

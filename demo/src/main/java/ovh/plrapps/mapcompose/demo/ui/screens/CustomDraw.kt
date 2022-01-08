@@ -28,14 +28,14 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log10
 import kotlin.math.pow
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 /**
  * This demo shows how to embed custom drawings inside [MapUI].
  */
 @Composable
 fun CustomDraw(
-    modifier: Modifier = Modifier, viewModel: CustomDrawVM
+    modifier: Modifier = Modifier, viewModel: CustomDrawVM = viewModel()
 ) {
     Box {
         MapUI(modifier, state = viewModel.state) {

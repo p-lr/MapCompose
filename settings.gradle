@@ -7,4 +7,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "MapCompose"
-include ':demo', ':mapcompose'
+include ':mapcompose', ':demo', ':testapp'

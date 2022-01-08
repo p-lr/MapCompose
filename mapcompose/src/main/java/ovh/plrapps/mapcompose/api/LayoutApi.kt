@@ -15,6 +15,7 @@ import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.rotate
@@ -56,7 +57,7 @@ val MapState.scroll: Offset
  * suspending call because it's required to wait the first composition. Otherwise, it's invoked
  * immediately.
  * This is a low-level concept (input value is expected to be in scaled pixels). To scroll to a
- * known position, prefer the [scrollTo] API.
+ * known position, prefer the [snapScrollTo] API.
  */
 suspend fun MapState.setScroll(offset: Offset) {
     with(zoomPanRotateState) {
@@ -158,6 +159,32 @@ suspend fun MapState.rotateTo(
 }
 
 /**
+ * Scrolls to a position. Defaults to centering on the provided scroll destination.
+ *
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ * @param screenOffset Offset of the screen relatively to its dimension. Default is
+ * Offset(-0.5f, -0.5f), so moving the screen by half the width left and by half the height top,
+ * effectively centering on the scroll destination.
+ */
+suspend fun MapState.snapScrollTo(
+    x: Double,
+    y: Double,
+    screenOffset: Offset = Offset(-0.5f, -0.5f)
+) {
+    with(zoomPanRotateState) {
+        awaitLayout()
+        val offsetX = screenOffset.x * layoutSize.width
+        val offsetY = screenOffset.y * layoutSize.height
+
+        val destScrollX = (x * fullWidth * scale + offsetX).toFloat()
+        val destScrollY = (y * fullHeight * scale + offsetY).toFloat()
+
+        setScroll(destScrollX, destScrollY)
+    }
+}
+
+/**
  * Scrolls to a position, animating the scroll and the scale. Defaults to centering on the provided
  * scroll destination.
  *
@@ -198,6 +225,25 @@ suspend fun MapState.scrollTo(
 }
 
 /**
+ * Scrolls to an area. The target position will be centered on the area, scaled in as much as
+ * possible while still keeping the area plus the provided padding completely in view.
+ *
+ * @param area The [BoundingBox] of the target area to scroll to.
+ * @param padding Padding around the area defined as a fraction of the viewport.
+ */
+suspend fun MapState.snapScrollTo(
+    area: BoundingBox,
+    padding: Offset = Offset(0f, 0f)
+) {
+    with(zoomPanRotateState) {
+        awaitLayout()
+        val (center, scale) = calculateScrollTo(area, padding)
+        setScale(scale)
+        snapScrollTo(center.x, center.y)
+    }
+}
+
+/**
  * Scrolls to an area, animating the scroll and the scale. The target position will be centered
  * on the area, scaled in as much as possible while still keeping the area plus the provided
  * padding completely in view.
@@ -213,30 +259,44 @@ suspend fun MapState.scrollTo(
 ) {
     with(zoomPanRotateState) {
         awaitLayout()
-
-        val centerX = (area.xLeft + area.xRight) / 2
-        val centerY = (area.yTop + area.yBottom) / 2
-
-        val xAxisScale = fullHeight / fullWidth.toDouble()
-        val normalizedArea = area.scaleAxis(1 / xAxisScale)
-        val rotatedNormalizedArea = normalizedArea.rotate(Point(centerX / xAxisScale, centerY), -rotation.toRad())
-        val rotatedArea = rotatedNormalizedArea.scaleAxis(xAxisScale)
-
-        val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
-        val availableViewportWidth = layoutSize.width * (1 - padding.x)
-        val areaWidthLayoutFraction = areaWidth / availableViewportWidth
-        val horizontalScale = 1 / areaWidthLayoutFraction
-
-        val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
-        val availableViewportHeight = layoutSize.height * (1 - padding.y)
-        val areaHeightLayoutFraction = areaHeight / availableViewportHeight
-        val verticalScale = 1 / areaHeightLayoutFraction
-
-        val targetScale = min(horizontalScale, verticalScale).toFloat()
-        val effectiveTargetScale = constrainScale(targetScale)
-
-        scrollTo(centerX, centerY, effectiveTargetScale, animationSpec)
+        val (center, scale) = calculateScrollTo(area, padding)
+        scrollTo(center.x, center.y, scale, animationSpec)
     }
+}
+
+/**
+ * Calculates the target scroll position and scale that will be centered on the given [area] and
+ * scaled in as much as possible while keeping the [area] plus [padding] in view.
+ *
+ * @return The scroll position and scale, as a [Pair].
+ */
+private fun ZoomPanRotateState.calculateScrollTo(
+    area: BoundingBox,
+    padding: Offset
+): Pair<Point, Float> {
+    val centerX = (area.xLeft + area.xRight) / 2
+    val centerY = (area.yTop + area.yBottom) / 2
+
+    val xAxisScale = fullHeight / fullWidth.toDouble()
+    val normalizedArea = area.scaleAxis(1 / xAxisScale)
+    val rotatedNormalizedArea =
+        normalizedArea.rotate(Point(centerX / xAxisScale, centerY), -rotation.toRad())
+    val rotatedArea = rotatedNormalizedArea.scaleAxis(xAxisScale)
+
+    val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
+    val availableViewportWidth = layoutSize.width * (1 - padding.x)
+    val areaWidthLayoutFraction = areaWidth / availableViewportWidth
+    val horizontalScale = 1 / areaWidthLayoutFraction
+
+    val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
+    val availableViewportHeight = layoutSize.height * (1 - padding.y)
+    val areaHeightLayoutFraction = areaHeight / availableViewportHeight
+    val verticalScale = 1 / areaHeightLayoutFraction
+
+    val targetScale = min(horizontalScale, verticalScale).toFloat()
+    val effectiveTargetScale = constrainScale(targetScale)
+
+    return Point(centerX, centerY) to effectiveTargetScale
 }
 
 /**

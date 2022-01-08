@@ -13,9 +13,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
-import ovh.plrapps.mapcompose.core.ColorFilterProvider
-import ovh.plrapps.mapcompose.core.Tile
-import ovh.plrapps.mapcompose.core.VisibleTilesResolver
+import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
 @Composable
@@ -27,7 +25,7 @@ internal fun TileCanvas(
     alphaTick: Float,
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
-    isFilteringBitmap: () -> Boolean
+    isFilteringBitmap: () -> Boolean,
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {

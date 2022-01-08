@@ -4,7 +4,7 @@ package ovh.plrapps.mapcompose.core
  * A simple pool of objects.
  * This class isn't thread-safe.
  */
-internal class Pool<T>(private val threshold: Int = 100) {
+internal class Pool<T>(private val threshold: Int = 300) {
     val size: Int
         get() = pool.size
 

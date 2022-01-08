@@ -1,6 +1,8 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.0.5-green)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.1.0)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+
+🎉 New v2.0.0 has layers support
 
 # MapCompose
 
@@ -18,9 +20,11 @@ val tileStreamProvider =
     }
 
 val state: MapState by mutableStateOf(
-    MapState(4, 4096, 4096, tileStreamProvider).apply {
+    MapState(4, 4096, 4096) {
+        scroll(0.5, 0.5)
+    }.apply {
+        addLayer(tileStreamProvider)
         enableRotation()
-        scrollTo(0.5, 0.5)
     }
 )
 
@@ -33,7 +37,7 @@ fun MapContainer(
 }
 ```
 
-Inspired by [MapView](https://github.com/peterLaurence/MapView), every aspects of the library have
+Inspired by [MapView](https://github.com/p-lr/MapView), every aspects of the library have
 been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
 This project holds the source code of this library, plus a demo app (which is useful to get started).
@@ -43,7 +47,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:1.1.1'
+implementation 'ovh.plrapps:mapcompose:2.0.0-beta02'
 ```
 
 ## Basics
@@ -84,18 +88,29 @@ details on the `MapState` class, and give examples of how to add markers, callou
 
 ### MapState
 
-The `MapState` class expects four parameters for its construction:
+The `MapState` class expects three parameters for its construction:
 * `levelCount`: The number of levels of the map,
 * `fullWidth`: The width of the map at scale 1.0, which is the width of last level,
-* `fullHeight`: The height of the map at scale 1.0, which is the height of last level,
-* `tileStreamProvider`: Your implementation of this interface (see below) provides `InputStream`s of
-image files (png, jpg). MapCompose will request tiles using the convention that the origin is at the
-top-left corner. For example, the tile requested with `row` = 0, and `col = 0` will be positioned at
-the top-left corner.
+* `fullHeight`: The height of the map at scale 1.0, which is the height of last level
+
+### Layers
+
+MapCompose supports layers though the ability to add several tile pyramids. Each level is made of
+the superposition of tiles from all pyramids at the given level. For example, at the second level
+(starting from the lowest scale), tiles would look like the image below when three layers are added.
+
+<p align="center">
+<img src="doc/readme-files/layer.png" width="200">
+</p>
+
+Your implementation of the `TileStreamProvider` interface (see below) is what defines a tile
+pyramid. It provides `InputStream`s of image files (png, jpg). MapCompose will request tiles using
+the convention that the origin is at the top-left corner. For example, the tile requested with
+`row` = 0, and `col = 0` will be positioned at the top-left corner.
 
 ```kotlin
 fun interface TileStreamProvider {
-    fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
 }
 ```
 
@@ -107,9 +122,12 @@ That optional parameter defines the size of the dedicated thread pool for fetchi
 to the number of cores minus one. Typically, you would want to set `workerCount` to 16 when performing
 HTTP requests. Otherwise, you can safely leave it to its default.
 
+To add a layer, use the `addLayer` on your `MapState` instance. There are others APIs for reordering,
+removing, setting alpha - all dynamically.
+
 ### Markers
 
-To add a marker, use the [addMarker](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
+To add a marker, use the [addMarker](https://github.com/p-lr/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L30)
 API, like so:
 
 ```kotlin
@@ -132,21 +150,21 @@ A marker is composable which you supply (in the example above, it's an `Icon`). 
 whatever composable you like. A marker does not scale, but it's position updates as the map scales,
 so it's always attached to the original position. A marker has an anchor point defined - the point
 which is fixed relatively to the map. This anchor point is defined using relative offsets, which are
-applied to with and height of the marker. For example, to have a marker center horizontally to a
+applied to the width and height of the marker. For example, to have a marker center horizontally to a
 point, and align at the bottom edge (like a typical map pin would do), you'd pass -0.5f and -1.0f
 (thus, left position is offset by half the width, and top is offset by the full height).
 If necessary, an absolute offset expressed in pixels can be applied, in addition to the
 relative offset.
 
-Markers can be moved, removed, and be draggable. See the following APIs: [moveMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L72),
-[removeMarker](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L61),
-[enableMarkerDrag](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L89).
+Markers can be moved, removed, and be draggable. See the following APIs: [moveMarker](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L72),
+[removeMarker](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L61),
+[enableMarkerDrag](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L89).
 
 ### Callouts
 
 Callouts are typically message popups which are, like markers, attached to a specific position.
 However, they automatically dismiss on touch down (this is the default behavior, which can be
-changed). To add a callout, use [addCallout](https://github.com/peterLaurence/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
+changed). To add a callout, use [addCallout](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
 
 <p align="center">
 <img src="doc/readme-files/callout.png">
@@ -174,7 +192,7 @@ mapState.addPath("pathName", pathData, color = Color(0xFF448AFF), width = 12.dp)
 
 It's important to note that the only way to get a `PathDataBuilder` is by using the
 `makePathDataBuilder` function. Once you've built your `PathData` instance, you can use the
-use the [addPath](https://github.com/peterLaurence/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
+use the [addPath](https://github.com/p-lr/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
 API.
 
 <p align="center">
@@ -203,13 +221,13 @@ the map.
 
 When animating the scale, we generally do so while maintaining the center of the screen at
 a specific position. When animating the scroll position, we can do so with or without animating the
-scale altogether. There's one API to handle both scenario:
-[scrollTo](https://github.com/peterLaurence/MapCompose/blob/cf69d55a8ca9eb279ab07011c4c7a003b5c4266f/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L138)
+scale altogether, using [scrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L188)
+and [snapScrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L161).
 
 *rotation animation*
 
 For animating the rotation while keeping the current scale and scroll, use the
-[rotateTo](https://github.com/peterLaurence/MapCompose/blob/982caf29ab5e86b58c56812735f60bfe405638ea/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L130) API.
+[rotateTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L149) API.
 
 Both `scrollTo` and `rotateTo` are suspending functions. That means you know exactly when
 an animation finishes, and you can easily chain animations inside a coroutine.
@@ -238,4 +256,9 @@ parameters.
 * A lot of things which couldn't change after MapView configuration can now be changed dynamically
 in MapCompose. For example, the `zIndex` of a marker, or the minimum scale mode can be changed at
 runtime.
+
+## Contributors
+
+Marcin (@Nohus) has contributed and fixed some issues. He also thoroughly tested the new layers 
+feature – which made `MapCompose` better.
 

@@ -6,11 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ovh.plrapps.mapcompose.demo.viewmodels.CalloutVM
 import ovh.plrapps.mapcompose.ui.MapUI
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun CalloutDemo(
     modifier: Modifier = Modifier,
-    viewModel: CalloutVM
+    viewModel: CalloutVM = viewModel()
 ) {
     Column(modifier.fillMaxSize()) {
         MapUI(

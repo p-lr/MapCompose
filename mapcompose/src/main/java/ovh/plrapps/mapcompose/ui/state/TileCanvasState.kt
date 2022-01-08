@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.core.*
+import java.util.*
 import java.util.concurrent.Executors
 import kotlin.math.pow
 
@@ -27,7 +28,6 @@ import kotlin.math.pow
 internal class TileCanvasState(
     parentScope: CoroutineScope, tileSize: Int,
     private val visibleTilesResolver: VisibleTilesResolver,
-    tileStreamProvider: TileStreamProvider,
     workerCount: Int, highFidelityColors: Boolean
 ) {
 
@@ -37,28 +37,14 @@ internal class TileCanvasState(
         parentScope.coroutineContext + singleThreadDispatcher
     )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
-    private var hashOfPreviousRender: Int = 0
-    private val renderTask = scope.throttle(wait = 34) {
-        /* Quick comparison in order to avoid unnecessarily sorting the list of collected tiles.
-         * Since Tile is a data class, a hash code of a List<Tile> is an ordered hash code made from
-         * each tile hash code. */
-        val newHash = tilesCollected.hashCode()
-        if (newHash == hashOfPreviousRender) return@throttle
-        hashOfPreviousRender = newHash
 
-        /* Right before sending tiles to the view, reorder them so that tiles from current level are
-         * above others, and make a defensive copy. */
-        val lastVisible = lastVisible ?: return@throttle
-        val tilesToRenderCopy = tilesCollected.sortedBy {
-            it.zoom == lastVisible.level && it.subSample == lastVisible.subSample
-        }
-        tilesToRender = tilesToRenderCopy
-    }
+    private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
+    internal val layerFlow = _layerFlow.asStateFlow()
 
     private val bitmapPool = Pool<Bitmap>()
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
-    private val visibleTilesFlow = MutableSharedFlow<VisibleTiles?>()
+    private val visibleStateFlow = MutableStateFlow<VisibleState?>(null)
     internal var alphaTick = 0.07f
         set(value) {
             field = value.coerceIn(0.01f, 1f)
@@ -84,17 +70,37 @@ internal class TileCanvasState(
         Bitmap.Config.RGB_565
     }
 
-    private var lastVisible: VisibleTiles? = null
-    private var lastVisibleCount: Int = 0
-    private var idle = false
+    private val lastVisible: VisibleTiles?
+        get() = visibleStateFlow.value?.visibleTiles
 
     /**
      * So long as this debounced channel is offered a message, the lambda isn't called.
      */
     private val idleDebounced = scope.debounce<Unit>(400) {
-        idle = true
-        val lastVisible = lastVisible ?: return@debounce
-        evictTiles(lastVisible)
+        visibleStateFlow.value?.also { (visibleTiles, layerIds, opacities) ->
+            evictTiles(visibleTiles, layerIds, opacities, aggressiveAttempt = true)
+            renderTiles(visibleTiles, layerIds)
+        }
+    }
+
+    private val renderTask = scope.throttle(wait = 34) {
+        /* Evict, then render */
+        val (lastVisible, ids, opacities) = visibleStateFlow.value ?: return@throttle
+        evictTiles(lastVisible, ids, opacities)
+
+        renderTiles(lastVisible, ids)
+    }
+
+    private fun renderTiles(visibleTiles: VisibleTiles, layerIds: List<String>) {
+        /* Right before sending tiles to the view, reorder them so that tiles from current level are
+         * above others. */
+        val tilesToRenderCopy = tilesCollected.sortedBy {
+            val priority =
+                if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
+            priority + if (layerIds == it.layerIds) 1 else 0
+        }
+
+        tilesToRender = tilesToRenderCopy
     }
 
     private val tilesCollected = mutableListOf<Tile>()
@@ -108,19 +114,30 @@ internal class TileCanvasState(
         }
 
         /* Launch the TileCollector */
-        tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig)
-        with(tileCollector) {
-            scope.collectTiles(
-                visibleTileLocationsChannel,
-                tilesOutput,
-                tileStreamProvider,
-                bitmapFlow
-            )
+        tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig, tileSize)
+        scope.launch {
+            _layerFlow.collectLatest {
+                tileCollector.collectTiles(
+                    visibleTileLocationsChannel,
+                    tilesOutput,
+                    it,
+                    bitmapFlow
+                )
+            }
         }
 
         /* Launch a coroutine to consume the produced tiles */
         scope.launch {
             consumeTiles(tilesOutput)
+        }
+    }
+
+    fun setLayers(layers: List<Layer>) {
+        /* If there's nothing in common with current layers, the canvas will be cleared */
+        val clear = layers.intersect(_layerFlow.value.toSet()).isEmpty()
+        _layerFlow.value = layers
+        if (clear) {
+            evictAll()
         }
     }
 
@@ -131,42 +148,27 @@ internal class TileCanvasState(
 
     suspend fun setViewport(viewport: Viewport) {
         /* Thread-confine the tileResolver to the main thread */
-        val visibleTiles = withContext(Dispatchers.Main.immediate) {
+        val visibleTiles = withContext(Dispatchers.Main) {
             visibleTilesResolver.getVisibleTiles(viewport)
         }
 
         withContext(scope.coroutineContext) {
-            /* It's important to set the idle flag to false before launching computations, so that
-             * tile eviction don't happen too quickly (can cause blinks) */
-            idle = false
-
             setVisibleTiles(visibleTiles)
         }
     }
 
-    private suspend fun setVisibleTiles(visibleTiles: VisibleTiles) {
+    private fun setVisibleTiles(visibleTiles: VisibleTiles) {
         /* Feed the tile processing machinery */
-        visibleTilesFlow.emit(visibleTiles)
-
-        lastVisible = visibleTiles
-        lastVisibleCount = visibleTiles.count
-
-        evictTiles(visibleTiles)
+        val layerIds = _layerFlow.value.map { it.id }
+        val opacities = _layerFlow.value.map { it.alpha }
+        val visibleTilesForLayers = VisibleState(visibleTiles, layerIds, opacities)
+        visibleStateFlow.value = visibleTilesForLayers
 
         renderThrottled()
     }
 
-    fun clearVisibleTiles() = scope.launch {
-        tilesCollected.clear()
-
-        /**
-         * Reset the [visibleTilesFlow] state so that any new [VisibleTiles] value will trigger and
-         * update. */
-        visibleTilesFlow.emit(null)
-    }
-
     /**
-     * Consumes incoming visible tiles from [visibleTilesFlow] and sends [TileSpec] instances to the
+     * Consumes incoming visible tiles from [visibleStateFlow] and sends [TileSpec] instances to the
      * [TileCollector].
      *
      * Leverage built-in back pressure, as this function will suspend when the tile collector is busy
@@ -174,20 +176,29 @@ internal class TileCanvasState(
      *
      * Using [Flow.collectLatest], we cancel any ongoing previous tile list processing. It's
      * particularly useful when the [TileCollector] is too slow, so when a new [VisibleTiles] element
-     * is received from [visibleTilesFlow], no new [TileSpec] elements from the previous [VisibleTiles]
+     * is received from [visibleStateFlow], no new [TileSpec] elements from the previous [VisibleTiles]
      * element are sent to the [TileCollector]. When the [TileCollector] is ready to resume processing,
      * the latest [VisibleTiles] element is processed right away.
      */
     private suspend fun collectNewTiles() {
-        visibleTilesFlow.distinctUntilChanged().collectLatest { visibleTiles ->
+        visibleStateFlow.collectLatest { visibleState ->
+            val visibleTiles = visibleState?.visibleTiles
             if (visibleTiles != null) {
                 for (e in visibleTiles.tileMatrix) {
                     val row = e.key
                     val colRange = e.value
                     for (col in colRange) {
                         val alreadyProcessed = tilesCollected.any { tile ->
-                            tile.sameSpecAs(visibleTiles.level, row, col, visibleTiles.subSample)
+                            tile.sameSpecAs(
+                                visibleTiles.level,
+                                row,
+                                col,
+                                visibleTiles.subSample,
+                                visibleState.layerIds,
+                                visibleState.opacities
+                            )
                         }
+
                         /* Only emit specs which haven't already been processed by the collector
                          * Doing this now results in less object allocations than filtering the flow
                          * afterwards */
@@ -214,15 +225,23 @@ internal class TileCanvasState(
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
             val lastVisible = lastVisible
-            if ((lastVisible == null || lastVisible.contains(tile)) && !tilesCollected.contains(tile)) {
+            if (
+                (lastVisible == null || lastVisible.contains(tile))
+                && !tilesCollected.contains(tile)
+                && tile.layerIds == visibleStateFlow.value?.layerIds
+            ) {
                 tile.prepare()
                 tilesCollected.add(tile)
-                idleDebounced.trySend(Unit)
                 renderThrottled()
             } else {
                 tile.recycle()
             }
+            fullEvictionDebounced()
         }
+    }
+
+    private fun fullEvictionDebounced() {
+        idleDebounced.trySend(Unit)
     }
 
     /**
@@ -274,95 +293,122 @@ internal class TileCanvasState(
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
-    private fun evictTiles(visibleTiles: VisibleTiles) {
+    private fun evictTiles(
+        visibleTiles: VisibleTiles,
+        layerIds: List<String>,
+        opacities: List<Float>,
+        aggressiveAttempt: Boolean = false
+    ) {
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
-        /* Always remove tiles that aren't visible at current level */
-        val iterator = tilesCollected.iterator()
-        while (iterator.hasNext()) {
-            val tile = iterator.next()
-            if (
-                tile.zoom == currentLevel
-                && tile.subSample == visibleTiles.subSample
-                && !visibleTiles.contains(tile)
-            ) {
-                iterator.remove()
-                tile.recycle()
-            }
-        }
+        /* Always perform partial eviction */
+        partialEviction(visibleTiles, layerIds, opacities)
 
-        if (!idle) {
-            partialEviction(visibleTiles)
-        } else {
-            aggressiveEviction(currentLevel, currentSubSample)
+        if (aggressiveAttempt) {
+            /**
+             * If not all tiles at current level (or also current sub-sample) are fetched, abort
+             * the attempt.
+             */
+            val nTilesAtCurrentLevel = tilesCollected.count {
+                it.zoom == currentLevel && it.subSample == currentSubSample && it.alpha == 1f
+                        && it.layerIds == layerIds
+            }
+            if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
+                return
+            }
+            aggressiveEviction(currentLevel, currentSubSample, layerIds)
         }
     }
 
     /**
-     * Evict tiles for levels different than the current one, that aren't visible.
+     * Evict:
+     * * tiles of levels different than the current one, that aren't visible,
+     * * tiles that aren't visible at current level, and tiles from current level which aren't made
+     * of current layers
      */
-    private fun partialEviction(visibleTiles: VisibleTiles) {
+    private fun partialEviction(
+        visibleTiles: VisibleTiles,
+        layerIds: List<String>,
+        opacities: List<Float>
+    ) {
         val currentLevel = visibleTiles.level
-
-        /* First, deal with tiles of other levels */
-        val otherTilesNotSubSampled = tilesCollected.filter {
-            it.zoom != currentLevel
-        }
-        val evictList = mutableListOf<Tile>()
-        if (otherTilesNotSubSampled.isNotEmpty()) {
-            otherTilesNotSubSampled.forEach {
-                if (!visibleTiles.intersects(it)) {
-                    evictList.add(it)
-                }
-            }
-        }
-
-        for (tile in evictList) {
-            tilesCollected.remove(tile)
-            tile.recycle()
-        }
-    }
-
-    /**
-     * Only triggered after the [idleDebounced] fires.
-     */
-    private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int) {
-        /**
-         * If not all tiles at current level (or also current sub-sample) are fetched, don't go
-         * further.
-         */
-        val nTilesAtCurrentLevel = tilesCollected.count {
-            it.zoom == currentLevel && it.subSample == currentSubSample
-        }
-        if (nTilesAtCurrentLevel < lastVisibleCount) {
-            return
-        }
-
-        val otherTilesNotSubSampled = tilesCollected.filter {
-            it.zoom != currentLevel && it.subSample == 0
-        }
-
-        val subSampledTiles = tilesCollected.filter {
-            it.zoom == 0 && it.subSample != currentSubSample
-        }
+        val currentSubSample = visibleTiles.subSample
 
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
-            val found = otherTilesNotSubSampled.any {
-                it.samePositionAs(tile)
-            }
-            if (found) {
+
+            if (tile.zoom != currentLevel && !visibleTiles.intersects(tile)) {
                 iterator.remove()
                 tile.recycle()
                 continue
             }
 
-            if (subSampledTiles.contains(tile)) {
+            if (
+                tile.zoom == currentLevel
+                && tile.subSample == currentSubSample
+                && (!visibleTiles.contains(tile) || !shouldKeepTile(tile, layerIds, opacities))
+            ) {
                 iterator.remove()
                 tile.recycle()
             }
+        }
+    }
+
+    private fun shouldKeepTile(
+        tile: Tile,
+        layerIds: List<String>,
+        opacities: List<Float>
+    ): Boolean {
+        if (layerIds.isEmpty()) return false
+        return if (tile.layerIds != layerIds) {
+            layerIds.containsAll(tile.layerIds) || tile.layerIds.containsAll(layerIds)
+        } else {
+            tile.opacities == opacities
+        }
+    }
+
+    /**
+     * Removes tiles of other levels, even if they are visible (although they should be drawn beneath
+     * currently visible tiles).
+     * Only triggered after the [idleDebounced] fires.
+     */
+    private fun aggressiveEviction(
+        currentLevel: Int,
+        currentSubSample: Int,
+        layerIds: List<String>
+    ) {
+        val iterator = tilesCollected.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+
+            /* Remove tiles at the same level but from other layers */
+            if (
+                tile.zoom == currentLevel
+                && tile.subSample == currentSubSample
+                && tile.layerIds != layerIds
+            ) {
+                iterator.remove()
+                tile.recycle()
+            }
+
+            /* Remove other tiles at different level and sub-sample */
+            if ((tile.zoom != currentLevel && tile.subSample == 0)
+                || (tile.zoom == 0 && tile.subSample != currentSubSample)
+            ) {
+                iterator.remove()
+                tile.recycle()
+            }
+        }
+    }
+
+    private fun evictAll() {
+        val iterator = tilesCollected.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+            iterator.remove()
+            tile.recycle()
         }
     }
 
@@ -390,4 +436,10 @@ internal class TileCanvasState(
     private fun Int.maxAtGreaterLevel(n: Int): Int {
         return (this + 1) * 2.0.pow(n).toInt() - 1
     }
+
+    private data class VisibleState(
+        val visibleTiles: VisibleTiles,
+        val layerIds: List<String>,
+        val opacities: List<Float>
+    )
 }

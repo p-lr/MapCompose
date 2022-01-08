@@ -19,12 +19,12 @@ import kotlin.math.*
  * @param scaleProvider Since the component which invokes [getVisibleTiles] isn't likely to be the
  * component which owns the scale state, we provide it here as a loosely coupled reference.
  *
- * @author peterLaurence on 25/05/2019
+ * @author p-lr on 25/05/2019
  */
 internal class VisibleTilesResolver(
     private val levelCount: Int, private val fullWidth: Int,
     private val fullHeight: Int, private val tileSize: Int = 256,
-    private val magnifyingFactor: Int = 0,
+    var magnifyingFactor: Int = 0,
     private val scaleProvider: ScaleProvider
 ) {
 
@@ -180,13 +180,13 @@ internal class VisibleTilesResolver(
  * is lower than the scale of the minimum level, [subSample] is greater than 0. Otherwise, [subSample]
  * equals 0.
  */
-data class VisibleTiles(
-    var level: Int,
+internal data class VisibleTiles(
+    val level: Int,
     val tileMatrix: TileMatrix,
     val count: Int,
     val subSample: Int = 0
 )
 
-typealias Row = Int
-typealias ColRange = IntRange
-typealias TileMatrix = Map<Row, ColRange>
+internal typealias Row = Int
+internal typealias ColRange = IntRange
+internal typealias TileMatrix = Map<Row, ColRange>

@@ -4,6 +4,7 @@ package ovh.plrapps.mapcompose.api
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -13,14 +14,18 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * A [speed] of 1f effectively disables the fade-in effect.
  */
 fun MapState.setFadeInSpeed(speed: Float) {
-    tileCanvasState.alphaTick = speed
+    scope.launch {
+        tileCanvasState.alphaTick = speed
+    }
 }
 
 /**
  * Disables the fade-in effect of tiles.
  */
 fun MapState.disableFadeIn() {
-    tileCanvasState.alphaTick = 1f
+    scope.launch {
+        tileCanvasState.alphaTick = 1f
+    }
 }
 
 /**
@@ -56,4 +61,30 @@ fun MapState.setBitmapFilteringEnabled(enabled: Boolean) {
  */
 fun MapState.setBitmapFilteringEnabled(predicate: (state: MapState) -> Boolean) {
     isFilteringBitmap = { predicate(this) }
+}
+
+/**
+ * Virtually increase the size of the screen by a padding in pixel amount.
+ * With the appropriate value, this can be used to produce a seamless tile loading effect.
+ *
+ * @param padding in pixels
+ */
+fun MapState.setPreloadingPadding(padding: Int) {
+    scope.launch {
+        preloadingPadding = padding.coerceAtLeast(0)
+        renderVisibleTilesThrottled()
+    }
+}
+
+/**
+ * The magnifying factor alters the level at which tiles are picked for a given scale. By default,
+ * the level immediately higher (in index) is picked, to avoid sub-sampling. This corresponds to a
+ * magnifying factor of 0. The value 1 will result in picking the current level at a given scale,
+ * which will be at a relative scale between 1.0 and 2.0
+ */
+fun MapState.setMagnifyingFactor(factor: Int) {
+    scope.launch {
+        visibleTilesResolver.magnifyingFactor = factor
+        renderVisibleTilesThrottled()
+    }
 }

@@ -10,13 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.demo.viewmodels.AnimationDemoVM
 import ovh.plrapps.mapcompose.ui.MapUI
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 @Composable
 fun AnimationDemo(
     modifier: Modifier = Modifier,
-    viewModel: AnimationDemoVM,
-    onRestart: () -> Unit
+    viewModel: AnimationDemoVM = viewModel(),
+    onRestart: () -> Unit = viewModel::startAnimation
 ) {
     Column(modifier.fillMaxSize()) {
         MapUI(

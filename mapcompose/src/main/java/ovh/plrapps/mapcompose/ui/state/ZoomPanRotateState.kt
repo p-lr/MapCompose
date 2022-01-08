@@ -19,7 +19,11 @@ import kotlin.math.*
 internal class ZoomPanRotateState(
     val fullWidth: Int,
     val fullHeight: Int,
-    private val stateChangeListener: ZoomPanRotateStateListener
+    private val stateChangeListener: ZoomPanRotateStateListener,
+    minimumScaleMode: MinimumScaleMode,
+    maxScale: Float,
+    scale: Float,
+    rotation: AngleDegree
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
@@ -38,7 +42,7 @@ internal class ZoomPanRotateState(
         }
     }
 
-    internal var minimumScaleMode: MinimumScaleMode = Fit
+    internal var minimumScaleMode: MinimumScaleMode = minimumScaleMode
         set(value) {
             field = value
             recalculateMinScale()
@@ -47,8 +51,8 @@ internal class ZoomPanRotateState(
     internal var isRotationEnabled = false
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
-    internal var scale by mutableStateOf(1f)
-    internal var rotation: AngleDegree by mutableStateOf(0f)
+    internal var scale by mutableStateOf(scale)
+    internal var rotation: AngleDegree by mutableStateOf(rotation)
     internal var scrollX by mutableStateOf(0f)
     internal var scrollY by mutableStateOf(0f)
 
@@ -63,7 +67,7 @@ internal class ZoomPanRotateState(
             setScale(scale)
         }
 
-    var maxScale = 2f
+    var maxScale = maxScale
         set(value) {
             field = value
             setScale(scale)
@@ -101,11 +105,11 @@ internal class ZoomPanRotateState(
         SplineBasedFloatDecayAnimationSpec(Density(2f)).generateDecayAnimationSpec<Offset>()
 
     @Suppress("unused")
-    fun setScale(scale: Float) {
+    fun setScale(scale: Float, notify: Boolean = true) {
         this.scale = constrainScale(scale)
         updatePadding()
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        if (notify) notifyStateChanged()
     }
 
     @Suppress("unused")
@@ -113,14 +117,14 @@ internal class ZoomPanRotateState(
         this.scrollX = constrainScrollX(scrollX)
         this.scrollY = constrainScrollY(scrollY)
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        notifyStateChanged()
     }
 
     @Suppress("unused")
-    fun setRotation(angle: AngleDegree) {
+    fun setRotation(angle: AngleDegree, notify: Boolean = true) {
         this.rotation = angle.modulo()
         updateCentroid()
-        stateChangeListener.onStateChanged()
+        if (notify) notifyStateChanged()
     }
 
     /**
@@ -387,11 +391,14 @@ internal class ZoomPanRotateState(
         scope = composableScope
 
         /* When the size changes, typically on device rotation, the scroll needs to be adapted so
-         * that we keep the same location at the center of the screen. */
-        setScroll(
-            scrollX = scrollX + (layoutSize.width - size.width) / 2,
-            scrollY = scrollY + (layoutSize.height - size.height) / 2
-        )
+         * that we keep the same location at the center of the screen. Don't do that when layout
+         * hasn't been done yet. */
+        if (layoutSize != IntSize.Zero) {
+            setScroll(
+                scrollX = scrollX + (layoutSize.width - size.width) / 2,
+                scrollY = scrollY + (layoutSize.height - size.height) / 2
+            )
+        }
 
         layoutSize = size
         recalculateMinScale()
@@ -453,6 +460,12 @@ internal class ZoomPanRotateState(
             layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
         }
         padding = IntOffset(paddingX, paddingY)
+    }
+
+    private fun notifyStateChanged() {
+        if (layoutSize != IntSize.Zero) {
+            stateChangeListener.onStateChanged()
+        }
     }
 }
 
