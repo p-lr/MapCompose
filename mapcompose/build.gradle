@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    def coroutine_version = '1.5.2'
+    def coroutine_version = '1.6.0'
 
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"

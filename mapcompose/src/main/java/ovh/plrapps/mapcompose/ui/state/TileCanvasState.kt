@@ -342,6 +342,7 @@ internal class TileCanvasState(
             if (tile.zoom != currentLevel && !visibleTiles.intersects(tile)) {
                 iterator.remove()
                 tile.recycle()
+                continue
             }
 
             if (
