@@ -47,7 +47,7 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
-            setCount(count)
+            setCount(count ?: pathData?.data?.size)
             setOffset(offset)
         }
     }
