@@ -56,8 +56,22 @@ fun MapState.updatePath(
     pathState.updatePath(id, pathData, visible, width, color, offset, count)
 }
 
+/**
+ * Removes a path.
+ *
+ * @param id The id of the path
+ */
 fun MapState.removePath(id: String) {
     pathState.removePath(id)
+}
+
+/**
+ * Check whether a path was already added or not.
+ *
+ * @param id The id of the path
+ */
+fun MapState.hasPath(id: String): Boolean {
+    return pathState.pathState.keys.contains(id)
 }
 
 /**
