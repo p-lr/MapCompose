@@ -175,6 +175,7 @@ fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
 
 /**
  * Similar to [markerDerivedState], but useful for asynchronous processing, using flow operators.
+ * Like every snapshot flow, it should be collected from the main thread.
  */
 fun MapState.markerSnapshotFlow(): Flow<List<MarkerDataSnapshot>> {
     return snapshotFlow {
