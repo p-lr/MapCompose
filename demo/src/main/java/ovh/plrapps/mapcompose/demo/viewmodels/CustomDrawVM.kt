@@ -69,12 +69,12 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
                     .clip(CircleShape)
             )
         }
-        state.enableMarkerDrag("m1") { id, x, y, dx, dy ->
+        state.enableMarkerDrag("m1") { id, x, y, dx, dy, _, _ ->
             p1x = x + dx
             p1y = y + dy
             state.moveMarker(id, p1x, p1y)
         }
-        state.enableMarkerDrag("m2") { id, x, y, dx, dy ->
+        state.enableMarkerDrag("m2") { id, x, y, dx, dy, _, _ ->
             p2x = x + dx
             p2y = y + dy
             state.moveMarker(id, p2x, p2y)

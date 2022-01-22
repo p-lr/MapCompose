@@ -36,6 +36,8 @@ internal fun MarkerLayout(
             for (measurable in measurables) {
                 val data = measurable.layoutId as? MarkerData ?: continue
                 val placeable = measurable.measure(placeableCst)
+                data.measuredWidth = placeable.measuredWidth
+                data.measuredHeight = placeable.measuredHeight
 
                 val widthOffset =
                     placeable.measuredWidth * data.relativeOffset.x + data.absoluteOffset.x

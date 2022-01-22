@@ -103,6 +103,9 @@ internal class MarkerData(
     var isClickable: Boolean by mutableStateOf(clickable)
     var zIndex: Float by mutableStateOf(zIndex)
 
+    var measuredWidth = 0
+    var measuredHeight = 0
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -128,4 +131,26 @@ internal data class CalloutData(val markerData: MarkerData, val autoDismiss: Boo
 
 internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
 internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit
-internal typealias DragInterceptor = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
+
+fun interface DragInterceptor {
+    /**
+     * The default behavior (e.g without a drag interceptor) updates the marker coordinates like so:
+     * * x: [x] + [dx]
+     * * y: [y] + [dy]
+     *
+     * @param id: The id of the marker
+     * @param x, y: The current normalized coordinates of the marker
+     * @param dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
+     * have been applied if there were no drag interceptor
+     * @param px, py: The current normalized coordinates of the pointer
+     */
+    fun onMove(
+        id: String,
+        x: Double,
+        y: Double,
+        dx: Double,
+        dy: Double,
+        px: Double,
+        py: Double
+    )
+}

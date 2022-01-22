@@ -120,11 +120,7 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
  * @param dragInterceptor (Optional) Useful to constrain drag movements along a path. When this
  * parameter is set, you're responsible for invoking [moveMarker] with appropriate values (using
  * your own custom logic).
- * The lambda receives 5 parameters:
- * * id: The id of the marker
- * * x, y: The current position in relative coordinates
- * * dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
- * have been applied if there were no drag interceptor
+ * See [DragInterceptor].
  */
 fun MapState.enableMarkerDrag(id: String, dragInterceptor: DragInterceptor? = null) {
     markerState.setDraggable(id, true)

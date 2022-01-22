@@ -53,7 +53,7 @@ internal fun MarkerComposer(
                                         change.consumeAllChanges()
                                         val interceptor = data.dragInterceptor
                                         if (interceptor != null) {
-                                            invokeDragInterceptor(data, zoomPRState, dragAmount)
+                                            invokeDragInterceptor(data, zoomPRState, dragAmount, change.position)
                                         } else {
                                             mapState.moveMarkerBy(data.id, dragAmount)
                                         }
@@ -90,8 +90,10 @@ internal fun MarkerComposer(
 private fun invokeDragInterceptor(
     data: MarkerData,
     zoomPRState: ZoomPanRotateState,
-    deltaPx: Offset
+    deltaPx: Offset,
+    position: Offset
 ) {
+    /* Compute the displacement */
     val angle = -zoomPRState.rotation.toRad()
     val dx = rotateX(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
     val dy = rotateY(deltaPx.x.toDouble(), deltaPx.y.toDouble(), angle)
@@ -101,11 +103,23 @@ private fun invokeDragInterceptor(
     val deltaY =
         (data.y + dy / (zoomPRState.fullHeight * zoomPRState.scale)).coerceIn(0.0, 1.0) - data.y
 
+    /* Compute the pointer offset */
+    val origin = Offset(- data.measuredWidth * data.relativeOffset.x, - data.measuredHeight * data.relativeOffset.y)
+    val pointerOffset = position - origin
+    val pointerOffsetRotated = Offset(
+        rotateX(pointerOffset.x.toDouble(), pointerOffset.y.toDouble(), angle).toFloat(),
+        rotateY(pointerOffset.x.toDouble(), pointerOffset.y.toDouble(), angle).toFloat()
+    )
+
+    val px = (data.x + pointerOffsetRotated.x.toDouble() / (zoomPRState.fullWidth * zoomPRState.scale)).coerceIn(0.0, 1.0)
+    val py = (data.y + pointerOffsetRotated.y.toDouble() / (zoomPRState.fullHeight * zoomPRState.scale)).coerceIn(0.0, 1.0)
+
     with(data) {
-        dragInterceptor?.invoke(
+        dragInterceptor?.onMove(
             id, x, y,
             deltaX,
-            deltaY
+            deltaY,
+            px, py
         )
     }
 }
