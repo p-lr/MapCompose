@@ -3,7 +3,6 @@ package ovh.plrapps.mapcompose.ui.markers
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
@@ -38,7 +37,11 @@ internal fun MarkerComposer(
                 Box(
                     Modifier
                         .layoutId(data)
-                        .clip(CircleShape)
+                        .then(
+                            data.clipShape?.let {
+                                Modifier.clip(it)
+                            } ?: Modifier
+                        )
                         .then(
                             if (data.isClickable) {
                                 Modifier.clickable {

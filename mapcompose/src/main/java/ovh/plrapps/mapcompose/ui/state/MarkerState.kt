@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shape
 
 internal class MarkerState {
     internal val markers = mutableStateMapOf<String, MarkerData>()
@@ -13,10 +14,11 @@ internal class MarkerState {
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float, clickable: Boolean,
+        zIndex: Float, clickable: Boolean, clipShape: Shape?,
         c: @Composable () -> Unit
     ) {
-        markers[id] = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+        markers[id] =
+            MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, clipShape, c)
     }
 
     fun addCallout(
@@ -24,7 +26,8 @@ internal class MarkerState {
         zIndex: Float, autoDismiss: Boolean, clickable: Boolean,
         c: @Composable () -> Unit
     ) {
-        val markerData = MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+        val markerData =
+            MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, null, c)
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
@@ -94,6 +97,7 @@ internal class MarkerData(
     val absoluteOffset: Offset,
     zIndex: Float,
     clickable: Boolean,
+    clipShape: Shape?,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)
@@ -101,6 +105,7 @@ internal class MarkerData(
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
     var isClickable: Boolean by mutableStateOf(clickable)
+    var clipShape: Shape? by mutableStateOf(clipShape)
     var zIndex: Float by mutableStateOf(zIndex)
 
     var measuredWidth = 0

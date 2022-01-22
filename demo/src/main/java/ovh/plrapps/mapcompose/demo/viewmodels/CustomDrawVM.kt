@@ -57,16 +57,16 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(Color(0xAAF44336))
                     .clip(CircleShape)
+                    .background(Color(0xAAF44336))
             )
         }
         state.addMarker("m2", p2x, p2y, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(Color(0xAAF44336))
                     .clip(CircleShape)
+                    .background(Color(0xAAF44336))
             )
         }
         state.enableMarkerDrag("m1") { id, x, y, dx, dy, _, _ ->

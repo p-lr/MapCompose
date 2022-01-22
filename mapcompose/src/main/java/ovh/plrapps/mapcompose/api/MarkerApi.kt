@@ -5,11 +5,13 @@ package ovh.plrapps.mapcompose.api
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shape
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -34,6 +36,8 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
  * is registered using [onMarkerClick], that listener will only be invoked for that marker if
  * [clickable] is true.
+ * @param clipShape The [Shape] used to clip the marker. Defaults to [CircleShape]. If null, no
+ * clipping is done.
  */
 fun MapState.addMarker(
     id: String,
@@ -43,9 +47,10 @@ fun MapState.addMarker(
     absoluteOffset: Offset = Offset.Zero,
     zIndex: Float = 0f,
     clickable: Boolean = true,
+    clipShape: Shape? = CircleShape,
     c: @Composable () -> Unit
 ) {
-    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, c)
+    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, clipShape, c)
 }
 
 /**
