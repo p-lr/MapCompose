@@ -23,8 +23,8 @@ internal class PathState {
             val p = this
             width?.also { p.width = it }
             color?.also { p.color = it }
-            setCount(count)
             setOffset(offset)
+            setCount(count)
         }
     }
 
@@ -47,8 +47,8 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
-            setCount(count ?: pathData?.data?.size)
             setOffset(offset)
+            setCount(count)
         }
     }
 
@@ -56,10 +56,14 @@ internal class PathState {
      * Since values are internally backed by a [FloatArray] with 4 times more values than the number
      * of points added on user site, we define the custom modification (outside of
      * [DrawablePathState] class, because this isn't a concern of this class).
+     * It's assumed that the offset has an updated value.
      */
     private fun DrawablePathState.setCount(cnt: Int?) {
-        if (cnt == null) return
-        count = (cnt * 4).coerceIn(0, pathData.data.size - offset)
+        count = if (cnt != null) {
+            (cnt * 4).coerceIn(
+                0, (pathData.data.size - this.offset)
+            )
+        } else pathData.data.size
     }
 
     /**
@@ -68,11 +72,6 @@ internal class PathState {
     private fun DrawablePathState.setOffset(ofst: Int?) {
         if (ofst == null) return
         offset = (ofst * 4).coerceIn(0, pathData.data.size)
-
-        // Safety - adapt the count
-        if (offset + count > pathData.data.size) {
-            count = pathData.data.size - offset
-        }
     }
 }
 
