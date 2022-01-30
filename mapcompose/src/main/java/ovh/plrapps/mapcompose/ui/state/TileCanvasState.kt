@@ -10,7 +10,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.core.*
-import java.util.*
 import java.util.concurrent.Executors
 import kotlin.math.pow
 
@@ -403,7 +402,7 @@ internal class TileCanvasState(
         }
     }
 
-    private fun evictAll() {
+    private fun evictAll() = scope.launch {
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
