@@ -38,6 +38,8 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * [clickable] is true.
  * @param clipShape The [Shape] used to clip the marker. Defaults to [CircleShape]. If null, no
  * clipping is done.
+ * @param isConstrainedInBounds By default, a marker cannot be positioned or moved outside of the
+ * map bounds.
  */
 fun MapState.addMarker(
     id: String,
@@ -48,9 +50,21 @@ fun MapState.addMarker(
     zIndex: Float = 0f,
     clickable: Boolean = true,
     clipShape: Shape? = CircleShape,
+    isConstrainedInBounds: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addMarker(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, clipShape, c)
+    markerState.addMarker(
+        id,
+        x,
+        y,
+        relativeOffset,
+        absoluteOffset,
+        zIndex,
+        clickable,
+        clipShape,
+        isConstrainedInBounds,
+        c
+    )
 }
 
 /**
@@ -96,6 +110,25 @@ fun MapState.updateMarkerClickable(
     clickable: Boolean
 ) {
     markerState.markers[id]?.isClickable = clickable
+}
+
+/**
+ * Updates the constrained in bounds state of the marker.
+ *
+ * @param id The id of the marker
+ * @param constrainedInBounds Controls whether the marker is constrained inside map bounds
+ */
+fun MapState.updateMarkerConstrained(
+    id: String,
+    constrainedInBounds: Boolean
+) {
+    val markerData = markerState.markers[id] ?: return
+    markerData.isConstrainedInBounds = constrainedInBounds
+
+    /* If constrained, immediately move the marker to its constrained position */
+    if (constrainedInBounds) {
+        markerState.moveMarkerTo(id, markerData.x, markerData.y)
+    }
 }
 
 /**
@@ -288,6 +321,8 @@ suspend fun MapState.centerOnMarker(
  * @param clickable Controls whether the callout is clickable. Default is false. If a click listener
  * is registered using [onMarkerClick], that listener will only be invoked for that marker if
  * [clickable] is true.
+ * @param isConstrainedInBounds By default, a callout cannot be positioned outside of the map
+ * bounds.
  */
 fun MapState.addCallout(
     id: String,
@@ -298,9 +333,21 @@ fun MapState.addCallout(
     zIndex: Float = 0f,
     autoDismiss: Boolean = true,
     clickable: Boolean = false,
+    isConstrainedInBounds: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addCallout(id, x, y, relativeOffset, absoluteOffset, zIndex, autoDismiss, clickable, c)
+    markerState.addCallout(
+        id,
+        x,
+        y,
+        relativeOffset,
+        absoluteOffset,
+        zIndex,
+        autoDismiss,
+        clickable,
+        isConstrainedInBounds,
+        c
+    )
 }
 
 /**

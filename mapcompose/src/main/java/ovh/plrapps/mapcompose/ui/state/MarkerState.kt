@@ -14,20 +14,42 @@ internal class MarkerState {
 
     fun addMarker(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float, clickable: Boolean, clipShape: Shape?,
+        zIndex: Float, clickable: Boolean, clipShape: Shape?, isConstrainedInBounds: Boolean,
         c: @Composable () -> Unit
     ) {
         markers[id] =
-            MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, clipShape, c)
+            MarkerData(
+                id,
+                x,
+                y,
+                relativeOffset,
+                absoluteOffset,
+                zIndex,
+                clickable,
+                clipShape,
+                isConstrainedInBounds,
+                c
+            )
     }
 
     fun addCallout(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float, autoDismiss: Boolean, clickable: Boolean,
+        zIndex: Float, autoDismiss: Boolean, clickable: Boolean, isConstrainedInBounds: Boolean,
         c: @Composable () -> Unit
     ) {
         val markerData =
-            MarkerData(id, x, y, relativeOffset, absoluteOffset, zIndex, clickable, null, c)
+            MarkerData(
+                id,
+                x,
+                y,
+                relativeOffset,
+                absoluteOffset,
+                zIndex,
+                clickable,
+                clipShape = null,
+                isConstrainedInBounds,
+                c
+            )
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
@@ -52,8 +74,10 @@ internal class MarkerState {
         with(marker) {
             val prevX = x
             val prevY = y
-            this.x = x.coerceIn(0.0, 1.0)
-            this.y = y.coerceIn(0.0, 1.0)
+            if (marker.isConstrainedInBounds) {
+                this.x = x.coerceIn(0.0, 1.0)
+                this.y = y.coerceIn(0.0, 1.0)
+            }
             onMarkerMove(this, this.x - prevX, this.y - prevY)
         }
     }
@@ -63,8 +87,12 @@ internal class MarkerState {
      */
     fun moveMarkerBy(id: String, deltaX: Double, deltaY: Double) {
         markers[id]?.apply {
-            x = (x + deltaX).coerceIn(0.0, 1.0)
-            y = (y + deltaY).coerceIn(0.0, 1.0)
+            x = (x + deltaX).let {
+                if (isConstrainedInBounds) it.coerceIn(0.0, 1.0) else it
+            }
+            y = (y + deltaY).let {
+                if (isConstrainedInBounds) it.coerceIn(0.0, 1.0) else it
+            }
         }.also {
             if (it != null) onMarkerMove(it, deltaX, deltaY)
         }
@@ -98,6 +126,7 @@ internal class MarkerData(
     zIndex: Float,
     clickable: Boolean,
     clipShape: Shape?,
+    isConstrainedInBounds: Boolean,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)
@@ -107,6 +136,7 @@ internal class MarkerData(
     var isClickable: Boolean by mutableStateOf(clickable)
     var clipShape: Shape? by mutableStateOf(clipShape)
     var zIndex: Float by mutableStateOf(zIndex)
+    var isConstrainedInBounds by mutableStateOf(isConstrainedInBounds)
 
     var measuredWidth = 0
     var measuredHeight = 0
