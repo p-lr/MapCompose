@@ -18,9 +18,10 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM = viewModel()) {
-    val markerCount = viewModel.markerCount
-
+fun AddingMarkerDemo(
+    modifier: Modifier = Modifier,
+    viewModel: AddingMarkerVM = viewModel(),
+) {
     Column(modifier.fillMaxSize()) {
         MapUI(
             modifier.weight(2f),
@@ -28,18 +29,7 @@ fun AddingMarkerDemo(modifier: Modifier = Modifier, viewModel: AddingMarkerVM = 
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Button(onClick = {
-                with(viewModel.state) {
-                    addMarker("marker$markerCount", 0.5, 0.5) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.map_marker),
-                            contentDescription = null,
-                            modifier = Modifier.size(50.dp),
-                            tint = Color(0xCC2196F3)
-                        )
-                    }
-                    enableMarkerDrag("marker$markerCount")
-                    viewModel.addMarker()
-                }
+                viewModel.addMarker()
             }, Modifier.padding(8.dp)) {
                 Text(text = "Add marker")
             }
