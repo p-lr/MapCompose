@@ -74,10 +74,8 @@ internal class MarkerState {
         with(marker) {
             val prevX = x
             val prevY = y
-            if (marker.isConstrainedInBounds) {
-                this.x = x.coerceIn(0.0, 1.0)
-                this.y = y.coerceIn(0.0, 1.0)
-            }
+            this.x = if (isConstrainedInBounds) x.coerceIn(0.0, 1.0) else x
+            this.y = if (isConstrainedInBounds) y.coerceIn(0.0, 1.0) else y
             onMarkerMove(this, this.x - prevX, this.y - prevY)
         }
     }
