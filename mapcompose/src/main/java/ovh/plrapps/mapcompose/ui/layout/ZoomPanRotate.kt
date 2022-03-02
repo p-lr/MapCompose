@@ -28,7 +28,8 @@ internal fun ZoomPanRotate(
     Layout(
         content = content,
         modifier
-            .pointerInput(Unit) {
+            .pointerInput(gestureListener.isListeningForGestures()) {
+                if (!gestureListener.isListeningForGestures()) return@pointerInput
                 detectGestures(
                     onGesture = { centroid, pan, gestureZoom, gestureRotate ->
                         gestureListener.onRotationDelta(gestureRotate)
@@ -39,7 +40,8 @@ internal fun ZoomPanRotate(
                     onFling = { velocity -> gestureListener.onFling(velocity) }
                 )
             }
-            .pointerInput(Unit) {
+            .pointerInput(gestureListener.isListeningForGestures()) {
+                if (!gestureListener.isListeningForGestures()) return@pointerInput
                 detectTapGestures(
                     onTap = { offset -> gestureListener.onTap(offset) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
@@ -80,6 +82,7 @@ internal interface GestureListener {
     fun onPressUnconsumed()
     fun onTap(focalPt: Offset)
     fun onDoubleTap(focalPt: Offset)
+    fun isListeningForGestures(): Boolean
 }
 
 internal interface LayoutSizeChangeListener {

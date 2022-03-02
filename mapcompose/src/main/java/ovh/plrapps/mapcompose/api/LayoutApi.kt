@@ -95,10 +95,24 @@ var MapState.shouldLoopScale
     }
 
 /**
- * Enable the rotation by user gestures.
+ * Enable rotation by user gestures.
  */
 fun MapState.enableRotation() {
     zoomPanRotateState.isRotationEnabled = true
+}
+
+/**
+ * Enable scrolling by user gestures. This is enabled by default.
+ */
+fun MapState.enableScrolling() {
+    zoomPanRotateState.isScrollingEnabled = true
+}
+
+/**
+ * Enable zooming by user gestures. This is enabled by default.
+ */
+fun MapState.enableZooming() {
+    zoomPanRotateState.isZoomingEnabled = true
 }
 
 /**
@@ -107,6 +121,32 @@ fun MapState.enableRotation() {
  */
 fun MapState.disableRotation() {
     zoomPanRotateState.isRotationEnabled = false
+}
+
+/**
+ * Discard scrolling gestures. The map can still be programmatically scrolled using APIs such as
+ * [scrollTo] or [snapScrollTo].
+ */
+fun MapState.disableScrolling() {
+    zoomPanRotateState.isScrollingEnabled = false
+}
+
+/**
+ * Discard zooming gestures. The map can still be programmatically zoomed using [scale].
+ */
+fun MapState.disableZooming() {
+    zoomPanRotateState.isZoomingEnabled = false
+}
+
+/**
+ * Disable gesture detection. The map view can still be transformed programmatically.
+ */
+fun MapState.disableGestures() {
+    with (zoomPanRotateState) {
+        isRotationEnabled = false
+        isScrollingEnabled = false
+        isZoomingEnabled = false
+    }
 }
 
 /**
