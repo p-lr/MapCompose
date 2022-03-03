@@ -48,7 +48,10 @@ internal class ZoomPanRotateState(
             recalculateMinScale()
         }
 
-    internal var isRotationEnabled = false
+    private val areGesturesEnabled by derivedStateOf { isRotationEnabled || isScrollingEnabled || isZoomingEnabled }
+    internal var isRotationEnabled by mutableStateOf(false)
+    internal var isScrollingEnabled by mutableStateOf(true)
+    internal var isZoomingEnabled by mutableStateOf(true)
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(scale)
@@ -271,6 +274,8 @@ internal class ZoomPanRotateState(
     }
 
     override fun onScaleRatio(scaleRatio: Float, centroid: Offset) {
+        if (!isZoomingEnabled) return
+
         val formerScale = scale
         setScale(scale * scaleRatio)
 
@@ -305,12 +310,14 @@ internal class ZoomPanRotateState(
     }
 
     override fun onRotationDelta(rotationDelta: Float) {
-        if (isRotationEnabled) {
-            setRotation(rotation + rotationDelta)
-        }
+        if (!isRotationEnabled) return
+
+        setRotation(rotation + rotationDelta)
     }
 
     override fun onScrollDelta(scrollDelta: Offset) {
+        if (!isScrollingEnabled) return
+
         var scrollX = scrollX
         var scrollY = scrollY
 
@@ -325,6 +332,8 @@ internal class ZoomPanRotateState(
     }
 
     override fun onFling(velocity: Velocity) {
+        if (!isScrollingEnabled) return
+
         val rotRad = -rotation.toRad()
         val velocityX = if (rotRad == 0f) velocity.x else {
             velocity.x * cos(rotRad) - velocity.y * sin(rotRad)
@@ -348,6 +357,8 @@ internal class ZoomPanRotateState(
     }
 
     override fun onTouchDown() {
+        if (!areGesturesEnabled) return
+
         scope?.launch {
             stopAnimations()
         }
@@ -368,6 +379,8 @@ internal class ZoomPanRotateState(
     }
 
     override fun onDoubleTap(focalPt: Offset) {
+        if (!isZoomingEnabled) return
+
         val destScale = (
                 2.0.pow(floor(ln((scale * 2).toDouble()) / ln(2.0))).toFloat()
                 ).let {
@@ -386,6 +399,8 @@ internal class ZoomPanRotateState(
             )
         }
     }
+
+    override fun isListeningForGestures(): Boolean = areGesturesEnabled
 
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
         scope = composableScope
