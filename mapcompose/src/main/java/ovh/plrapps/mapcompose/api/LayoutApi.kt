@@ -2,13 +2,19 @@
 
 package ovh.plrapps.mapcompose.api
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,6 +33,7 @@ import ovh.plrapps.mapcompose.utils.scaleAxis
 import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * The scale of the map. By convention, the scale at full dimension is 1f.
@@ -150,6 +157,35 @@ fun MapState.disableGestures() {
 }
 
 /**
+ * Sets the padding of the visible area of the map viewport, for the purpose of camera moves.
+ * For example, if you have some UI obscuring the map on the left, you can set the appropriate
+ * left padding. Then, when you use the scrollTo methods, the map will take that into account, by
+ * centering on the visible portion of the viewport.
+ */
+@SuppressLint("ComposableNaming")
+@Composable
+fun MapState.setVisibleAreaPadding(left: Dp = 0.dp, right: Dp = 0.dp, top: Dp = 0.dp, bottom: Dp = 0.dp) {
+    with(LocalDensity.current) {
+        setVisibleAreaPadding(
+            left = left.toPx().roundToInt(),
+            right = right.toPx().roundToInt(),
+            top = top.toPx().roundToInt(),
+            bottom = bottom.toPx().roundToInt()
+        )
+    }
+}
+
+/**
+ * Sets the padding of the visible area of the map viewport, for the purpose of camera moves.
+ * For example, if you have some UI obscuring the map on the left, you can set the appropriate
+ * left padding. Then, when you use the scrollTo methods, the map will take that into account, by
+ * centering on the visible portion of the viewport.
+ */
+fun MapState.setVisibleAreaPadding(left: Int = 0, right: Int = 0, top: Int = 0, bottom: Int = 0) {
+    zoomPanRotateState.visibleAreaOffset = IntOffset((left - right) / 2, (top - bottom) / 2)
+}
+
+/**
  * Set the minimum scale mode. See [MinimumScaleMode].
  * The minimum scale can be manually defined using [Forced], or can be inferred using [Fill], or
  * [Fit] (the default).
@@ -219,8 +255,8 @@ suspend fun MapState.snapScrollTo(
         val offsetX = screenOffset.x * layoutSize.width
         val offsetY = screenOffset.y * layoutSize.height
 
-        val destScrollX = (x * fullWidth * scale + offsetX).toFloat()
-        val destScrollY = (y * fullHeight * scale + offsetY).toFloat()
+        val destScrollX = (x * fullWidth * scale + offsetX).toFloat().withVisibleAreaHorizontalOffset(this)
+        val destScrollY = (y * fullHeight * scale + offsetY).toFloat().withVisibleAreaVerticalOffset(this)
 
         setScroll(destScrollX, destScrollY)
     }
@@ -252,8 +288,8 @@ suspend fun MapState.scrollTo(
 
         val effectiveDstScale = constrainScale(destScale)
 
-        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX).toFloat()
-        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY).toFloat()
+        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX).toFloat().withVisibleAreaHorizontalOffset(this)
+        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY).toFloat().withVisibleAreaVerticalOffset(this)
 
         withRetry(maxAnimationsRetries, animationsRetriesInterval) {
             smoothScrollAndScale(
@@ -280,8 +316,9 @@ suspend fun MapState.snapScrollTo(
     with(zoomPanRotateState) {
         awaitLayout()
         val (center, scale) = calculateScrollTo(area, padding)
+        val offsetCenter = center.applyVisibleAreaOffset(this)
         setScale(scale)
-        snapScrollTo(center.x, center.y)
+        snapScrollTo(offsetCenter.x, offsetCenter.y)
     }
 }
 
@@ -302,8 +339,25 @@ suspend fun MapState.scrollTo(
     with(zoomPanRotateState) {
         awaitLayout()
         val (center, scale) = calculateScrollTo(area, padding)
-        scrollTo(center.x, center.y, scale, animationSpec)
+        val offsetCenter = center.applyVisibleAreaOffset(this)
+        scrollTo(offsetCenter.x, offsetCenter.y, scale, animationSpec)
     }
+}
+
+private fun Point.applyVisibleAreaOffset(zoomPanRotateState: ZoomPanRotateState): Point {
+    return with(zoomPanRotateState) {
+        val horizontalOffset = visibleAreaOffset.x / fullWidth
+        val verticalOffset = visibleAreaOffset.y / fullHeight
+        copy(x = x + horizontalOffset, y = y + verticalOffset)
+    }
+}
+
+private fun Float.withVisibleAreaHorizontalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
+    return this - zoomPanRotateState.visibleAreaOffset.x
+}
+
+private fun Float.withVisibleAreaVerticalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
+    return this - zoomPanRotateState.visibleAreaOffset.y
 }
 
 /**

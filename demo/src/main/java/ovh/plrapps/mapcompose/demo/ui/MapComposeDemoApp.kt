@@ -49,6 +49,9 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.HTTP_TILES_DEMO.name) {
                 HttpTilesDemo()
             }
+            composable(MainDestinations.VISIBLE_AREA_PADDING.name) {
+                VisibleAreaPaddingDemo()
+            }
         }
     }
 }
