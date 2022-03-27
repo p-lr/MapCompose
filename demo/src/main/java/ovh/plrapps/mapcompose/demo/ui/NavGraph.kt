@@ -13,4 +13,5 @@ enum class MainDestinations(val title: String) {
     CALLOUT_DEMO("Callout (tap markers)"),
     ANIMATION_DEMO("Animation demo"),
     HTTP_TILES_DEMO("Remote HTTP tiles"),
+    VISIBLE_AREA_PADDING("Visible area padding")
 }

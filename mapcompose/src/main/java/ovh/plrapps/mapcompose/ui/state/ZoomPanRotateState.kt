@@ -64,6 +64,11 @@ internal class ZoomPanRotateState(
 
     internal var layoutSize by mutableStateOf(IntSize(0, 0))
 
+    /**
+     * Offset of the conceptual center of the map when moving the camera to a position
+     */
+    internal var visibleAreaOffset by mutableStateOf(IntOffset(0, 0))
+
     private var minScale = 0f   // should only be changed through MinimumScaleMode
         set(value) {
             field = value
