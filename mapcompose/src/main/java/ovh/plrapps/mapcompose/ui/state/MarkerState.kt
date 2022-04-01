@@ -57,6 +57,10 @@ internal class MarkerState {
         return markers.remove(id) != null
     }
 
+    fun removeAllMarkers() {
+        markers.clear()
+    }
+
     fun removeCallout(id: String): Boolean {
         return callouts.remove(id) != null
     }

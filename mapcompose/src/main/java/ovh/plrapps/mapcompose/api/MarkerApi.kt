@@ -141,6 +141,13 @@ fun MapState.removeMarker(id: String): Boolean {
 }
 
 /**
+ * Remove all markers.
+ */
+fun MapState.removeAllMarkers() {
+    markerState.removeAllMarkers()
+}
+
+/**
  * Move marker to the given position.
  *
  * @param id The id of the marker
