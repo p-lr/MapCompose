@@ -237,6 +237,31 @@ suspend fun MapState.rotateTo(
 }
 
 /**
+ * Get the layout dimensions in pixels.
+ * Note that layout dimension may change during the lifetime of the application. The returned value
+ * is a read-only snapshot.
+ */
+suspend fun MapState.getLayoutSize(): IntSize {
+    return with (zoomPanRotateState) {
+        awaitLayout()
+        layoutSize
+    }
+}
+
+/**
+ * Get the layout dimensions in pixels, as a [Flow].
+ * This api is useful to react on layout changes.
+ */
+suspend fun MapState.getLayoutSizeFlow(): Flow<IntSize> {
+    return with (zoomPanRotateState) {
+        awaitLayout()
+        snapshotFlow {
+            layoutSize
+        }
+    }
+}
+
+/**
  * Scrolls to a position. Defaults to centering on the provided scroll destination.
  *
  * @param x The normalized X position on the map, in range [0..1]
