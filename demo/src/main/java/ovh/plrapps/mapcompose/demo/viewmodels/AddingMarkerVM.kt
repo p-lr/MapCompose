@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.runtime.getValue
@@ -17,10 +16,7 @@ import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
-    private val appContext: Context by lazy {
-        getApplication<Application>().applicationContext
-    }
-    private val tileStreamProvider = makeTileStreamProvider(appContext)
+    private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     var markerCount = 0
 
