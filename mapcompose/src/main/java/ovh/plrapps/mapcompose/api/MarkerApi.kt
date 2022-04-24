@@ -36,6 +36,8 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
  * is registered using [onMarkerClick], that listener will only be invoked for that marker if
  * [clickable] is true.
+ * If the marker doesn't need to be clickable, set it to false to squeeze a bit of performance. This
+ * becomes noticeable when many markers are rendered.
  * @param clipShape The [Shape] used to clip the marker. Defaults to [CircleShape]. If null, no
  * clipping is done.
  * @param isConstrainedInBounds By default, a marker cannot be positioned or moved outside of the
