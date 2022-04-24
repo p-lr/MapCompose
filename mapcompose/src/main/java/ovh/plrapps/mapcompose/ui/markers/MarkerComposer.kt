@@ -1,7 +1,7 @@
 package ovh.plrapps.mapcompose.ui.markers
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -44,8 +44,17 @@ internal fun MarkerComposer(
                         )
                         .then(
                             if (data.isClickable) {
-                                Modifier.clickable {
-                                    markerState.onMarkerClick(data)
+                                /**
+                                 * As of 2022/04, using Modifier.clickable causes a huge performance
+                                 * drop when the number of markers exceeds a few dozens.
+                                 * Using pointerInput, we loose the ripple effect.
+                                 */
+                                Modifier.pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            markerState.onMarkerClick(data)
+                                        }
+                                    )
                                 }
                             } else Modifier
                         )
@@ -77,8 +86,17 @@ internal fun MarkerComposer(
                         .layoutId(data.markerData)
                         .then(
                             if (data.markerData.isClickable) {
-                                Modifier.clickable {
-                                    markerState.onCalloutClick(data.markerData)
+                                /**
+                                 * As of 2022/04, using Modifier.clickable causes a huge performance
+                                 * drop when the number of callouts exceeds a few dozens.
+                                 * Using pointerInput, we loose the ripple effect.
+                                 */
+                                Modifier.pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            markerState.onCalloutClick(data.markerData)
+                                        }
+                                    )
                                 }
                             } else Modifier
                         )
