@@ -36,6 +36,11 @@ import ovh.plrapps.mapcompose.utils.throttle
 import kotlin.math.*
 import kotlin.random.Random.Default.nextDouble
 
+/**
+ * In this sample, an experimental clustering algorithm is used to display 400 markers.
+ * The lazy loading technique (removing a marker/cluster when it's not visible) is also used for
+ * performance reasons.
+ */
 class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
@@ -451,9 +456,6 @@ data class Marker(
     val id: String,
     val x: Double,
     val y: Double,
-    @Deprecated("We won't rely on this")
-    var cluster: Cluster? = null,
-    var assignedToCluster: Boolean = false
 ) : Placeable
 
 data class Cluster(val x: Double, val y: Double, val markers: List<Marker>) : Placeable {
