@@ -76,6 +76,12 @@ suspend fun MapState.setScroll(offset: Offset) {
     }
 }
 
+fun MapState.referentialSnapshotFlow(): Flow<ReferentialSnapshot> = snapshotFlow {
+    ReferentialSnapshot(zoomPanRotateState.scale, scroll, zoomPanRotateState.rotation)
+}
+
+data class ReferentialSnapshot(val scale: Float, val scroll: Offset, val rotation: AngleDegree)
+
 /**
  * Get notified whenever the state ([scale] and/or [scroll] and/or [rotation]) changes.
  *

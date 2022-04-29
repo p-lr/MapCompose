@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -29,10 +28,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * The line is added as a custom view inside [MapUI] composable.
  */
 class CustomDrawVM(application: Application) : AndroidViewModel(application) {
-    private val appContext: Context by lazy {
-        getApplication<Application>().applicationContext
-    }
-    private val tileStreamProvider = makeTileStreamProvider(appContext)
+    private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     var p1x by mutableStateOf(0.6)
     var p1y by mutableStateOf(0.6)

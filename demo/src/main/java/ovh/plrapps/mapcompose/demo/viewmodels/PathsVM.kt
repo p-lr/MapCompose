@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
@@ -19,10 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * In this sample, we add "tracks" to the map. The tracks are rendered as paths using MapCompose.
  */
 class PathsVM(application: Application) : AndroidViewModel(application) {
-    private val appContext: Context by lazy {
-        getApplication<Application>().applicationContext
-    }
-    private val tileStreamProvider = makeTileStreamProvider(appContext)
+    private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096).apply {
@@ -53,7 +49,9 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
      */
     private fun addTrack(trackName: String, color: Color? = null) {
         with(state) {
-            val lines = appContext.assets?.open("tracks/$trackName.txt")?.bufferedReader()?.lineSequence()
+            val lines = getApplication<Application>().applicationContext.assets?.open(
+                "tracks/$trackName.txt"
+            )?.bufferedReader()?.lineSequence()
                 ?: return@with
             val builder = makePathDataBuilder()
             for (line in lines) {

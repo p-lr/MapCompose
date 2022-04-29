@@ -11,13 +11,13 @@ import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
-class LayersVM (application: Application) : AndroidViewModel(application) {
-    private val appContext: Context by lazy {
-        getApplication<Application>().applicationContext
-    }
-    private val tileStreamProvider = makeTileStreamProvider(appContext, "mont_blanc")
-    private val satelliteProvider = makeTileStreamProvider(appContext, "mont_blanc_satellite")
-    private val ignV2Provider = makeTileStreamProvider(appContext, "mont_blanc_ignv2")
+class LayersVM(application: Application) : AndroidViewModel(application) {
+    private val tileStreamProvider =
+        makeTileStreamProvider(application.applicationContext, "mont_blanc")
+    private val satelliteProvider =
+        makeTileStreamProvider(application.applicationContext, "mont_blanc_satellite")
+    private val ignV2Provider =
+        makeTileStreamProvider(application.applicationContext, "mont_blanc_ignv2")
 
     private var satelliteId: String? = null
     private var ignV2Id: String? = null

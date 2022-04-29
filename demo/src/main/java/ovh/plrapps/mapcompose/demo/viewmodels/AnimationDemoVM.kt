@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.SnapSpec
 import androidx.compose.animation.core.TweenSpec
@@ -22,10 +21,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * Since animations APIs are suspending functions, this is easy to do.
  */
 class AnimationDemoVM(application: Application) : AndroidViewModel(application) {
-    private val appContext: Context by lazy {
-        getApplication<Application>().applicationContext
-    }
-    private val tileStreamProvider = makeTileStreamProvider(appContext)
+    private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
     private var job: Job? = null
     private val spec = TweenSpec<Float>(2000, easing = FastOutSlowInEasing)
 
