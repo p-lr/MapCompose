@@ -24,13 +24,9 @@ import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
-import ovh.plrapps.mapcompose.utils.AngleDegree
-import ovh.plrapps.mapcompose.utils.Point
+import ovh.plrapps.mapcompose.utils.*
 import ovh.plrapps.mapcompose.utils.rotate
-import ovh.plrapps.mapcompose.utils.rotateCenteredX
-import ovh.plrapps.mapcompose.utils.rotateCenteredY
 import ovh.plrapps.mapcompose.utils.scaleAxis
-import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -528,14 +524,14 @@ data class BoundingBox(val xLeft: Double, val yTop: Double, val xRight: Double, 
  *      ---------
  *    p4         p3
  */
-suspend fun MapState.visibleArea(): VisibleArea {
+suspend fun MapState.visibleArea(padding: IntOffset = IntOffset.Zero): VisibleArea {
     return with(zoomPanRotateState) {
         awaitLayout()
 
-        val xLeft = centroidX - layoutSize.width / (2 * fullWidth * scale)
-        val yTop = centroidY - layoutSize.height / (2 * fullHeight * scale)
-        val xRight = centroidX + layoutSize.width / (2 * fullWidth * scale)
-        val yBottom = centroidY + layoutSize.height / (2 * fullHeight * scale)
+        val xLeft = centroidX - (layoutSize.width + padding.x * 2) / (2 * fullWidth * scale)
+        val yTop = centroidY - (layoutSize.height + padding.y * 2) / (2 * fullHeight * scale)
+        val xRight = centroidX + (layoutSize.width + padding.x * 2) / (2 * fullWidth * scale)
+        val yBottom = centroidY + (layoutSize.height + padding.y * 2) / (2 * fullHeight * scale)
 
         val xAxisScale = fullHeight / fullWidth.toDouble()
         val scaledCenterX = centroidX / xAxisScale

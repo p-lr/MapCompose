@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
@@ -30,7 +31,6 @@ import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.utils.randomDouble
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.contains
 import ovh.plrapps.mapcompose.utils.throttle
 import kotlin.math.*
@@ -71,11 +71,12 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             state.referentialSnapshotFlow().throttle(500).collectLatest {
                 val scale = it.scale
-                val visibleArea = state.visibleArea()
+                val padding = dpToPx(100).toInt()
+                val visibleArea = state.visibleArea(IntOffset(padding, padding))
                 val markersOnMap = state.markerSnapshotFlow().firstOrNull().orEmpty()
                 removeNonVisibleMarkers(visibleArea, markersOnMap)
                 withContext(Dispatchers.Default) {
-                    addManyMarkers(scale, visibleArea, markersOnMap)
+                    clusterize(scale, visibleArea, markersOnMap)
                 }
             }
         }
@@ -92,12 +93,11 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         }
 
         markersToRemove.forEach {
-            /* In any case, remove the marker/cluster from the map */
             state.removeMarker(it.id)
         }
     }
 
-    private suspend fun addManyMarkers(
+    private suspend fun clusterize(
         scale: Float,
         visibleArea: VisibleArea,
         markersOnMap: List<MarkerDataSnapshot>,
@@ -108,9 +108,6 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         val mergePass = mergeClosest(densitySearchPass, epsilon, scale)
 
         withContext(Dispatchers.Main) {
-            /**
-             * The rendering is based on previously updated internal structures.
-             */
             render(markersOnMap, mergePass.clusters, mergePass.markers)
         }
     }
@@ -166,7 +163,7 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         visibleArea: VisibleArea, scale: Float, epsilon: Float
     ): ClusteringResult {
         val remaining = markers.filter { marker ->
-            shouldAddMarker(marker, visibleArea, scale, epsilon)
+            visibleArea.contains(marker.x, marker.y)
         }
 
         val snapScale = getSnapScale(scale)
@@ -276,36 +273,6 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         return result
     }
 
-    private fun shouldAddMarker(
-        marker: Marker,
-        visibleArea: VisibleArea,
-        scale: Float,
-        meshSize: Float
-    ): Boolean {
-        val key = getKey(marker, meshSize, scale)
-        val box = listOf(
-            Point(
-                (key.row * meshSize).toDouble() / (state.fullSize.width * scale),
-                (key.col * meshSize).toDouble() / (state.fullSize.height * scale)
-            ),
-            Point(
-                ((key.row + 1) * meshSize).toDouble() / (state.fullSize.width * scale),
-                (key.col * meshSize).toDouble() / (state.fullSize.height * scale)
-            ),
-            Point(
-                (key.row * meshSize).toDouble() / (state.fullSize.width * scale),
-                ((key.col + 1) * meshSize).toDouble() / (state.fullSize.height * scale)
-            ),
-            Point(
-                ((key.row + 1) * meshSize).toDouble() / (state.fullSize.width * scale),
-                ((key.col + 1) * meshSize).toDouble() / (state.fullSize.height * scale)
-            )
-        )
-        return box.any {
-            visibleArea.contains(it.x, it.y)
-        }
-    }
-
     private fun getBarycenter(markers: List<Marker>): Barycenter? {
         if (markers.isEmpty()) return null
         return Barycenter(
@@ -361,16 +328,6 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
     }
 
     private fun getSnapScale(scale: Float): Float = 2.0.pow(ceil(ln(scale) / ln(2.0))).toFloat()
-
-    private fun getKey(marker: Marker, meshSize: Float, scale: Float): Key {
-        val relativeWidth = marker.x * state.fullSize.width * scale
-        val relativeHeight = marker.y * state.fullSize.height * scale
-
-        return Key(
-            row = (relativeWidth / meshSize).toInt(),
-            col = (relativeHeight / meshSize).toInt()
-        )
-    }
 
     private fun Marker.addToMap() {
         state.addMarker(id, x, y, clickable = false) {
