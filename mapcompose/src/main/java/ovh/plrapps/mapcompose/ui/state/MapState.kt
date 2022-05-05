@@ -77,6 +77,7 @@ class MapState(
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var tapCb: LayoutTapCb? = null
+    internal var longPressCb: LayoutTapCb? = null
     internal var mapBackground by mutableStateOf(Color.Transparent)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
         { initialValues.isFilteringBitmap(this) }
@@ -111,11 +112,17 @@ class MapState(
         markerState.removeAllAutoDismissCallouts()
     }
 
+    override fun onLongPress(x: Double, y: Double) {
+        longPressCb?.invoke(x, y)
+    }
+
     override fun onTap(x: Double, y: Double) {
         tapCb?.invoke(x, y)
     }
 
     override fun detectsTapGesture(): Boolean = tapCb != null
+
+    override fun detectsLongPress(): Boolean = longPressCb != null
 
     internal fun renderVisibleTilesThrottled() {
         throttledTask.trySend(Unit)

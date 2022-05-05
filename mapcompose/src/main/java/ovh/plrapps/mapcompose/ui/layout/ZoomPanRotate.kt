@@ -45,7 +45,8 @@ internal fun ZoomPanRotate(
                 detectTapGestures(
                     onTap = { offset -> gestureListener.onTap(offset) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
-                    onPress = { gestureListener.onPress() }
+                    onPress = { gestureListener.onPress() },
+                    onLongPress = { offset -> gestureListener.onLongPress(offset) }
                 )
             }
             .onSizeChanged {
@@ -77,6 +78,7 @@ internal interface GestureListener {
     fun onPress()
     fun onTap(focalPt: Offset)
     fun onDoubleTap(focalPt: Offset)
+    fun onLongPress(focalPt: Offset)
     fun isListeningForGestures(): Boolean
 }
 

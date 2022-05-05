@@ -32,6 +32,9 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
             onTap { x, y ->
                 println("on tap $x $y")
             }
+            onLongPress { x, y ->
+                println("on long press $x $y")
+            }
             enableRotation()
             scale = 0f // zoom-out to minimum scale
         }

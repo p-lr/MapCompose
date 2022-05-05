@@ -478,6 +478,14 @@ fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
 }
 
 /**
+ * Registers a callback for long press gestures. The callback is invoked with the relative coordinates
+ * of the pressed point on the map.
+ */
+fun MapState.onLongPress(longPressCb: (x: Double, y: Double) -> Unit) {
+    this.longPressCb = longPressCb
+}
+
+/**
  * Registers a callback for touch down event.
  */
 fun MapState.onTouchDown(cb: () -> Unit) {

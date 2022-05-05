@@ -373,11 +373,24 @@ internal class ZoomPanRotateState(
 
     override fun onTap(focalPt: Offset) {
         if (!stateChangeListener.detectsTapGesture()) return
+        offsetToRelative(focalPt) { x, y ->
+            stateChangeListener.onTap(x, y)
+        }
+    }
+
+    override fun onLongPress(focalPt: Offset) {
+        if (!stateChangeListener.detectsLongPress()) return
+        offsetToRelative(focalPt) { x, y ->
+            stateChangeListener.onLongPress(x, y)
+        }
+    }
+
+    private fun offsetToRelative(focalPt: Offset, block: (Double, Double) -> Unit) {
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
         val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
         val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
-        stateChangeListener.onTap(x, y)
+        block(x, y)
     }
 
     override fun onDoubleTap(focalPt: Offset) {
@@ -490,6 +503,8 @@ interface ZoomPanRotateStateListener {
     fun onStateChanged()
     fun onTouchDown()
     fun onPress()
+    fun onLongPress(x: Double, y: Double)
     fun onTap(x: Double, y: Double)
     fun detectsTapGesture(): Boolean
+    fun detectsLongPress(): Boolean
 }
