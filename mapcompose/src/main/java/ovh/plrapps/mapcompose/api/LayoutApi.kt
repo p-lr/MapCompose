@@ -474,7 +474,7 @@ val MapState.fullSize: IntSize
  * passed, because the layout's gesture detector also detects double-tap gestures.
  */
 fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
-    zoomPanRotateState.tapCb = tapCb
+    this.tapCb = tapCb
 }
 
 /**

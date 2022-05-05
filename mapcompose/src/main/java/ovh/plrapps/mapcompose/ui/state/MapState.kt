@@ -76,6 +76,7 @@ class MapState(
     internal val tileSize by mutableStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
+    internal var tapCb: LayoutTapCb? = null
     internal var mapBackground by mutableStateOf(Color.Transparent)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
         { initialValues.isFilteringBitmap(this) }
@@ -106,9 +107,15 @@ class MapState(
         touchDownCb?.invoke()
     }
 
-    override fun onPressUnconsumed() {
+    override fun onPress() {
         markerState.removeAllAutoDismissCallouts()
     }
+
+    override fun onTap(x: Double, y: Double) {
+        tapCb?.invoke(x, y)
+    }
+
+    override fun detectsTapGesture(): Boolean = tapCb != null
 
     internal fun renderVisibleTilesThrottled() {
         throttledTask.trySend(Unit)
@@ -267,3 +274,5 @@ class InitialValues internal constructor() {
         isFilteringBitmap = predicate
     }
 }
+
+internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit

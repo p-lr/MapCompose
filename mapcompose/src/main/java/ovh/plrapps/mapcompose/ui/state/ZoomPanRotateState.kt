@@ -100,9 +100,6 @@ internal class ZoomPanRotateState(
             } else throw IllegalArgumentException("The offset ratio should have values in 0f..1f range")
         }
 
-    /* Not used internally (user customizable) */
-    internal var tapCb: LayoutTapCb? = null
-
     private val userAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
     private val apiAnimatable = Animatable(0f)
@@ -370,17 +367,17 @@ internal class ZoomPanRotateState(
         stateChangeListener.onTouchDown()
     }
 
-    override fun onPressUnconsumed() {
-        stateChangeListener.onPressUnconsumed()
+    override fun onPress() {
+        stateChangeListener.onPress()
     }
 
     override fun onTap(focalPt: Offset) {
-        val tapCb = tapCb ?: return
+        if (!stateChangeListener.detectsTapGesture()) return
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
         val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
         val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
-        tapCb.invoke(x, y)
+        stateChangeListener.onTap(x, y)
     }
 
     override fun onDoubleTap(focalPt: Offset) {
@@ -492,7 +489,7 @@ internal class ZoomPanRotateState(
 interface ZoomPanRotateStateListener {
     fun onStateChanged()
     fun onTouchDown()
-    fun onPressUnconsumed()
+    fun onPress()
+    fun onTap(x: Double, y: Double)
+    fun detectsTapGesture(): Boolean
 }
-
-internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit

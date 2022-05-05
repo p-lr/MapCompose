@@ -45,12 +45,7 @@ internal fun ZoomPanRotate(
                 detectTapGestures(
                     onTap = { offset -> gestureListener.onTap(offset) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
-                    onPress = {
-                        /* Don't wait for press release.
-                         * This gesture will be skipped if the first down event was consumed,
-                         * typically by a clickable child composable. */
-                        gestureListener.onPressUnconsumed()
-                    }
+                    onPress = { gestureListener.onPress() }
                 )
             }
             .onSizeChanged {
@@ -79,7 +74,7 @@ internal interface GestureListener {
     fun onScrollDelta(scrollDelta: Offset)
     fun onFling(velocity: Velocity)
     fun onTouchDown()
-    fun onPressUnconsumed()
+    fun onPress()
     fun onTap(focalPt: Offset)
     fun onDoubleTap(focalPt: Offset)
     fun isListeningForGestures(): Boolean
