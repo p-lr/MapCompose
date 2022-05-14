@@ -12,8 +12,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
-import ovh.plrapps.mapcompose.ui.state.DragInterceptor
+import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
@@ -65,15 +67,82 @@ fun MapState.addMarker(
         clickable,
         clipShape,
         isConstrainedInBounds,
+        null,
         c
     )
+}
+
+/**
+ * @see [addMarker]
+ */
+@ExperimentalClusteringApi
+fun MapState.addMarker(
+    id: String,
+    x: Double,
+    y: Double,
+    relativeOffset: Offset = Offset(-0.5f, -1f),
+    absoluteOffset: Offset = Offset.Zero,
+    zIndex: Float = 0f,
+    clickable: Boolean = true,
+    clipShape: Shape? = CircleShape,
+    isConstrainedInBounds: Boolean = true,
+    clustererId: String? = null,
+    c: @Composable () -> Unit
+) {
+    markerState.addMarker(
+        id,
+        x,
+        y,
+        relativeOffset,
+        absoluteOffset,
+        zIndex,
+        clickable,
+        clipShape,
+        isConstrainedInBounds,
+        clustererId,
+        c
+    )
+}
+
+/**
+ * Add a clusterer which will clusterize all markers added with the same clusterer id.
+ * The default behavior on cluster click is a zoom-in to reveal the content of the clicked
+ * cluster. This can be changed using [clusterClickBehavior].
+ * The style of a cluster is user-defined using [clusterFactory].
+ *
+ * @param id The id of the clusterer.
+ * @param clusteringThreshold When the distance between two markers goes below that threshold, a
+ * cluster is formed. Defaults to 50 dp. There's one exception: when the scale reaches max scale,
+ * in which case clustering is disabled.
+ * @param clusterClickBehavior Defines the behavior when a cluster is clicked
+ * @param clusterFactory Compose code for a cluster
+ */
+fun MapState.addClusterer(
+    id: String,
+    clusteringThreshold: Dp = 50.dp,
+    clusterClickBehavior: ClusterClickBehavior = Default,
+    clusterFactory: (Int) -> (@Composable () -> Unit)
+) {
+    markerState.addClusterer(
+        this,
+        id,
+        clusteringThreshold,
+        clusterClickBehavior.toInternal(),
+        clusterFactory
+    )
+}
+
+fun MapState.removeClusterer(
+    id: String,
+) {
+    markerState.removeClusterer(id)
 }
 
 /**
  * Check whether a marker was already added or not.
  */
 fun MapState.hasMarker(id: String): Boolean {
-    return markerState.markers.keys.contains(id)
+    return markerState.hasMarker(id)
 }
 
 /**
@@ -82,7 +151,7 @@ fun MapState.hasMarker(id: String): Boolean {
  * @return Available [MarkerInfo] if the marker was already added, `null` otherwise.
  */
 fun MapState.getMarkerInfo(id: String): MarkerInfo? {
-    return markerState.markers[id]?.let {
+    return markerState.getMarker(id)?.let {
         MarkerInfo(it.id, it.x, it.y, it.relativeOffset, it.absoluteOffset, it.zIndex)
     }
 }
@@ -98,7 +167,7 @@ fun MapState.updateMarkerZ(
     id: String,
     zIndex: Float
 ) {
-    markerState.markers[id]?.zIndex = zIndex
+    markerState.getMarker(id)?.zIndex = zIndex
 }
 
 /**
@@ -111,7 +180,7 @@ fun MapState.updateMarkerClickable(
     id: String,
     clickable: Boolean
 ) {
-    markerState.markers[id]?.isClickable = clickable
+    markerState.getMarker(id)?.isClickable = clickable
 }
 
 /**
@@ -124,7 +193,7 @@ fun MapState.updateMarkerConstrained(
     id: String,
     constrainedInBounds: Boolean
 ) {
-    val markerData = markerState.markers[id] ?: return
+    val markerData = markerState.getMarker(id) ?: return
     markerData.isConstrainedInBounds = constrainedInBounds
 
     /* If constrained, immediately move the marker to its constrained position */
@@ -172,7 +241,7 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
 fun MapState.enableMarkerDrag(id: String, dragInterceptor: DragInterceptor? = null) {
     markerState.setDraggable(id, true)
     if (dragInterceptor != null) {
-        markerState.markers[id]?.dragInterceptor = dragInterceptor
+        markerState.getMarker(id)?.dragInterceptor = dragInterceptor
     }
 }
 
@@ -200,17 +269,18 @@ fun MapState.onMarkerMove(
  * click gesture isn't already consumed by some other composable (like a button).
  */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
-    markerState.markerClickCb = cb
+    markerRenderState.markerClickCb = cb
 }
 
 /**
  * Sometimes, some components need to react to marker position change. However, the [MapState] owns
  * the [State] of each marker position. To avoid duplicating state and have the [MapState] as single
  * source of truth, this API creates an "observer" [State] of marker positions.
+ * Note that this api only accounts for regular markers (e.g not managed by a clusterer).
  */
 fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
     return derivedStateOf {
-        markerState.markers.values.map {
+        markerState.getRenderedMarkers().map {
             MarkerDataSnapshot(it.id, it.x, it.y)
         }
     }
@@ -219,10 +289,11 @@ fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
 /**
  * Similar to [markerDerivedState], but useful for asynchronous processing, using flow operators.
  * Like every snapshot flow, it should be collected from the main thread.
+ * Note that this api only accounts for regular markers (e.g not managed by a clusterer).
  */
 fun MapState.markerSnapshotFlow(): Flow<List<MarkerDataSnapshot>> {
     return snapshotFlow {
-        markerState.markers.values.map {
+        markerState.getRenderedMarkers().map {
             MarkerDataSnapshot(it.id, it.x, it.y)
         }
     }
@@ -236,7 +307,7 @@ data class MarkerDataSnapshot(val id: String, val x: Double, val y: Double)
  * click gesture isn't already consumed by some other composable (like a button).
  */
 fun MapState.onCalloutClick(cb: (id: String, x: Double, y: Double) -> Unit) {
-    markerState.calloutClickCb = cb
+    markerRenderState.calloutClickCb = cb
 }
 
 /**
@@ -271,7 +342,7 @@ suspend fun MapState.centerOnMarker(
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
-        markerState.markers[id]?.also {
+        markerState.getMarker(id)?.also {
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
             val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat()
@@ -300,7 +371,7 @@ suspend fun MapState.centerOnMarker(
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
-        markerState.markers[id]?.also {
+        markerState.getMarker(id)?.also {
             awaitLayout()
             val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
             val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
@@ -345,7 +416,7 @@ fun MapState.addCallout(
     isConstrainedInBounds: Boolean = true,
     c: @Composable () -> Unit
 ) {
-    markerState.addCallout(
+    markerRenderState.addCallout(
         id,
         x,
         y,
@@ -369,7 +440,7 @@ fun MapState.updateCalloutClickable(
     id: String,
     clickable: Boolean
 ) {
-    markerState.callouts[id]?.markerData?.isClickable = clickable
+    markerRenderState.callouts[id]?.markerData?.isClickable = clickable
 }
 
 /**
@@ -378,7 +449,7 @@ fun MapState.updateCalloutClickable(
  * @param id The id of the callout.
  */
 fun MapState.removeCallout(id: String): Boolean {
-    return markerState.removeCallout(id)
+    return markerRenderState.removeCallout(id)
 }
 
 /**

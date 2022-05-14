@@ -6,5 +6,6 @@ import ovh.plrapps.mapcompose.testapp.R
 const val HOME = "home"
 
 enum class NavDestinations(@StringRes val title: Int) {
-    LAYERS_SWITCH(R.string.layers_switch_test)
+    LAYERS_SWITCH(R.string.layers_switch_test),
+    CLUSTERING(R.string.clustering_test)
 }

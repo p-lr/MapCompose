@@ -8,8 +8,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
-import ovh.plrapps.mapcompose.ui.state.MarkerData
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
+import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.utils.rotateCenteredX
 import ovh.plrapps.mapcompose.utils.rotateCenteredY
 import ovh.plrapps.mapcompose.utils.toRad

@@ -31,6 +31,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
         useIR = true
+        freeCompilerArgs += ["-opt-in=kotlin.RequiresOptIn"]
     }
     buildFeatures {
         compose true

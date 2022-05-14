@@ -19,7 +19,7 @@ fun MapUI(
     content: @Composable () -> Unit = {}
 ) {
     val zoomPRState = state.zoomPanRotateState
-    val markerState = state.markerState
+    val markerState = state.markerRenderState
     val pathState = state.pathState
 
     key(state) {
@@ -45,7 +45,7 @@ fun MapUI(
             MarkerComposer(
                 modifier = Modifier.zIndex(1f),
                 zoomPRState = zoomPRState,
-                markerState = markerState,
+                markerRenderState = markerState,
                 mapState = state
             )
 

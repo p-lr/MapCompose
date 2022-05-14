@@ -14,6 +14,8 @@ import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.core.throttle
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
+import ovh.plrapps.mapcompose.ui.state.markers.MarkerRenderState
+import ovh.plrapps.mapcompose.ui.state.markers.MarkerState
 import ovh.plrapps.mapcompose.utils.AngleDegree
 import ovh.plrapps.mapcompose.utils.toRad
 
@@ -48,7 +50,8 @@ class MapState(
         scale = initialValues.scale,
         rotation = initialValues.rotation
     )
-    internal val markerState = MarkerState()
+    internal val markerRenderState = MarkerRenderState()
+    internal val markerState = MarkerState(scope, markerRenderState)
     internal val pathState = PathState()
     internal val visibleTilesResolver =
         VisibleTilesResolver(
@@ -82,9 +85,9 @@ class MapState(
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
         { initialValues.isFilteringBitmap(this) }
     )
-    private var consumeDynamicInitialValues: () -> Unit = {
-        consumeDynamicInitialValues = {}
-        applyDynamicInitialValues(initialValues)
+    private var consumeLateInitialValues: () -> Unit = {
+        consumeLateInitialValues = {}
+        applyLateInitialValues(initialValues)
     }
 
     /**
@@ -98,7 +101,7 @@ class MapState(
     }
 
     override fun onStateChanged() {
-        consumeDynamicInitialValues()
+        consumeLateInitialValues()
 
         renderVisibleTilesThrottled()
         stateChangeListener?.invoke(this)
@@ -109,7 +112,7 @@ class MapState(
     }
 
     override fun onPress() {
-        markerState.removeAllAutoDismissCallouts()
+        markerRenderState.removeAllAutoDismissCallouts()
     }
 
     override fun onLongPress(x: Double, y: Double) {
@@ -145,10 +148,10 @@ class MapState(
     }
 
     /**
-     * Apply "dynamic" initial values - e.g, those which depend on the layout size.
+     * Apply "late" initial values - e.g, those which depend on the layout size.
      * For the moment, the scroll is the only one.
      */
-    private fun applyDynamicInitialValues(initialValues: InitialValues) {
+    private fun applyLateInitialValues(initialValues: InitialValues) {
         with(zoomPanRotateState) {
             val offsetX = initialValues.screenOffset.x * layoutSize.width
             val offsetY = initialValues.screenOffset.y * layoutSize.height

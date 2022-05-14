@@ -52,8 +52,8 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.VISIBLE_AREA_PADDING.name) {
                 VisibleAreaPaddingDemo()
             }
-            composable(MainDestinations.MARKERS_LAZY_LOADING.name) {
-                MarkersLazyLoadingDemo()
+            composable(MainDestinations.MARKERS_CLUSTERING.name) {
+                MarkersClusteringDemo()
             }
         }
     }

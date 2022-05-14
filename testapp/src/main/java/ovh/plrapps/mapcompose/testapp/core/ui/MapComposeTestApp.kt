@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import ovh.plrapps.mapcompose.testapp.core.ui.nav.HOME
 import ovh.plrapps.mapcompose.testapp.core.ui.nav.NavDestinations
 import ovh.plrapps.mapcompose.testapp.core.ui.theme.MapComposeTheme
+import ovh.plrapps.mapcompose.testapp.features.clustering.MarkerClusteringUi
 import ovh.plrapps.mapcompose.testapp.features.home.Home
 import ovh.plrapps.mapcompose.testapp.features.layerswitch.LayerSwitchTest
 
@@ -24,6 +25,9 @@ fun MapComposeTestApp() {
             }
             composable(NavDestinations.LAYERS_SWITCH.name) {
                 LayerSwitchTest()
+            }
+            composable(NavDestinations.CLUSTERING.name) {
+                MarkerClusteringUi()
             }
         }
     }

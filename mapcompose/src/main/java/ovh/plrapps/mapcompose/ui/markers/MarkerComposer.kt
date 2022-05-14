@@ -12,9 +12,9 @@ import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.api.moveMarkerBy
+import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.ui.state.MarkerData
-import ovh.plrapps.mapcompose.ui.state.MarkerState
+import ovh.plrapps.mapcompose.ui.state.markers.MarkerRenderState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
@@ -24,14 +24,14 @@ import ovh.plrapps.mapcompose.utils.toRad
 internal fun MarkerComposer(
     modifier: Modifier,
     zoomPRState: ZoomPanRotateState,
-    markerState: MarkerState,
+    markerRenderState: MarkerRenderState,
     mapState: MapState
 ) {
     MarkerLayout(
         modifier = modifier,
         zoomPRState = zoomPRState,
     ) {
-        for (data in markerState.markers.values) {
+        for (data in markerRenderState.markers.value) {
             /* Optimize re-compositions */
             key(data.id) {
                 Box(
@@ -52,7 +52,7 @@ internal fun MarkerComposer(
                                 Modifier.pointerInput(Unit) {
                                     detectTapGestures(
                                         onTap = {
-                                            markerState.onMarkerClick(data)
+                                            markerRenderState.onMarkerClick(data)
                                         }
                                     )
                                 }
@@ -78,7 +78,7 @@ internal fun MarkerComposer(
                 }
             }
         }
-        for (data in markerState.callouts.values) {
+        for (data in markerRenderState.callouts.values) {
             /* Optimize re-compositions */
             key(data.markerData.id) {
                 Box(
@@ -94,7 +94,7 @@ internal fun MarkerComposer(
                                 Modifier.pointerInput(Unit) {
                                     detectTapGestures(
                                         onTap = {
-                                            markerState.onCalloutClick(data.markerData)
+                                            markerRenderState.onCalloutClick(data.markerData)
                                         }
                                     )
                                 }

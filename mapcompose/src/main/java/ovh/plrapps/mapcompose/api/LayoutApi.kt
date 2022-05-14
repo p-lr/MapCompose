@@ -322,7 +322,7 @@ suspend fun MapState.scrollTo(
             smoothScrollAndScale(
                 destScrollX,
                 destScrollY,
-                destScale,
+                effectiveDstScale,
                 animationSpec
             )
         }
