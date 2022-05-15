@@ -17,11 +17,10 @@ import kotlinx.coroutines.flow.collectLatest
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.MarkerRenderState
+import ovh.plrapps.mapcompose.ui.state.markers.model.*
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior
-import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterInfo
 import ovh.plrapps.mapcompose.ui.state.markers.model.Custom
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default
-import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.markers.model.None
 import ovh.plrapps.mapcompose.utils.contains
 import ovh.plrapps.mapcompose.utils.map
@@ -38,7 +37,9 @@ internal class Clusterer(
     private val clusterClickBehavior: ClusterClickBehavior,
     private val clusterFactory: (Int) -> (@Composable () -> Unit)
 ) {
-    private val scope = CoroutineScope(mapState.scope.coroutineContext + SupervisorJob())
+    private val scope = CoroutineScope(
+        mapState.scope.coroutineContext + SupervisorJob(mapState.scope.coroutineContext[Job])
+    )
 
     /* Create a derived state flow from the original unique source of truth */
     private val markers = markersDataFlow.map(scope) {
