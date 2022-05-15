@@ -33,6 +33,15 @@ internal class MarkerRenderState {
         return removed
     }
 
+    fun removeAllClusterManagedMarkers(clusteredId: String) {
+        val it = clustererManagedMarkers.iterator()
+        while (it.hasNext()) {
+            if (it.next().clustererId == clusteredId) {
+                it.remove()
+            }
+        }
+    }
+
     fun addCallout(
         id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
         zIndex: Float, autoDismiss: Boolean, clickable: Boolean, isConstrainedInBounds: Boolean,

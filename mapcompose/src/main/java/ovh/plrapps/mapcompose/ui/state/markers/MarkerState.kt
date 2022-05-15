@@ -69,6 +69,12 @@ internal class MarkerState(
         } ?: false
     }
 
+    fun removeAll(predicate: (MarkerData) -> Boolean) {
+        markers.value = markers.value.filterNot {
+            predicate(it)
+        }
+    }
+
     fun removeAllMarkers() {
         markers.value = emptyList()
     }
@@ -126,9 +132,9 @@ internal class MarkerState(
         clusterersById[id] = clusterer
     }
 
-    fun removeClusterer(id: String) {
+    fun removeClusterer(id: String, removeManaged: Boolean) {
         clusterersById[id]?.apply {
-            cancel()
+            cancel(removeManaged = removeManaged)
         }
         clusterersById.remove(id)
     }

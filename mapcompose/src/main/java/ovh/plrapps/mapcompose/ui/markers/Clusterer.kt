@@ -38,7 +38,7 @@ internal class Clusterer(
     private val clusterClickBehavior: ClusterClickBehavior,
     private val clusterFactory: (Int) -> (@Composable () -> Unit)
 ) {
-    private val scope = CoroutineScope(mapState.scope.coroutineContext)
+    private val scope = CoroutineScope(mapState.scope.coroutineContext + SupervisorJob())
 
     /* Create a derived state flow from the original unique source of truth */
     private val markers = markersDataFlow.map(scope) {
@@ -75,7 +75,17 @@ internal class Clusterer(
         }
     }
 
-    fun cancel() = scope.cancel()
+    /**
+     * The user might want to cancel a clusterer while keeping managed markers. For example,
+     * removing a clusterer and adding it back with the same id but with a different cluster style.
+     * This allows for replacing a clusterer without any visual blinks.
+     */
+    fun cancel(removeManaged: Boolean) {
+        scope.cancel()
+        if (removeManaged) {
+            markerRenderState.removeAllClusterManagedMarkers(id)
+        }
+    }
 
     private suspend fun removeNonVisibleMarkers(
         visibleArea: VisibleArea,

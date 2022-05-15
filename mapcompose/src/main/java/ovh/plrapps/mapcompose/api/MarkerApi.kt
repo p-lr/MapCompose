@@ -117,6 +117,7 @@ fun MapState.addMarker(
  * @param clusterClickBehavior Defines the behavior when a cluster is clicked
  * @param clusterFactory Compose code for a cluster
  */
+@ExperimentalClusteringApi
 fun MapState.addClusterer(
     id: String,
     clusteringThreshold: Dp = 50.dp,
@@ -132,10 +133,19 @@ fun MapState.addClusterer(
     )
 }
 
+/**
+ * Remove a clusterer.
+ * By default, also removes all markers managed by this clusterer.
+ */
+@ExperimentalClusteringApi
 fun MapState.removeClusterer(
     id: String,
+    removeManagedMarkers: Boolean = true
 ) {
-    markerState.removeClusterer(id)
+    markerState.removeClusterer(id, removeManagedMarkers)
+    if (removeManagedMarkers) {
+        markerState.removeAll { it.clustererId == id }
+    }
 }
 
 /**
