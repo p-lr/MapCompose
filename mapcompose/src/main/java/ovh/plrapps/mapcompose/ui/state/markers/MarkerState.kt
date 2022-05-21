@@ -1,7 +1,6 @@
 package ovh.plrapps.mapcompose.ui.state.markers
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
@@ -9,9 +8,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.markers.Clusterer
+import ovh.plrapps.mapcompose.ui.markers.LazyLoader
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 
 internal class MarkerState(
     scope: CoroutineScope,
@@ -21,6 +22,7 @@ internal class MarkerState(
     internal var markerMoveCb: MarkerMoveCb? = null
 
     private val clusterersById = mutableMapOf<String, Clusterer>()
+    private val lazyLoaderById = mutableMapOf<String, LazyLoader>()
 
     init {
         scope.launch {
@@ -36,14 +38,15 @@ internal class MarkerState(
 
     fun getRenderedMarkers(): List<MarkerData> = markerRenderState.markers.value
 
-    fun getRenderedAndClusteredManaged(): SnapshotStateList<MarkerData> {
-        return markerRenderState.clustererManagedMarkers
-    }
-
     fun addMarker(
-        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
-        zIndex: Float, clickable: Boolean, clipShape: Shape?, isConstrainedInBounds: Boolean,
-        clustererId: String?,
+        id: String, x: Double, y: Double,
+        relativeOffset: Offset,
+        absoluteOffset: Offset,
+        zIndex: Float,
+        clickable: Boolean,
+        clipShape: Shape?,
+        isConstrainedInBounds: Boolean,
+        renderingStrategy: RenderingStrategy,
         c: @Composable () -> Unit
     ) {
         if (hasMarker(id)) return
@@ -57,7 +60,7 @@ internal class MarkerState(
             clickable,
             clipShape,
             isConstrainedInBounds,
-            clustererId,
+            renderingStrategy,
             c
         )
     }
@@ -128,8 +131,27 @@ internal class MarkerState(
         clusterClickBehavior: ClusterClickBehavior,
         clusterFactory: (Int) -> (@Composable () -> Unit)
     ) {
-        val clusterer = Clusterer(id, clusteringThreshold, mapState, markerRenderState, markers, clusterClickBehavior, clusterFactory)
+        val clusterer = Clusterer(
+            id,
+            clusteringThreshold,
+            mapState,
+            markerRenderState,
+            markers,
+            clusterClickBehavior,
+            clusterFactory
+        )
         clusterersById[id] = clusterer
+    }
+
+    fun addLazyLoader(
+        mapState: MapState,
+        id: String,
+        padding: Dp
+    ) {
+        val lazyLoader = LazyLoader(
+            id, mapState, markerRenderState, markers, padding, mapState.scope
+        )
+        lazyLoaderById[id] = lazyLoader
     }
 
     fun removeClusterer(id: String, removeManaged: Boolean) {
@@ -137,19 +159,39 @@ internal class MarkerState(
             cancel(removeManaged = removeManaged)
         }
         clusterersById.remove(id)
+
+        if (removeManaged) {
+            removeAll {
+                (it.renderingStrategy is RenderingStrategy.Clustering) &&
+                        (it.renderingStrategy.clustererId == id)
+            }
+        }
+    }
+
+    fun removeLazyLoader(id: String, removeManaged: Boolean) {
+        lazyLoaderById[id]?.apply {
+            cancel(removeManaged = removeManaged)
+        }
+
+        if (removeManaged) {
+            removeAll {
+                (it.renderingStrategy is RenderingStrategy.LazyLoading) &&
+                        (it.renderingStrategy.lazyLoaderId == id)
+            }
+        }
     }
 
     private suspend fun renderNonClusteredMarkers() {
         markers.collect {
             val nonClustered = it.filter { markerData ->
-                markerData.clustererId == null
+                markerData.renderingStrategy is RenderingStrategy.Default
             }
-            val rendered = markerRenderState.regularMarkers
+            val rendered = markerRenderState.getRegularMarkers()
             val toAdd = nonClustered - rendered
             val toRemove = rendered - nonClustered
 
-            markerRenderState.regularMarkers += toAdd
-            markerRenderState.regularMarkers -= toRemove
+            markerRenderState.addRegularMarkers(toAdd)
+            markerRenderState.removeRegularMarkers(toRemove)
         }
     }
 }

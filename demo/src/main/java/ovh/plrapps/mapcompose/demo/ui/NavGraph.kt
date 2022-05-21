@@ -14,5 +14,6 @@ enum class MainDestinations(val title: String) {
     ANIMATION_DEMO("Animation demo"),
     HTTP_TILES_DEMO("Remote HTTP tiles"),
     VISIBLE_AREA_PADDING("Visible area padding"),
-    MARKERS_CLUSTERING("Markers clustering")
+    MARKERS_CLUSTERING("Markers clustering"),
+    MARKERS_LAZY_LOADING("Markers lazy loading")
 }

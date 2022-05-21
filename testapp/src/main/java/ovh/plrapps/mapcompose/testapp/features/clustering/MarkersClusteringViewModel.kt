@@ -21,6 +21,7 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.testapp.R
 import ovh.plrapps.mapcompose.testapp.utils.randomDouble
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import kotlin.random.Random.Default.nextDouble
 
 /**
@@ -77,7 +78,10 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
                 val y = randomDouble(cy, 0.03).coerceAtLeast(0.0)
 
                 /* Notice how we set the cluster which we previously added */
-                state.addMarker("marker-$i-$j", x, y, clustererId = "default") {
+                state.addMarker(
+                    "marker-$i-$j", x, y,
+                    renderingStrategy = RenderingStrategy.Clustering("default")
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.map_marker),
                         contentDescription = null,

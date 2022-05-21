@@ -55,6 +55,9 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.MARKERS_CLUSTERING.name) {
                 MarkersClusteringDemo()
             }
+            composable(MainDestinations.MARKERS_LAZY_LOADING.name) {
+                MarkersLazyLoadingDemo()
+            }
         }
     }
 }

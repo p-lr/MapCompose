@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
 import ovh.plrapps.mapcompose.utils.toRad
@@ -67,13 +68,18 @@ fun MapState.addMarker(
         clickable,
         clipShape,
         isConstrainedInBounds,
-        null,
+        RenderingStrategy.Default,
         c
     )
 }
 
 /**
  * @see [addMarker]
+ * @param renderingStrategy By default, markers are eagerly laid-out, e.g they are laid-out
+ * even when not visible. There are two alternative rendering strategies:
+ * - [RenderingStrategy.LazyLoading]: removes all non-visible markers, dynamically.
+ * - [RenderingStrategy.Clustering]: in addition to lazy loading, clusterize markers when they are
+ * close to each other.
  */
 @ExperimentalClusteringApi
 fun MapState.addMarker(
@@ -86,7 +92,7 @@ fun MapState.addMarker(
     clickable: Boolean = true,
     clipShape: Shape? = CircleShape,
     isConstrainedInBounds: Boolean = true,
-    clustererId: String? = null,
+    renderingStrategy: RenderingStrategy = RenderingStrategy.Default,
     c: @Composable () -> Unit
 ) {
     markerState.addMarker(
@@ -99,7 +105,7 @@ fun MapState.addMarker(
         clickable,
         clipShape,
         isConstrainedInBounds,
-        clustererId,
+        renderingStrategy,
         c
     )
 }
@@ -134,6 +140,21 @@ fun MapState.addClusterer(
 }
 
 /**
+ * Add a lazy loader for markers. The lazy loader removes markers as they go out of the visible area
+ * (and adds markers which are visible).
+ *
+ * @param id The id for the lazy loader
+ * @param padding Padding added to the visible area, in dp. Defaults to 0.
+ */
+@ExperimentalClusteringApi
+fun MapState.addLazyLoader(
+    id: String,
+    padding: Dp = 0.dp
+) {
+    markerState.addLazyLoader(this, id, padding)
+}
+
+/**
  * Remove a clusterer.
  * By default, also removes all markers managed by this clusterer.
  */
@@ -143,9 +164,18 @@ fun MapState.removeClusterer(
     removeManagedMarkers: Boolean = true
 ) {
     markerState.removeClusterer(id, removeManagedMarkers)
-    if (removeManagedMarkers) {
-        markerState.removeAll { it.clustererId == id }
-    }
+}
+
+/**
+ * Remove a lazy loader.
+ * By default, also removes all markers managed by this lazy loader.
+ */
+@ExperimentalClusteringApi
+fun MapState.removeLazyLoader(
+    id: String,
+    removeManagedMarkers: Boolean = true
+) {
+    markerState.removeLazyLoader(id, removeManagedMarkers)
 }
 
 /**

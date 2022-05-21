@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.markers
 
-import android.content.res.Resources
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
@@ -23,11 +22,11 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.Custom
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default
 import ovh.plrapps.mapcompose.ui.state.markers.model.None
 import ovh.plrapps.mapcompose.utils.contains
+import ovh.plrapps.mapcompose.utils.dpToPx
 import ovh.plrapps.mapcompose.utils.map
 import ovh.plrapps.mapcompose.utils.throttle
 import kotlin.math.*
 
-@OptIn(ExperimentalClusteringApi::class)
 internal class Clusterer(
     val id: String,
     clusteringThreshold: Dp,
@@ -44,7 +43,8 @@ internal class Clusterer(
     /* Create a derived state flow from the original unique source of truth */
     private val markers = markersDataFlow.map(scope) {
         it.filter { markerData ->
-            markerData.clustererId == id
+            (markerData.renderingStrategy is RenderingStrategy.Clustering) &&
+            markerData.renderingStrategy.clustererId == id
         }.map { markerData ->
             Marker(markerData)
         }
@@ -64,10 +64,10 @@ internal class Clusterer(
 
                     /* Get the list of rendered clusterer managed (by this clusterer) markers */
                     val markersOnMap =
-                        mapState.markerState.getRenderedAndClusteredManaged().filter { markerData ->
-                            markerData.clustererId == id
+                        markerRenderState.getClusteredMarkers().filter { markerData ->
+                            (markerData.renderingStrategy is RenderingStrategy.Clustering) &&
+                                    markerData.renderingStrategy.clustererId == id
                         }
-                    removeNonVisibleMarkers(visibleArea, markersOnMap)
                     withContext(Dispatchers.Default) {
                         clusterize(scale, visibleArea, markersOnMap, epsilon)
                     }
@@ -85,21 +85,6 @@ internal class Clusterer(
         scope.cancel()
         if (removeManaged) {
             markerRenderState.removeAllClusterManagedMarkers(id)
-        }
-    }
-
-    private suspend fun removeNonVisibleMarkers(
-        visibleArea: VisibleArea,
-        markersOnMap: List<MarkerData>
-    ) = withContext(Dispatchers.Main) {
-        val markersToRemove = withContext(Dispatchers.Default) {
-            markersOnMap.filter { dataSnapshot ->
-                !visibleArea.contains(dataSnapshot.x, dataSnapshot.y)
-            }
-        }
-
-        markersToRemove.forEach {
-            markerRenderState.removeClustererManagedMarker(it.id)
         }
     }
 
@@ -421,12 +406,10 @@ internal class Clusterer(
             clipShape = CircleShape,
             isConstrainedInBounds = true,
             clickable = false,
-            clustererId = this@Clusterer.id,
+            renderingStrategy = RenderingStrategy.Clustering(this@Clusterer.id),
             c = c
         )
     }
-
-    private fun dpToPx(dp: Float): Float = dp * Resources.getSystem().displayMetrics.density
 
     private data class Barycenter(val x: Double, val y: Double, val weight: Int)
 

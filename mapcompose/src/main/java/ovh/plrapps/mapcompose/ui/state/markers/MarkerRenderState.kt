@@ -1,44 +1,74 @@
 package ovh.plrapps.mapcompose.ui.state.markers
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
+import ovh.plrapps.mapcompose.utils.removeFirst
 
 internal class MarkerRenderState {
     internal val markers = derivedStateOf {
-        regularMarkers + clustererManagedMarkers
+        regularMarkers + lazyLoadedMarkers + clustererManagedMarkers
     }
 
-    internal val regularMarkers = mutableStateListOf<MarkerData>()
-    internal val clustererManagedMarkers = mutableStateListOf<MarkerData>()
+    private val regularMarkers = mutableStateListOf<MarkerData>()
+    private val lazyLoadedMarkers = mutableStateListOf<MarkerData>()
+    private val clustererManagedMarkers = mutableStateListOf<MarkerData>()
     internal var markerClickCb: MarkerClickCb? = null
 
     internal val callouts = mutableStateMapOf<String, CalloutData>()
     internal var calloutClickCb: MarkerClickCb? = null
+
+    fun getRegularMarkers(): List<MarkerData> {
+        return regularMarkers
+    }
+
+    fun addRegularMarkers(markerDataList: List<MarkerData>) {
+        regularMarkers += markerDataList
+    }
+
+    fun removeRegularMarkers(markerDataList: List<MarkerData>) {
+        regularMarkers -= markerDataList
+    }
+
+    fun getClusteredMarkers(): List<MarkerData> {
+        return clustererManagedMarkers
+    }
 
     fun addClustererManagedMarker(markerData: MarkerData) {
         clustererManagedMarkers.add(markerData)
     }
 
     fun removeClustererManagedMarker(id: String): Boolean {
-        var removed = false
-        val it = clustererManagedMarkers.iterator()
-        while (it.hasNext()) {
-            if (it.next().id == id) {
-                it.remove()
-                removed = true
-                break
-            }
-        }
-        return removed
+        return clustererManagedMarkers.removeFirst { it.id == id }
     }
 
     fun removeAllClusterManagedMarkers(clusteredId: String) {
-        val it = clustererManagedMarkers.iterator()
-        while (it.hasNext()) {
-            if (it.next().clustererId == clusteredId) {
-                it.remove()
-            }
+        clustererManagedMarkers.removeAll { markerData ->
+            (markerData.renderingStrategy is RenderingStrategy.Clustering)
+                    && markerData.renderingStrategy.clustererId == clusteredId
+        }
+    }
+
+    fun getLazyLoadedMarkers(): List<MarkerData> {
+        return lazyLoadedMarkers
+    }
+
+    fun addLazyLoadedMarker(markerData: MarkerData) {
+        lazyLoadedMarkers.add(markerData)
+    }
+
+    fun removeLazyLoadedMarker(id: String): Boolean {
+        return lazyLoadedMarkers.removeFirst { it.id == id }
+    }
+
+    fun removeAllLazyLoadedMarkers(lazyLoaderId: String) {
+        lazyLoadedMarkers.removeAll { markerData ->
+            (markerData.renderingStrategy is RenderingStrategy.LazyLoading)
+                    && markerData.renderingStrategy.lazyLoaderId == lazyLoaderId
         }
     }
 
@@ -58,7 +88,7 @@ internal class MarkerRenderState {
                 clickable,
                 clipShape = null,
                 isConstrainedInBounds,
-                null,
+                renderingStrategy = RenderingStrategy.Default,
                 c
             )
         callouts[id] = CalloutData(markerData, autoDismiss)

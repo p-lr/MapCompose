@@ -17,7 +17,7 @@ internal class MarkerData(
     clickable: Boolean,
     clipShape: Shape?,
     isConstrainedInBounds: Boolean,
-    val clustererId: String?,
+    val renderingStrategy: RenderingStrategy,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)

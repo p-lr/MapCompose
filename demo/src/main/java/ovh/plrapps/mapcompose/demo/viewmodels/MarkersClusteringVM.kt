@@ -20,6 +20,7 @@ import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 
 
 /**
@@ -65,10 +66,22 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
                 id = "marker-$i",
                 x = pair.first,
                 y = pair.second,
-                clustererId = "default"
+                renderingStrategy = RenderingStrategy.Clustering("default"),
             ) {
                 Marker()
             }
+        }
+
+        /* We can still add regular markers */
+        state.addMarker(
+            "marker-regular", 0.52, 0.36
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.map_marker),
+                contentDescription = null,
+                modifier = Modifier.size(50.dp),
+                tint = Color(0xEEF44336)
+            )
         }
     }
 
