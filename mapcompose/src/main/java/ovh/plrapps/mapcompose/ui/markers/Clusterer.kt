@@ -317,7 +317,7 @@ internal class Clusterer(
     }
 
     private fun Cluster.addToMap() {
-        val markerData = makeMarkerData(id, x, y) {
+        val markerData = makeClusterMarkerData(id, x, y) {
             when (clusterClickBehavior) {
                 is Custom -> {
                     Box(Modifier.pointerInput(Unit) {
@@ -388,11 +388,10 @@ internal class Clusterer(
     private fun getSnapScale(scale: Float): Float = 2.0.pow(ceil(ln(scale) / ln(2.0))).toFloat()
 
     private fun Marker.addToMap() {
-        val markerData = makeMarkerData(id, x, y, markerData.c)
         markerRenderState.addClustererManagedMarker(markerData)
     }
 
-    private fun makeMarkerData(
+    private fun makeClusterMarkerData(
         id: String,
         x: Double,
         y: Double,
