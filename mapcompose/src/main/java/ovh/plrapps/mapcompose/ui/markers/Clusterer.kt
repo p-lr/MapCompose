@@ -1,12 +1,8 @@
 package ovh.plrapps.mapcompose.ui.markers
 
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -72,6 +68,22 @@ internal class Clusterer(
                         clusterize(scale, visibleArea, markersOnMap, epsilon)
                     }
                 }
+            }
+        }
+    }
+
+    fun onPlaceableClick(markerData: MarkerData) {
+        val cluster = markerData.data as? Cluster ?: return
+        when (clusterClickBehavior) {
+            is Custom -> {
+                clusterClickBehavior.onClick(
+                    ClusterInfo(cluster.x, cluster.y, cluster.markers.map { it.markerData })
+                )
+            }
+            Default -> {
+                defaultClusterClickListener(cluster)
+            }
+            None -> {
             }
         }
     }
@@ -318,37 +330,10 @@ internal class Clusterer(
 
     private fun Cluster.addToMap() {
         val markerData = makeClusterMarkerData(id, x, y) {
-            when (clusterClickBehavior) {
-                is Custom -> {
-                    Box(Modifier.pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                clusterClickBehavior.onClick(
-                                    ClusterInfo(x, y, markers.map { it.markerData })
-                                )
-                            }
-                        )
-                    }) {
-                        clusterFactory(weight)()
-                    }
-                }
-                Default -> {
-                    Box(Modifier.pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                defaultClusterClickListener(this@addToMap)
-                            }
-                        )
-                    }) {
-                        clusterFactory(weight)()
-                    }
-                }
-                None -> {
-                    clusterFactory(weight)()
-                }
-            }
-
+            clusterFactory(weight)()
         }
+        /* Add the cluster as bundled data for later retrieval on cluster click */
+        markerData.data = this
         markerRenderState.addClustererManagedMarker(markerData)
     }
 
@@ -404,7 +389,7 @@ internal class Clusterer(
             zIndex = 0f,
             clipShape = CircleShape,
             isConstrainedInBounds = true,
-            clickable = false,
+            clickable = true,
             renderingStrategy = RenderingStrategy.Clustering(this@Clusterer.id),
             c = c
         )

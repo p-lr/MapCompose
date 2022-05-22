@@ -19,6 +19,7 @@ internal class MarkerState(
     private val markerRenderState: MarkerRenderState
 ) {
     private val markers = MutableStateFlow<List<MarkerData>>(emptyList())
+    internal var markerClickCb: MarkerClickCb? = null
     internal var markerMoveCb: MarkerMoveCb? = null
 
     private val clusterersById = mutableMapOf<String, Clusterer>()
@@ -177,6 +178,19 @@ internal class MarkerState(
             removeAll {
                 (it.renderingStrategy is RenderingStrategy.LazyLoading) &&
                         (it.renderingStrategy.lazyLoaderId == id)
+            }
+        }
+    }
+
+    fun onHit(x: Int, y: Int) {
+        markerRenderState.getMarkerOnHit(x, y)?.also { markerData ->
+            /* Invoke user callback, if any */
+            markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
+
+            /* If it's managed by a clusterer, it might have something to do with this event */
+            if (markerData.renderingStrategy is RenderingStrategy.Clustering) {
+                val clusterer = clusterersById[markerData.renderingStrategy.clustererId]
+                clusterer?.onPlaceableClick(markerData)
             }
         }
     }

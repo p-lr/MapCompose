@@ -81,7 +81,7 @@ internal class ZoomPanRotateState(
             setScale(scale)
         }
 
-    var shouldLoopScale = false
+    internal var shouldLoopScale by mutableStateOf(false)
 
     /**
      * When scaled out beyond the scaled permitted by [Fill], the padding is used by the layout.
@@ -374,7 +374,30 @@ internal class ZoomPanRotateState(
     override fun onTap(focalPt: Offset) {
         if (!stateChangeListener.detectsTapGesture()) return
         offsetToRelative(focalPt) { x, y ->
-            stateChangeListener.onTap(x, y)
+            /* Also compute pixels coordinates relatively to the layout,  */
+            val xFullPx = x * fullWidth * scale
+            val yFullPx = y * fullHeight * scale
+            val centerX = centroidX * fullWidth * scale
+            val centerY = centroidY * fullHeight * scale
+
+            val angleRad = rotation.toRad()
+            val xPx = (rotateCenteredX(
+                xFullPx,
+                yFullPx,
+                centerX,
+                centerY,
+                angleRad
+            )).toInt()
+
+            val yPx = (rotateCenteredY(
+                xFullPx,
+                yFullPx,
+                centerX,
+                centerY,
+                angleRad
+            )).toInt()
+
+            stateChangeListener.onTap(x, y, xPx, yPx)
         }
     }
 
@@ -504,7 +527,7 @@ interface ZoomPanRotateStateListener {
     fun onTouchDown()
     fun onPress()
     fun onLongPress(x: Double, y: Double)
-    fun onTap(x: Double, y: Double)
+    fun onTap(x: Double, y: Double, xPx: Int, yPx: Int)
     fun detectsTapGesture(): Boolean
     fun detectsLongPress(): Boolean
 }

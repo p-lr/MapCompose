@@ -31,6 +31,16 @@ internal class MarkerData(
 
     var measuredWidth = 0
     var measuredHeight = 0
+    var xPlacement: Int? = null
+    var yPlacement: Int? = null
+    var data: Any? = null
+
+    fun contains(x: Int, y: Int): Boolean {
+        val xPos = xPlacement ?: return false
+        val yPos = yPlacement ?: return false
+
+        return x >= xPos && x <= xPos + measuredWidth && y >= yPos && y <= yPos + measuredHeight
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

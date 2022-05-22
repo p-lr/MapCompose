@@ -119,11 +119,16 @@ class MapState(
         longPressCb?.invoke(x, y)
     }
 
-    override fun onTap(x: Double, y: Double) {
+    override fun onTap(x: Double, y: Double, xPx: Int, yPx: Int) {
         tapCb?.invoke(x, y)
+        if (markerRenderState.requiresTapGesture()) {
+            markerState.onHit(xPx, yPx)
+        }
     }
 
-    override fun detectsTapGesture(): Boolean = tapCb != null
+    override fun detectsTapGesture(): Boolean {
+        return tapCb != null || markerRenderState.requiresTapGesture()
+    }
 
     override fun detectsLongPress(): Boolean = longPressCb != null
 

@@ -37,7 +37,6 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
             scroll(0.5, 0.5)
         }.apply {
             addLayer(tileStreamProvider)
-            shouldLoopScale = true
         }
     )
 

@@ -43,22 +43,6 @@ internal fun MarkerComposer(
                             } ?: Modifier
                         )
                         .then(
-                            if (data.isClickable) {
-                                /**
-                                 * As of 2022/04, using Modifier.clickable causes a huge performance
-                                 * drop when the number of markers exceeds a few dozens.
-                                 * Using pointerInput, we loose the ripple effect.
-                                 */
-                                Modifier.pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onTap = {
-                                            markerRenderState.onMarkerClick(data)
-                                        }
-                                    )
-                                }
-                            } else Modifier
-                        )
-                        .then(
                             if (data.isDraggable) {
                                 Modifier.pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
