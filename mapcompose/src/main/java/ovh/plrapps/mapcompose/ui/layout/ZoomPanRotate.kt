@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.layout
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -14,6 +13,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
 import ovh.plrapps.mapcompose.ui.gestures.detectGestures
+import ovh.plrapps.mapcompose.ui.gestures.detectTapGestures
 
 @Composable
 internal fun ZoomPanRotate(
@@ -46,7 +46,8 @@ internal fun ZoomPanRotate(
                     onTap = { offset -> gestureListener.onTap(offset) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
                     onPress = { gestureListener.onPress() },
-                    onLongPress = { offset -> gestureListener.onLongPress(offset) }
+                    onLongPress = { offset -> gestureListener.onLongPress(offset) },
+                    shouldConsumeTap = { offset -> gestureListener.shouldConsumeTapGesture(offset) }
                 )
             }
             .onSizeChanged {
@@ -80,6 +81,7 @@ internal interface GestureListener {
     fun onDoubleTap(focalPt: Offset)
     fun onLongPress(focalPt: Offset)
     fun isListeningForGestures(): Boolean
+    fun shouldConsumeTapGesture(focalPt: Offset): Boolean
 }
 
 internal interface LayoutSizeChangeListener {
