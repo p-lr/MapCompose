@@ -49,6 +49,9 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
             addLayer(tileStreamProvider)
             enableRotation()
             shouldLoopScale = true
+            onMarkerClick { id, x, y ->
+                println("on marker click $id $x $y")
+            }
         }
     )
 

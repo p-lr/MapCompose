@@ -39,8 +39,6 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
  * is registered using [onMarkerClick], that listener will only be invoked for that marker if
  * [clickable] is true.
- * If the marker doesn't need to be clickable, set it to false to squeeze a bit of performance. This
- * becomes noticeable when many markers are rendered.
  * @param clipShape The [Shape] used to clip the marker. Defaults to [CircleShape]. If null, no
  * clipping is done.
  * @param isConstrainedInBounds By default, a marker cannot be positioned or moved outside of the
@@ -307,9 +305,11 @@ fun MapState.onMarkerMove(
  * Register a callback which will be invoked when a marker is tapped.
  * Beware that this clicked listener will only be invoked if the marker is clickable, and when the
  * click gesture isn't already consumed by some other composable (like a button).
+ * Since double-tap events are also listened (for zoom-in gesture), this click listener is invoked
+ * with a slight delay.
  */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
-    markerRenderState.markerClickCb = cb
+    markerState.markerClickCb = cb
 }
 
 /**

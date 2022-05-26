@@ -119,13 +119,26 @@ class MapState(
         longPressCb?.invoke(x, y)
     }
 
-    override fun onTap(x: Double, y: Double) {
-        tapCb?.invoke(x, y)
+    /**
+     * Tap gestures are consumed on marker tap.
+     */
+    override fun onTap(x: Double, y: Double, xPx: Int, yPx: Int, tapConsumed: Boolean) {
+        if (tapConsumed) {
+            markerState.onHit(xPx, yPx)
+        } else {
+            tapCb?.invoke(x, y)
+        }
     }
 
-    override fun detectsTapGesture(): Boolean = tapCb != null
+    override fun detectsTapGesture(): Boolean {
+        return tapCb != null || markerRenderState.requiresTapGesture()
+    }
 
     override fun detectsLongPress(): Boolean = longPressCb != null
+
+    override fun shouldConsumeTapGesture(x: Int, y: Int): Boolean {
+        return markerRenderState.getMarkerOnHit(x, y)?.isClickable ?: false
+    }
 
     internal fun renderVisibleTilesThrottled() {
         throttledTask.trySend(Unit)

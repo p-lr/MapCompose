@@ -48,7 +48,6 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
             /* Notice how we set the rendering strategy to lazy loading with the same id */
             state.addMarker(
                 "marker-$i", x, y,
-                clickable = false, // clickable has an impact on performance
                 renderingStrategy = RenderingStrategy.LazyLoading(lazyLoaderId = "default")
             ) {
                 Icon(
@@ -63,7 +62,6 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         /* We can still add regular markers */
         state.addMarker(
             "marker-regular", 0.5, 0.5,
-            clickable = false,
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.map_marker),

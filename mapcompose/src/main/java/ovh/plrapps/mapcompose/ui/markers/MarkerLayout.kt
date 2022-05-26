@@ -45,11 +45,12 @@ internal fun MarkerLayout(
                     placeable.measuredHeight * data.relativeOffset.y + data.absoluteOffset.y
 
                 if (zoomPRState.rotation == 0f) {
-                    placeable.place(
-                        x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt(),
-                        y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt(),
-                        zIndex = data.zIndex
-                    )
+                    val x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt()
+                    val y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt()
+                    data.xPlacement = x
+                    data.yPlacement = y
+
+                    placeable.place(x, y, zIndex = data.zIndex)
                 } else {
                     with(zoomPRState) {
                         val angleRad = rotation.toRad()
@@ -57,23 +58,26 @@ internal fun MarkerLayout(
                         val yFullPx = data.y * fullHeight * scale
                         val centerX = centroidX * fullWidth * scale
                         val centerY = centroidY * fullHeight * scale
-                        placeable.place(
-                            x = (rotateCenteredX(
-                                xFullPx,
-                                yFullPx,
-                                centerX,
-                                centerY,
-                                angleRad
-                            ) + widthOffset).toInt(),
-                            y = (rotateCenteredY(
-                                xFullPx,
-                                yFullPx,
-                                centerX,
-                                centerY,
-                                angleRad
-                            ) + heightOffset).toInt(),
-                            zIndex = data.zIndex
-                        )
+
+                        val x = (rotateCenteredX(
+                            xFullPx,
+                            yFullPx,
+                            centerX,
+                            centerY,
+                            angleRad
+                        ) + widthOffset).toInt()
+
+                        val y = (rotateCenteredY(
+                            xFullPx,
+                            yFullPx,
+                            centerX,
+                            centerY,
+                            angleRad
+                        ) + heightOffset).toInt()
+
+                        data.xPlacement = x
+                        data.yPlacement = y
+                        placeable.place(x, y, zIndex = data.zIndex)
                     }
                 }
             }

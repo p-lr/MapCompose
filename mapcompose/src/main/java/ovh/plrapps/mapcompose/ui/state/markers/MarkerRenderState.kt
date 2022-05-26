@@ -14,10 +14,15 @@ internal class MarkerRenderState {
         regularMarkers + lazyLoadedMarkers + clustererManagedMarkers
     }
 
+    private val hasClickable = derivedStateOf {
+        markers.value.any {
+            it.isClickable
+        }
+    }
+
     private val regularMarkers = mutableStateListOf<MarkerData>()
     private val lazyLoadedMarkers = mutableStateListOf<MarkerData>()
     private val clustererManagedMarkers = mutableStateListOf<MarkerData>()
-    internal var markerClickCb: MarkerClickCb? = null
 
     internal val callouts = mutableStateMapOf<String, CalloutData>()
     internal var calloutClickCb: MarkerClickCb? = null
@@ -106,8 +111,19 @@ internal class MarkerRenderState {
         }
     }
 
-    internal fun onMarkerClick(data: MarkerData) {
-        markerClickCb?.invoke(data.id, data.x, data.y)
+    /**
+     * When at least one rendered marker is clickable, we need to get notified on tap gesture.
+     */
+    fun requiresTapGesture(): Boolean {
+        return hasClickable.value
+    }
+
+    fun getMarkerOnHit(xPx: Int, yPx: Int): MarkerData? {
+        return markers.value.filter { markerData ->
+            markerData.isClickable && markerData.contains(xPx, yPx)
+        }.maxByOrNull {
+            it.zIndex
+        }
     }
 
     internal fun onCalloutClick(data: MarkerData) {

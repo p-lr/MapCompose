@@ -81,7 +81,7 @@ internal class ZoomPanRotateState(
             setScale(scale)
         }
 
-    var shouldLoopScale = false
+    internal var shouldLoopScale by mutableStateOf(false)
 
     /**
      * When scaled out beyond the scaled permitted by [Fill], the padding is used by the layout.
@@ -371,10 +371,13 @@ internal class ZoomPanRotateState(
         stateChangeListener.onPress()
     }
 
-    override fun onTap(focalPt: Offset) {
+    override fun onTap(focalPt: Offset, tapConsumed: Boolean) {
         if (!stateChangeListener.detectsTapGesture()) return
         offsetToRelative(focalPt) { x, y ->
-            stateChangeListener.onTap(x, y)
+            /* Also compute pixels coordinates relatively to the layout,  */
+            relativeToAbsolute(x, y) { xPx, yPx ->
+                stateChangeListener.onTap(x, y, xPx, yPx, tapConsumed)
+            }
         }
     }
 
@@ -385,12 +388,38 @@ internal class ZoomPanRotateState(
         }
     }
 
-    private fun offsetToRelative(focalPt: Offset, block: (Double, Double) -> Unit) {
+    private fun <T> offsetToRelative(focalPt: Offset, block: (Double, Double) -> T): T {
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
         val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
         val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
-        block(x, y)
+        return block(x, y)
+    }
+
+    private fun <T> relativeToAbsolute(x: Double, y: Double, block: (Int, Int) -> T): T {
+        val xFullPx = x * fullWidth * scale
+        val yFullPx = y * fullHeight * scale
+        val centerX = centroidX * fullWidth * scale
+        val centerY = centroidY * fullHeight * scale
+
+        val angleRad = rotation.toRad()
+        val xPx = (rotateCenteredX(
+            xFullPx,
+            yFullPx,
+            centerX,
+            centerY,
+            angleRad
+        )).toInt()
+
+        val yPx = (rotateCenteredY(
+            xFullPx,
+            yFullPx,
+            centerX,
+            centerY,
+            angleRad
+        )).toInt()
+
+        return block(xPx, yPx)
     }
 
     override fun onDoubleTap(focalPt: Offset) {
@@ -416,6 +445,14 @@ internal class ZoomPanRotateState(
     }
 
     override fun isListeningForGestures(): Boolean = areGesturesEnabled
+
+    override fun shouldConsumeTapGesture(focalPt: Offset): Boolean {
+        return offsetToRelative(focalPt) { x, y ->
+            relativeToAbsolute(x, y) { xPx, yPx ->
+                stateChangeListener.shouldConsumeTapGesture(xPx, yPx)
+            }
+        }
+    }
 
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
         scope = composableScope
@@ -504,7 +541,8 @@ interface ZoomPanRotateStateListener {
     fun onTouchDown()
     fun onPress()
     fun onLongPress(x: Double, y: Double)
-    fun onTap(x: Double, y: Double)
+    fun onTap(x: Double, y: Double, xPx: Int, yPx: Int, tapConsumed: Boolean)
     fun detectsTapGesture(): Boolean
     fun detectsLongPress(): Boolean
+    fun shouldConsumeTapGesture(x: Int, y: Int): Boolean
 }

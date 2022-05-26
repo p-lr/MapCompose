@@ -37,7 +37,6 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
             scroll(0.5, 0.5)
         }.apply {
             addLayer(tileStreamProvider)
-            shouldLoopScale = true
         }
     )
 
@@ -74,7 +73,8 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
 
         /* We can still add regular markers */
         state.addMarker(
-            "marker-regular", 0.52, 0.36
+            "marker-regular", 0.52, 0.36,
+            clickable = false
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.map_marker),
