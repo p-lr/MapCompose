@@ -371,12 +371,12 @@ internal class ZoomPanRotateState(
         stateChangeListener.onPress()
     }
 
-    override fun onTap(focalPt: Offset) {
+    override fun onTap(focalPt: Offset, tapConsumed: Boolean) {
         if (!stateChangeListener.detectsTapGesture()) return
         offsetToRelative(focalPt) { x, y ->
             /* Also compute pixels coordinates relatively to the layout,  */
             relativeToAbsolute(x, y) { xPx, yPx ->
-                stateChangeListener.onTap(x, y, xPx, yPx)
+                stateChangeListener.onTap(x, y, xPx, yPx, tapConsumed)
             }
         }
     }
@@ -541,7 +541,7 @@ interface ZoomPanRotateStateListener {
     fun onTouchDown()
     fun onPress()
     fun onLongPress(x: Double, y: Double)
-    fun onTap(x: Double, y: Double, xPx: Int, yPx: Int)
+    fun onTap(x: Double, y: Double, xPx: Int, yPx: Int, tapConsumed: Boolean)
     fun detectsTapGesture(): Boolean
     fun detectsLongPress(): Boolean
     fun shouldConsumeTapGesture(x: Int, y: Int): Boolean

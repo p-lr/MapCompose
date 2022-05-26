@@ -43,7 +43,7 @@ internal fun ZoomPanRotate(
             .pointerInput(gestureListener.isListeningForGestures()) {
                 if (!gestureListener.isListeningForGestures()) return@pointerInput
                 detectTapGestures(
-                    onTap = { offset -> gestureListener.onTap(offset) },
+                    onTap = { offset, tapConsumed -> gestureListener.onTap(offset, tapConsumed) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
                     onPress = { gestureListener.onPress() },
                     onLongPress = { offset -> gestureListener.onLongPress(offset) },
@@ -77,7 +77,7 @@ internal interface GestureListener {
     fun onFling(velocity: Velocity)
     fun onTouchDown()
     fun onPress()
-    fun onTap(focalPt: Offset)
+    fun onTap(focalPt: Offset, tapConsumed: Boolean)
     fun onDoubleTap(focalPt: Offset)
     fun onLongPress(focalPt: Offset)
     fun isListeningForGestures(): Boolean
