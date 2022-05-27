@@ -30,7 +30,7 @@ internal class Clusterer(
     private val markerRenderState: MarkerRenderState,
     markersDataFlow: MutableStateFlow<List<MarkerData>>,
     private val clusterClickBehavior: ClusterClickBehavior,
-    private val clusterFactory: (Int) -> (@Composable () -> Unit)
+    private val clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
 ) {
     private val scope = CoroutineScope(
         mapState.scope.coroutineContext + SupervisorJob(mapState.scope.coroutineContext[Job])
@@ -330,7 +330,7 @@ internal class Clusterer(
 
     private fun Cluster.addToMap() {
         val markerData = makeClusterMarkerData(id, x, y) {
-            clusterFactory(weight)()
+            clusterFactory(markers.map { it.id })()
         }
         /* Add the cluster as bundled data for later retrieval on cluster click */
         markerData.data = this
@@ -480,5 +480,4 @@ private data class Cluster(
     val markers: List<Marker>
 ) : Placeable {
     val id = clusterIdPrefix + markers.map { it.id }.sorted()
-    val weight = markers.size
 }

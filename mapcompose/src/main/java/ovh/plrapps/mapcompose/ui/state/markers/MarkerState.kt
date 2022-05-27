@@ -130,7 +130,7 @@ internal class MarkerState(
         id: String,
         clusteringThreshold: Dp,
         clusterClickBehavior: ClusterClickBehavior,
-        clusterFactory: (Int) -> (@Composable () -> Unit)
+        clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
     ) {
         val clusterer = Clusterer(
             id,

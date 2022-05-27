@@ -42,8 +42,8 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
 
     init {
         /* Add a marker clusterer to manage markers. In this example, we use "default" for the id */
-        state.addClusterer("default") { n ->
-            { Cluster(size = n) }
+        state.addClusterer("default") { ids ->
+            { Cluster(size = ids.size) }
         }
 
         /* Add some markers to the map, using the same clusterer id we just defined (if a marker
