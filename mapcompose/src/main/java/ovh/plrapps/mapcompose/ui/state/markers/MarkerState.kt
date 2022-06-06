@@ -47,6 +47,8 @@ internal class MarkerState(
         clickable: Boolean,
         clipShape: Shape?,
         isConstrainedInBounds: Boolean,
+        clickableAreaScale: Offset,
+        clickableAreaCenterOffset: Offset,
         renderingStrategy: RenderingStrategy,
         c: @Composable () -> Unit
     ) {
@@ -61,6 +63,8 @@ internal class MarkerState(
             clickable,
             clipShape,
             isConstrainedInBounds,
+            clickableAreaScale,
+            clickableAreaCenterOffset,
             renderingStrategy,
             c
         )

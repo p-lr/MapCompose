@@ -17,6 +17,8 @@ internal class MarkerData(
     clickable: Boolean,
     clipShape: Shape?,
     isConstrainedInBounds: Boolean,
+    clickableAreaScale: Offset,
+    clickableAreaCenterOffset: Offset,
     val renderingStrategy: RenderingStrategy,
     val c: @Composable () -> Unit
 ) {
@@ -25,6 +27,8 @@ internal class MarkerData(
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
     var isClickable: Boolean by mutableStateOf(clickable)
+    var clickableAreaScale by mutableStateOf(clickableAreaScale)
+    var clickableAreaCenterOffset by mutableStateOf(clickableAreaCenterOffset)
     var clipShape: Shape? by mutableStateOf(clipShape)
     var zIndex: Float by mutableStateOf(zIndex)
     var isConstrainedInBounds by mutableStateOf(isConstrainedInBounds)
@@ -39,7 +43,13 @@ internal class MarkerData(
         val xPos = xPlacement ?: return false
         val yPos = yPlacement ?: return false
 
-        return x >= xPos && x <= xPos + measuredWidth && y >= yPos && y <= yPos + measuredHeight
+        val centerX = xPos + measuredWidth / 2 + measuredWidth * clickableAreaCenterOffset.x
+        val deltaX = measuredWidth * clickableAreaScale.x / 2
+        val centerY = yPos + measuredHeight / 2 + measuredHeight * clickableAreaCenterOffset.y
+        val deltaY = measuredHeight * clickableAreaScale.y / 2
+
+        return (x >= centerX - deltaX && x <= centerX + deltaX
+                && y >= centerY - deltaY && y <= centerY + deltaY)
     }
 
     override fun equals(other: Any?): Boolean {

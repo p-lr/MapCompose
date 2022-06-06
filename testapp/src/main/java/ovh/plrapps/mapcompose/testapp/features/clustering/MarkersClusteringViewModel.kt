@@ -68,7 +68,7 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
                         .size(50.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = n.toString(), color = Color.White)
+                    Text(text = n.size.toString(), color = Color.White)
                 }
             }
         }

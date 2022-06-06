@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
-import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
@@ -43,6 +43,12 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * clipping is done.
  * @param isConstrainedInBounds By default, a marker cannot be positioned or moved outside of the
  * map bounds.
+ * @param clickableAreaScale The clickable area, which defaults to the bounds of the
+ * provided composable, can be expanded or shrinked. For example, using Offset(1.2f, 1f), the
+ * clickable are will be expanded by 20% on the X axis relatively to the center.
+ * @param clickableAreaCenterOffset The center of the clickable area will be offset by
+ * the width of the marker multiplied by the x value of the offset, and the height of the marker
+ * multiplied by the y value of the offset.
  */
 fun MapState.addMarker(
     id: String,
@@ -54,6 +60,8 @@ fun MapState.addMarker(
     clickable: Boolean = true,
     clipShape: Shape? = CircleShape,
     isConstrainedInBounds: Boolean = true,
+    clickableAreaScale: Offset = Offset(1f, 1f),
+    clickableAreaCenterOffset: Offset = Offset(0f, 0f),
     c: @Composable () -> Unit
 ) {
     markerState.addMarker(
@@ -66,6 +74,8 @@ fun MapState.addMarker(
         clickable,
         clipShape,
         isConstrainedInBounds,
+        clickableAreaScale,
+        clickableAreaCenterOffset,
         RenderingStrategy.Default,
         c
     )
@@ -90,6 +100,8 @@ fun MapState.addMarker(
     clickable: Boolean = true,
     clipShape: Shape? = CircleShape,
     isConstrainedInBounds: Boolean = true,
+    clickableAreaRelativeOffset: Offset = Offset(1f, 1f),
+    clickableAreaCenterOffset: Offset = Offset(0f, 0f),
     renderingStrategy: RenderingStrategy = RenderingStrategy.Default,
     c: @Composable () -> Unit
 ) {
@@ -103,6 +115,8 @@ fun MapState.addMarker(
         clickable,
         clipShape,
         isConstrainedInBounds,
+        clickableAreaRelativeOffset,
+        clickableAreaCenterOffset,
         renderingStrategy,
         c
     )
@@ -238,6 +252,23 @@ fun MapState.updateMarkerConstrained(
     /* If constrained, immediately move the marker to its constrained position */
     if (constrainedInBounds) {
         markerState.moveMarkerTo(id, markerData.x, markerData.y)
+    }
+}
+
+/**
+ * Updates the clickable area of the marker.
+ */
+fun MapState.updateClickableArea(
+    id: String,
+    clickableAreaScale: Offset? = null,
+    clickableAreaCenterOffset: Offset? = null
+) {
+    val markerData = markerState.getMarker(id) ?: return
+    if (clickableAreaScale != null) {
+        markerData.clickableAreaScale = clickableAreaScale
+    }
+    if (clickableAreaCenterOffset != null) {
+        markerData.clickableAreaCenterOffset = clickableAreaCenterOffset
     }
 }
 

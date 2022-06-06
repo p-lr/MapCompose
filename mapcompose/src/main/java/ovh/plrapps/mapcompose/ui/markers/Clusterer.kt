@@ -389,6 +389,8 @@ internal class Clusterer(
             zIndex = 0f,
             clipShape = CircleShape,
             isConstrainedInBounds = true,
+            clickableAreaScale = Offset(1f, 1f),
+            clickableAreaCenterOffset = Offset(0f, 0f),
             clickable = true,
             renderingStrategy = RenderingStrategy.Clustering(this@Clusterer.id),
             c = c
