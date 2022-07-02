@@ -123,8 +123,8 @@ internal class MarkerRenderState {
     fun getMarkerOnHit(xPx: Int, yPx: Int): MarkerData? {
         return markers.value.filter { markerData ->
             markerData.isClickable && markerData.contains(xPx, yPx)
-        }.maxByOrNull {
-            it.zIndex
+        }.maxWithOrNull { markerData1, markerData2 ->
+            if (markerData1.zIndex > markerData2.zIndex) 1 else -1
         }
     }
 

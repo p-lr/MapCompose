@@ -25,6 +25,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
     private val markers = listOf(
         MarkerInfo("Callout #1", 0.45, 0.6),
         MarkerInfo("Callout #2", 0.24, 0.1),
+        MarkerInfo("Callout #3", 0.25, 0.18),
         MarkerInfo(TAP_TO_DISMISS_ID, 0.4, 0.3)
     )
 
