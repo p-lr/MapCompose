@@ -69,11 +69,7 @@ internal class ZoomPanRotateState(
      */
     internal var visibleAreaOffset by mutableStateOf(IntOffset(0, 0))
 
-    private var minScale = 0f   // should only be changed through MinimumScaleMode
-        set(value) {
-            field = value
-            setScale(scale)
-        }
+    internal var minScale by mutableStateOf(0f)   // should only be changed through MinimumScaleMode
 
     var maxScale = maxScale
         set(value) {
@@ -512,6 +508,7 @@ internal class ZoomPanRotateState(
             Fill -> max(minScaleX, minScaleY)
             is Forced -> mode.scale
         }
+        setScale(scale)
     }
 
     private fun updatePadding() {

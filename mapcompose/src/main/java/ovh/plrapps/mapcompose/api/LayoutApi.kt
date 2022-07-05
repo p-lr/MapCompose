@@ -200,6 +200,23 @@ var MapState.minimumScaleMode: MinimumScaleMode
     }
 
 /**
+ * Get the current minimum scale. The minimum scale changes on [minimumScaleMode] change.
+ * Do note that the initial value is always 0f. However, the value is updated after the first layout
+ * pass. To be reactive on minimum scale changes, use [MapState.minScaleSnapshotFlow] api.
+ */
+val MapState.minScale: Float
+    get() = zoomPanRotateState.minScale
+
+/**
+ * Get the minimum scale changes.
+ */
+fun MapState.minScaleSnapshotFlow(): Flow<Float> {
+    return snapshotFlow {
+        zoomPanRotateState.minScale
+    }
+}
+
+/**
  * The default maximum scale is 2f.
  * When changed, and if the current scale is greater than the new [maxScale], the current scale is
  * changed to be equal to [maxScale].
