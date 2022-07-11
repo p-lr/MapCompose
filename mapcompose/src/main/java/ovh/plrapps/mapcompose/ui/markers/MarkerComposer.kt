@@ -33,7 +33,7 @@ internal fun MarkerComposer(
     ) {
         for (data in markerRenderState.markers.value) {
             /* Optimize re-compositions */
-            key(data.id) {
+            key(data.uuid) {
                 Box(
                     Modifier
                         .layoutId(data)
@@ -49,7 +49,12 @@ internal fun MarkerComposer(
                                         change.consumeAllChanges()
                                         val interceptor = data.dragInterceptor
                                         if (interceptor != null) {
-                                            invokeDragInterceptor(data, zoomPRState, dragAmount, change.position)
+                                            invokeDragInterceptor(
+                                                data,
+                                                zoomPRState,
+                                                dragAmount,
+                                                change.position
+                                            )
                                         } else {
                                             mapState.moveMarkerBy(data.id, dragAmount)
                                         }
@@ -64,7 +69,7 @@ internal fun MarkerComposer(
         }
         for (data in markerRenderState.callouts.values) {
             /* Optimize re-compositions */
-            key(data.markerData.id) {
+            key(data.markerData.uuid) {
                 Box(
                     Modifier
                         .layoutId(data.markerData)

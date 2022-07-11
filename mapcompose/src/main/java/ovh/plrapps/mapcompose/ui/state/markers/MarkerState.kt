@@ -27,7 +27,7 @@ internal class MarkerState(
 
     init {
         scope.launch {
-            renderNonClusteredMarkers()
+            renderRegularMarkers()
         }
     }
 
@@ -199,14 +199,14 @@ internal class MarkerState(
         }
     }
 
-    private suspend fun renderNonClusteredMarkers() {
+    private suspend fun renderRegularMarkers() {
         markers.collect {
-            val nonClustered = it.filter { markerData ->
+            val regular = it.filter { markerData ->
                 markerData.renderingStrategy is RenderingStrategy.Default
             }
             val rendered = markerRenderState.getRegularMarkers()
-            val toAdd = nonClustered - rendered
-            val toRemove = rendered - nonClustered
+            val toAdd = regular - rendered
+            val toRemove = rendered - regular
 
             markerRenderState.addRegularMarkers(toAdd)
             markerRenderState.removeRegularMarkers(toRemove)

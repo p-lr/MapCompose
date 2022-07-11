@@ -15,6 +15,7 @@ import ovh.plrapps.mapcompose.utils.contains
 import ovh.plrapps.mapcompose.utils.dpToPx
 import ovh.plrapps.mapcompose.utils.map
 import ovh.plrapps.mapcompose.utils.throttle
+import java.util.*
 
 internal class LazyLoader(
     private val id: String,
@@ -65,12 +66,12 @@ internal class LazyLoader(
         markersOnMap: List<MarkerData>,
         markers: List<MarkerData>
     ) {
-        val markersById = markers.associateByTo(mutableMapOf()) { it.id }
-        val markerIds = mutableListOf<String>()
+        val markersById = markers.associateByTo(mutableMapOf()) { it.uuid }
+        val markerIds = mutableListOf<UUID>()
 
         markersOnMap.forEach { markerData ->
-            markerIds.add(markerData.id)
-            val inMemory = markersById[markerData.id]
+            markerIds.add(markerData.uuid)
+            val inMemory = markersById[markerData.uuid]
             if (inMemory == null) {
                 markerRenderState.removeLazyLoadedMarker(markerData.id)
             } else {
