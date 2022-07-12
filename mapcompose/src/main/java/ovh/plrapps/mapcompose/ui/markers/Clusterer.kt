@@ -21,6 +21,7 @@ import ovh.plrapps.mapcompose.utils.contains
 import ovh.plrapps.mapcompose.utils.dpToPx
 import ovh.plrapps.mapcompose.utils.map
 import ovh.plrapps.mapcompose.utils.throttle
+import java.util.*
 import kotlin.math.*
 
 internal class Clusterer(
@@ -129,10 +130,10 @@ internal class Clusterer(
         markers: List<Marker>
     ) {
         val clustersById = clusters.associateByTo(mutableMapOf()) { it.id }
-        val markersById = markers.associateByTo(mutableMapOf()) { it.id }
+        val markersById = markers.associateByTo(mutableMapOf()) { it.uuid }
 
         val clusterIds = mutableListOf<String>()
-        val markerIds = mutableListOf<String>()
+        val markerIds = mutableListOf<UUID>()
 
         markersOnMap.forEach { markerData ->
             if (markerData.id.startsWith(clusterIdPrefix)) {
@@ -146,9 +147,9 @@ internal class Clusterer(
                     }
                 }
             } else { // then it must be a marker
-                if (shouldProcessMarker(markerData.id)) {
-                    markerIds.add(markerData.id)
-                    val inMemory = markersById[markerData.id]
+                if (shouldProcessMarker(markerData)) {
+                    markerIds.add(markerData.uuid)
+                    val inMemory = markersById[markerData.uuid]
                     if (inMemory == null) {
                         markerRenderState.removeClustererManagedMarker(markerData.id)
                     } else {
@@ -206,7 +207,7 @@ internal class Clusterer(
         val markerList = mutableListOf<Marker>()
 
         val markerAssigned = markers.value.associateTo(mutableMapOf()) {
-            it.id to false
+            it.uuid to false
         }
 
         for (e in entriesSorted) {
@@ -217,10 +218,10 @@ internal class Clusterer(
             val startBary = getBarycenter(e.value.markers) ?: break
 
             val mergedMarkers = (e.value.markers + neighborsMarkers).filter { marker ->
-                distance(startBary, marker, scale) < epsilon && (markerAssigned[marker.id]
+                distance(startBary, marker, scale) < epsilon && (markerAssigned[marker.uuid]
                     ?: false).not()
             }.onEach {
-                markerAssigned[it.id] = true
+                markerAssigned[it.uuid] = true
             }
 
             if (mergedMarkers.size == 1) {
@@ -366,8 +367,9 @@ internal class Clusterer(
         }
     }
 
-    private fun shouldProcessMarker(id: String): Boolean {
-        return markers.value.any { it.id == id }
+    private fun shouldProcessMarker(markerData: MarkerData): Boolean {
+        return (markerData.renderingStrategy is RenderingStrategy.Clustering) &&
+                markerData.renderingStrategy.clustererId == id
     }
 
     private fun getSnapScale(scale: Float): Float = 2.0.pow(ceil(ln(scale) / ln(2.0))).toFloat()
@@ -467,6 +469,8 @@ private sealed interface Placeable
 private data class Marker(
     val markerData: MarkerData,
 ) : Placeable {
+    val uuid: UUID
+        get() = markerData.uuid
     val id: String
         get() = markerData.id
     val x: Double
