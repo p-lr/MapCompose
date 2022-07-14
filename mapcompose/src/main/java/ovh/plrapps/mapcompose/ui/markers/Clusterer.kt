@@ -339,31 +339,23 @@ internal class Clusterer(
     }
 
     private fun defaultClusterClickListener(cluster: Cluster) {
-        fun getBoundingBox(cluster: Cluster): BoundingBox? {
-            if (cluster.markers.isEmpty()) return null
-            var minX: Double = Double.MAX_VALUE
-            var maxX: Double = Double.MIN_VALUE
-            var minY: Double = Double.MAX_VALUE
-            var maxY: Double = Double.MIN_VALUE
-            cluster.markers.forEach {
-                minX = if (it.x < minX) it.x else minX
-                maxX = if (it.x > maxX) it.x else maxX
-                minY = if (it.y < minY) it.y else minY
-                maxY = if (it.y > maxY) it.y else maxY
-            }
-            return BoundingBox(minX, minY, maxX, maxY)
-        }
+        if (cluster.markers.isEmpty()) return
 
-        val bb = getBoundingBox(cluster) ?: return
-        val layoutSize = mapState.zoomPanRotateState.layoutSize
-        val minScaleX =
-            layoutSize.width.toFloat() / (mapState.fullSize.width * 1.2 * abs(bb.xRight - bb.xLeft))
-        val minScaleY =
-            layoutSize.height.toFloat() / (mapState.fullSize.height * 1.2 * abs(bb.yBottom - bb.yTop))
-        val destScale = min(minScaleX, minScaleY).toFloat()
+        /* Compute the bounding box */
+        var minX: Double = Double.MAX_VALUE
+        var maxX: Double = Double.MIN_VALUE
+        var minY: Double = Double.MAX_VALUE
+        var maxY: Double = Double.MIN_VALUE
+        cluster.markers.forEach {
+            minX = if (it.x < minX) it.x else minX
+            maxX = if (it.x > maxX) it.x else maxX
+            minY = if (it.y < minY) it.y else minY
+            maxY = if (it.y > maxY) it.y else maxY
+        }
+        val bb = BoundingBox(minX, minY, maxX, maxY)
 
         scope.launch {
-            mapState.scrollTo((bb.xLeft + bb.xRight) / 2, (bb.yBottom + bb.yTop) / 2, destScale)
+            mapState.scrollTo(bb, padding = Offset(0.2f, 0.2f))
         }
     }
 
