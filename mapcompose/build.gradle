@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         minSdkVersion 21
-        targetSdk 31
+        targetSdk 32
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -30,29 +30,28 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
-        useIR = true
         freeCompilerArgs += ["-opt-in=kotlin.RequiresOptIn"]
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion compose_compiler_version
     }
 }
 
 dependencies {
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation "androidx.compose.ui:ui-util:$compose_version"
-    implementation "androidx.compose.ui:ui-unit:$compose_version"
+    implementation "androidx.compose.material:material:$compose_libs_version"
+    implementation "androidx.compose.ui:ui-tooling:$compose_libs_version"
+    implementation "androidx.compose.ui:ui-util:$compose_libs_version"
+    implementation "androidx.compose.ui:ui-unit:$compose_libs_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2'
     testImplementation 'org.robolectric:robolectric:4.7.3'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_libs_version"
 }
 
 task androidSourcesJar(type: Jar) {
