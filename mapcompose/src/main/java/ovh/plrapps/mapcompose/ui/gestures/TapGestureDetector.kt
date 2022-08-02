@@ -127,8 +127,14 @@ suspend fun PointerInputScope.detectTapGestures(
 private suspend fun AwaitPointerEventScope.consumeUntilUp() {
     do {
         val event = awaitPointerEvent()
-        event.changes.fastForEach { it.consumeAllChanges() }
+        event.changes.fastForEach { it.consume() }
     } while (event.changes.fastAny { it.pressed })
+}
+
+private fun PointerInputChange.consumeDownChange() {
+    if (pressed != previousPressed) {
+        consume()
+    }
 }
 
 /**

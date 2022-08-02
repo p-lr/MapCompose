@@ -23,8 +23,11 @@ fun Home(demoListState: LazyListState, onDemoSelected: (dest: NavDestinations) -
                 backgroundColor = MaterialTheme.colors.primarySurface,
             )
         }
-    ) {
-        LazyColumn(state = demoListState) {
+    ) { padding ->
+        LazyColumn(
+            Modifier.padding(padding),
+            state = demoListState
+        ) {
             NavDestinations.values().map { dest ->
                 item {
                     Text(

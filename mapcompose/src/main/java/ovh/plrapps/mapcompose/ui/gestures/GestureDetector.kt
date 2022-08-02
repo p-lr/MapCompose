@@ -35,7 +35,7 @@ suspend fun PointerInputScope.detectGestures(
             val velocityTracker = VelocityTracker()
             do {
                 val event = awaitPointerEvent()
-                val canceled = event.changes.fastAny { it.positionChangeConsumed() }
+                val canceled = event.changes.fastAny { it.isConsumed }
                 if (!canceled) {
                     val zoomChange = event.calculateZoom()
                     val rotationChange = event.calculateRotation()
@@ -79,7 +79,7 @@ suspend fun PointerInputScope.detectGestures(
                         }
                         event.changes.fastForEach {
                             if (it.positionChanged()) {
-                                it.consumeAllChanges()
+                                it.consume()
                             }
                         }
                     }

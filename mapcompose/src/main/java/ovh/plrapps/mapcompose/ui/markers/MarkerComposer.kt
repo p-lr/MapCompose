@@ -8,7 +8,6 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
 import ovh.plrapps.mapcompose.api.moveMarkerBy
@@ -46,7 +45,7 @@ internal fun MarkerComposer(
                             if (data.isDraggable) {
                                 Modifier.pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
-                                        change.consumeAllChanges()
+                                        change.consume()
                                         val interceptor = data.dragInterceptor
                                         if (interceptor != null) {
                                             invokeDragInterceptor(
