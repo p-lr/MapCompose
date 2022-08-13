@@ -21,6 +21,7 @@ private val NoPressGesture: suspend PressGestureScope.(Offset) -> Unit = { }
  * The first pointer down and final pointer up are consumed, and in the
  * case of long press, all changes after the long press is detected are consumed.
  *
+ * When [shouldConsumeTap] is provided, it takes precedence over double-tap gesture detection.
  * When [onDoubleTap] is provided, the tap gesture is detected only after
  * the [ViewConfiguration.doubleTapMinTimeMillis] has passed and [onDoubleTap] is called if the
  * second tap is started before [ViewConfiguration.doubleTapTimeoutMillis]. If [onDoubleTap] is not
@@ -46,7 +47,7 @@ suspend fun PointerInputScope.detectTapGestures(
     forEachGesture {
         awaitPointerEventScope {
             val down = awaitFirstDown()
-            down.consumeDownChange()
+            down.consume()
             pressScope.reset()
             if (onPress !== NoPressGesture) launch {
                 pressScope.onPress(down.position)
@@ -63,7 +64,7 @@ suspend fun PointerInputScope.detectTapGestures(
                 if (upOrCancel == null) {
                     pressScope.cancel() // tap-up was canceled
                 } else {
-                    upOrCancel.consumeDownChange()
+                    upOrCancel.consume()
                     pressScope.release()
                 }
             } catch (_: PointerEventTimeoutCancellationException) {
@@ -95,7 +96,7 @@ suspend fun PointerInputScope.detectTapGestures(
                             withTimeout(longPressTimeout) {
                                 val secondUp = waitForUpOrCancellation()
                                 if (secondUp != null) {
-                                    secondUp.consumeDownChange()
+                                    secondUp.consume()
                                     pressScope.release()
                                     onDoubleTap(secondUp.position)
                                 } else {
@@ -129,12 +130,6 @@ private suspend fun AwaitPointerEventScope.consumeUntilUp() {
         val event = awaitPointerEvent()
         event.changes.fastForEach { it.consume() }
     } while (event.changes.fastAny { it.pressed })
-}
-
-private fun PointerInputChange.consumeDownChange() {
-    if (pressed != previousPressed) {
-        consume()
-    }
 }
 
 /**
