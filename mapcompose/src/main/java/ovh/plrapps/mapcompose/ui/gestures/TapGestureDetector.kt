@@ -14,27 +14,18 @@ import kotlinx.coroutines.sync.Mutex
 private val NoPressGesture: suspend PressGestureScope.(Offset) -> Unit = { }
 
 /**
- * Detects tap, double-tap, and long press gestures and calls [onTap], [onDoubleTap], and
- * [onLongPress], respectively, when detected. [onPress] is called when the press is detected
- * and the [PressGestureScope.tryAwaitRelease] and [PressGestureScope.awaitRelease] can be
- * used to detect when pointers have released or the gesture was canceled.
- * The first pointer down and final pointer up are consumed, and in the
- * case of long press, all changes after the long press is detected are consumed.
- *
- * When [shouldConsumeTap] is provided, it takes precedence over double-tap gesture detection.
- * When [onDoubleTap] is provided, the tap gesture is detected only after
- * the [ViewConfiguration.doubleTapMinTimeMillis] has passed and [onDoubleTap] is called if the
- * second tap is started before [ViewConfiguration.doubleTapTimeoutMillis]. If [onDoubleTap] is not
- * provided, then [onTap] is called when the pointer up has been received.
- *
- * If the first down event was consumed, the entire gesture will be skipped, including
- * [onPress]. If the first down event was not consumed, if any other gesture consumes the down or
- * up events, the pointer moves out of the input area, or the position change is consumed,
- * the gestures are considered canceled. [onDoubleTap], [onLongPress], and [onTap] will not be
- * called after a gesture has been canceled.
+ * A modified version of [detectTapGestures] from the framework, with the following differences:
+ * - can take [shouldConsumeTap] callback which is invoked to check whether a tap should be consumed.
+ * When [shouldConsumeTap] returns true, [onTap] is immediately invoked without waiting for
+ * [ViewConfiguration.doubleTapMinTimeMillis].
+ * - takes a [onDoubleTapZoom] callback for one finger zooming by double tapping but not releasing
+ * on the second tap, and then sliding the finger up to zoom out, or down to zoom in.
+ * Consequently, this gesture detector doesn't try to detect a long-press after the
+ * second tap, and a double-tap can no-longer timeout.
  */
-suspend fun PointerInputScope.detectTapGestures(
+internal suspend fun PointerInputScope.detectTapGestures(
     onDoubleTap: ((Offset) -> Unit)? = null,
+    onDoubleTapZoom: (centroid: Offset, zoom: Float) -> Unit,
     onLongPress: ((Offset) -> Unit)? = null,
     onPress: suspend PressGestureScope.(Offset) -> Unit = NoPressGesture,
     onTap: ((Offset, Boolean) -> Unit)? = null,
@@ -77,13 +68,19 @@ suspend fun PointerInputScope.detectTapGestures(
                 // tap was successful.
                 val tapConsumed = shouldConsumeTap?.invoke(upOrCancel.position) ?: false
                 if (onDoubleTap == null || tapConsumed) {
-                    onTap?.invoke(upOrCancel.position, tapConsumed) // no need to check for double-tap.
+                    onTap?.invoke(
+                        upOrCancel.position,
+                        tapConsumed
+                    ) // no need to check for double-tap.
                 } else {
                     // check for second tap
                     val secondDown = awaitSecondDown(upOrCancel)
 
                     if (secondDown == null) {
-                        onTap?.invoke(upOrCancel.position, tapConsumed) // no valid second tap started
+                        onTap?.invoke(
+                            upOrCancel.position,
+                            tapConsumed
+                        ) // no valid second tap started
                     } else {
                         // Second tap down detected
                         pressScope.reset()
@@ -91,28 +88,30 @@ suspend fun PointerInputScope.detectTapGestures(
                             launch { pressScope.onPress(secondDown.position) }
                         }
 
-                        try {
-                            // Might have a long second press as the second tap
-                            withTimeout(longPressTimeout) {
-                                val secondUp = waitForUpOrCancellation()
-                                if (secondUp != null) {
-                                    secondUp.consume()
-                                    pressScope.release()
-                                    onDoubleTap(secondUp.position)
-                                } else {
-                                    pressScope.cancel()
-                                    onTap?.invoke(upOrCancel.position, tapConsumed)
-                                }
-                            }
-                        } catch (e: PointerEventTimeoutCancellationException) {
-                            // The first tap was valid, but the second tap is a long press.
-                            // notify for the first tap
-                            onTap?.invoke(upOrCancel.position, tapConsumed)
-
-                            // notify for the long press
-                            onLongPress?.invoke(secondDown.position)
-                            consumeUntilUp()
+                        // Now, either double-tap or zoom gesture
+                        val secondUp = waitForUpOrCancellation()
+                        if (secondUp != null) {
+                            secondUp.consume()
                             pressScope.release()
+                            onDoubleTap(secondUp.position)
+                        } else {
+                            do {
+                                val event = awaitPointerEvent()
+                                val canceled = event.changes.fastAny { it.isConsumed }
+                                if (!canceled) {
+                                    val dy = event.calculatePan().y
+                                    val zoom = (size.height + dy * density) / size.height
+                                    onDoubleTapZoom(secondDown.position, zoom)
+
+                                    event.changes.fastForEach {
+                                        if (it.positionChanged()) {
+                                            it.consume()
+                                        }
+                                    }
+                                }
+                            } while (!canceled && event.changes.fastAny { it.pressed })
+
+                            pressScope.cancel()
                         }
                     }
                 }

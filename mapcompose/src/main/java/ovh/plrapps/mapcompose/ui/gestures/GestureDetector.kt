@@ -12,7 +12,10 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.pow
 
-suspend fun PointerInputScope.detectGestures(
+/**
+ * A modified version of [detectTransformGestures] from the framework, which adds fling support.
+ */
+internal suspend fun PointerInputScope.detectTransformGestures(
     panZoomLock: Boolean = false,
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
     onTouchDown: () -> Unit,
@@ -64,10 +67,7 @@ suspend fun PointerInputScope.detectGestures(
                     }
 
                     if (pastTouchSlop) {
-                        velocityTracker.addPosition(
-                            uptime,
-                            pan
-                        )
+                        velocityTracker.addPosition(uptime, pan)
 
                         val centroid = event.calculateCentroid(useCurrent = false)
                         val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
