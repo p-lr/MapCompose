@@ -3,9 +3,9 @@
 [![](https://img.shields.io/badge/Compose-1.2.0-brightgreen)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 🎉 News:
-- Compose 1.2.0 support in v2.1.4
-- Marker clustering and lazy-loading. New examples added to the demo app.
-- Performance of markers greatly improved.
+- Compose 1.2.0 support
+- Marker clustering and lazy-loading. New examples added to the demo app
+- Performance of markers greatly improved
 
 # MapCompose
 
@@ -50,7 +50,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.1.4'
+implementation 'ovh.plrapps:mapcompose:2.2.0'
 ```
 
 ## Basics
