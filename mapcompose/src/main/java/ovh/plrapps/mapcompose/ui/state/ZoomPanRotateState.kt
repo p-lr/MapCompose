@@ -440,6 +440,24 @@ internal class ZoomPanRotateState(
         }
     }
 
+    override fun onTwoFingersTap(focalPt: Offset) {
+        if (!isZoomingEnabled) return
+
+        val destScale = 2.0.pow(floor(ln((scale / 2).toDouble()) / ln(2.0))).toFloat()
+
+        val angleRad = -rotation.toRad()
+        val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
+
+        scope?.launch {
+            smoothScaleWithFocalPoint(
+                focalPtRotated.x,
+                focalPtRotated.y,
+                destScale,
+                doubleTapSpec
+            )
+        }
+    }
+
     override fun isListeningForGestures(): Boolean = areGesturesEnabled
 
     override fun shouldConsumeTapGesture(focalPt: Offset): Boolean {

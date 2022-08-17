@@ -37,6 +37,7 @@ internal fun ZoomPanRotate(
                         gestureListener.onScrollDelta(pan)
                     },
                     onTouchDown = gestureListener::onTouchDown,
+                    onTwoFingersTap = gestureListener::onTwoFingersTap,
                     onFling = { velocity -> gestureListener.onFling(velocity) }
                 )
             }
@@ -80,6 +81,7 @@ internal interface GestureListener {
     fun onPress()
     fun onTap(focalPt: Offset, tapConsumed: Boolean)
     fun onDoubleTap(focalPt: Offset)
+    fun onTwoFingersTap(focalPt: Offset)
     fun onLongPress(focalPt: Offset)
     fun isListeningForGestures(): Boolean
     fun shouldConsumeTapGesture(focalPt: Offset): Boolean

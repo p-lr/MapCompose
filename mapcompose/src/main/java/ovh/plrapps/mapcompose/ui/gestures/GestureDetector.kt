@@ -6,6 +6,7 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.PI
@@ -13,12 +14,14 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 /**
- * A modified version of [detectTransformGestures] from the framework, which adds fling support.
+ * A modified version of [detectTransformGestures] from the framework, which adds fling and
+ * two-fingers tap support.
  */
 internal suspend fun PointerInputScope.detectTransformGestures(
     panZoomLock: Boolean = false,
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
     onTouchDown: () -> Unit,
+    onTwoFingersTap: (centroid: Offset) -> Unit,
     onFling: (velocity: Velocity) -> Unit
 ) {
     val flingVelocityThreshold = 200.dp.toPx().pow(2)
@@ -36,9 +39,11 @@ internal suspend fun PointerInputScope.detectTransformGestures(
             awaitFirstDown(requireUnconsumed = false)
             onTouchDown()
             val velocityTracker = VelocityTracker()
+            var canceled: Boolean
+            var centroidTwoFingersTap = Offset.Unspecified
             do {
                 val event = awaitPointerEvent()
-                val canceled = event.changes.fastAny { it.isConsumed }
+                canceled = event.changes.fastAny { it.isConsumed }
                 if (!canceled) {
                     val zoomChange = event.calculateZoom()
                     val rotationChange = event.calculateRotation()
@@ -83,20 +88,47 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                             }
                         }
                     }
+
+                    /* When releasing from two fingers tap, only one of the two pointers is pressed.
+                     * Note that this only detects the release of the two fingers. To be sure that
+                     * it's a genuine two-fingers tap, we need to also check the zoom and pan (see
+                     * below) */
+                    if (event.changes.size == 2
+                        && event.changes.fastAll { !it.positionChanged() }
+                        && event.changes.fastAny { it.pressed }
+                        && event.changes.fastAny { !it.pressed }
+                    ) {
+                        centroidTwoFingersTap = event.calculateCentroidIgnorePressed()
+                        event.changes.forEach { it.consume() }
+                    }
                 }
             } while (!canceled && event.changes.fastAny { it.pressed })
 
-            val velocity = runCatching {
-                velocityTracker.calculateVelocity()
-            }.getOrDefault(Velocity.Zero)
-            val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
-            val velocityCapped = Velocity(
-                velocity.x.coerceIn(flingVelocityMaxRange),
-                velocity.y.coerceIn(flingVelocityMaxRange)
-            )
+            // If changes where consumed in another gesture, or if there where some zooming involved,
+            // no need to go further since we'll next check for two-fingers tap and fling.
+            if (canceled || zoom != 1f) {
+                return@awaitPointerEventScope
+            }
 
-            if (velocitySquared > flingVelocityThreshold) {
-                onFling(velocityCapped)
+            // In addition to not zooming, if there where no pan, it might be a two fingers tap
+            if (pan == Offset.Zero) {
+                if (centroidTwoFingersTap != Offset.Unspecified) {
+                    onTwoFingersTap(centroidTwoFingersTap)
+                }
+            } else {
+                // No zoom with pan: it might be a fling
+                val velocity = runCatching {
+                    velocityTracker.calculateVelocity()
+                }.getOrDefault(Velocity.Zero)
+                val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
+                val velocityCapped = Velocity(
+                    velocity.x.coerceIn(flingVelocityMaxRange),
+                    velocity.y.coerceIn(flingVelocityMaxRange)
+                )
+
+                if (velocitySquared > flingVelocityThreshold) {
+                    onFling(velocityCapped)
+                }
             }
         }
     }
@@ -129,6 +161,26 @@ fun PointerEvent.calculateCurrentCentroid(
         }
     }
     uptimeConsumer(mostRecentUptime)
+    return if (centroidWeight == 0) {
+        Offset.Unspecified
+    } else {
+        centroid / centroidWeight.toFloat()
+    }
+}
+
+/**
+ * Returns the centroid when releasing two fingers. One of the changes isn't pressed while the other
+ * one is still pressed.
+ */
+private fun PointerEvent.calculateCentroidIgnorePressed(): Offset {
+    var centroid = Offset.Zero
+    var centroidWeight = 0
+
+    changes.fastForEach { change ->
+        val position = change.position
+        centroid += position
+        centroidWeight++
+    }
     return if (centroidWeight == 0) {
         Offset.Unspecified
     } else {
