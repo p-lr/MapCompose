@@ -22,10 +22,14 @@ internal suspend fun PointerInputScope.detectTransformGestures(
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
     onTouchDown: () -> Unit,
     onTwoFingersTap: (centroid: Offset) -> Unit,
-    onFling: (velocity: Velocity) -> Unit
+    onFling: (velocity: Velocity) -> Unit,
+    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit
 ) {
     val flingVelocityThreshold = 200.dp.toPx().pow(2)
     val flingVelocityMaxRange = -8000f..8000f
+
+    val flingZoomThreshold = 1f
+    val flingZoomVelocityMaxRange = -3f..3f
 
     forEachGesture {
         awaitPointerEventScope {
@@ -38,9 +42,10 @@ internal suspend fun PointerInputScope.detectTransformGestures(
 
             awaitFirstDown(requireUnconsumed = false)
             onTouchDown()
-            val velocityTracker = VelocityTracker()
+            val panVelocityTracker = VelocityTracker()
+            val zoomVelocityTracker = VelocityTracker()
             var canceled: Boolean
-            var centroidTwoFingersTap = Offset.Unspecified
+            var centroidTwoFingers = Offset.Unspecified
             do {
                 val event = awaitPointerEvent()
                 canceled = event.changes.fastAny { it.isConsumed }
@@ -52,11 +57,10 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                         uptime = uptime_
                     }
                     pan += panChange
+                    zoom *= zoomChange
+                    rotation += rotationChange
 
                     if (!pastTouchSlop) {
-                        zoom *= zoomChange
-                        rotation += rotationChange
-
                         val centroidSize = event.calculateCentroidSize(useCurrent = false)
                         val zoomMotion = abs(1 - zoom) * centroidSize
                         val rotationMotion = abs(rotation * PI.toFloat() * centroidSize / 180f)
@@ -72,7 +76,8 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     }
 
                     if (pastTouchSlop) {
-                        velocityTracker.addPosition(uptime, pan)
+                        panVelocityTracker.addPosition(uptime, pan)
+                        zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
 
                         val centroid = event.calculateCentroid(useCurrent = false)
                         val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
@@ -98,27 +103,40 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                         && event.changes.fastAny { it.pressed }
                         && event.changes.fastAny { !it.pressed }
                     ) {
-                        centroidTwoFingersTap = event.calculateCentroidIgnorePressed()
+                        centroidTwoFingers = event.calculateCentroidIgnorePressed()
                         event.changes.forEach { it.consume() }
                     }
                 }
             } while (!canceled && event.changes.fastAny { it.pressed })
 
-            // If changes where consumed in another gesture, or if there where some zooming involved,
-            // no need to go further since we'll next check for two-fingers tap and fling.
-            if (canceled || zoom != 1f) {
+            // If changes where consumed in another gesture, no need to go further.
+            if (canceled) {
+                return@awaitPointerEventScope
+            }
+
+            // If there where some zooming involved, there might be some zoom fling.
+            // Then, no need to go further since we'll next check for two-fingers tap and fling.
+            if (zoom != 1f) {
+                val velocity = runCatching {
+                    zoomVelocityTracker.calculateVelocity()
+                }.getOrDefault(Velocity.Zero).x
+
+                if (abs(velocity) > flingZoomThreshold && centroidTwoFingers != Offset.Unspecified) {
+                    onFlingZoom(centroidTwoFingers, velocity.coerceIn(flingZoomVelocityMaxRange))
+                }
+
                 return@awaitPointerEventScope
             }
 
             // In addition to not zooming, if there where no pan, it might be a two fingers tap
             if (pan == Offset.Zero) {
-                if (centroidTwoFingersTap != Offset.Unspecified) {
-                    onTwoFingersTap(centroidTwoFingersTap)
+                if (centroidTwoFingers != Offset.Unspecified) {
+                    onTwoFingersTap(centroidTwoFingers)
                 }
             } else {
                 // No zoom with pan: it might be a fling
                 val velocity = runCatching {
-                    velocityTracker.calculateVelocity()
+                    panVelocityTracker.calculateVelocity()
                 }.getOrDefault(Velocity.Zero)
                 val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
                 val velocityCapped = Velocity(

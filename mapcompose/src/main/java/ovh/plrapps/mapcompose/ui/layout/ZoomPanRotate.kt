@@ -38,7 +38,10 @@ internal fun ZoomPanRotate(
                     },
                     onTouchDown = gestureListener::onTouchDown,
                     onTwoFingersTap = gestureListener::onTwoFingersTap,
-                    onFling = { velocity -> gestureListener.onFling(velocity) }
+                    onFling = { velocity -> gestureListener.onFling(velocity) },
+                    onFlingZoom = { centroid, velocity ->
+                        gestureListener.onFlingZoom(velocity, centroid)
+                    }
                 )
             }
             .pointerInput(gestureListener.isListeningForGestures()) {
@@ -77,6 +80,7 @@ internal interface GestureListener {
     fun onRotationDelta(rotationDelta: Float)
     fun onScrollDelta(scrollDelta: Offset)
     fun onFling(velocity: Velocity)
+    fun onFlingZoom(velocity: Float, centroid: Offset)
     fun onTouchDown()
     fun onPress()
     fun onTap(focalPt: Offset, tapConsumed: Boolean)

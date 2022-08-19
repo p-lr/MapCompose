@@ -52,6 +52,7 @@ internal class ZoomPanRotateState(
     internal var isRotationEnabled by mutableStateOf(false)
     internal var isScrollingEnabled by mutableStateOf(true)
     internal var isZoomingEnabled by mutableStateOf(true)
+    internal var isFlingZoomEnabled by  mutableStateOf(true)
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(scale)
@@ -96,14 +97,20 @@ internal class ZoomPanRotateState(
             } else throw IllegalArgumentException("The offset ratio should have values in 0f..1f range")
         }
 
+    // For user gestures animations
+    private val userFloatAnimatable = Animatable(0f)
     private val userAnimatable: Animatable<Offset, AnimationVector2D> =
         Animatable(Offset.Zero, Offset.VectorConverter)
+
+    // For api-based animations
     private val apiAnimatable = Animatable(0f)
 
     private val doubleTapSpec =
         TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
     private val flingSpec =
         SplineBasedFloatDecayAnimationSpec(Density(2f)).generateDecayAnimationSpec<Offset>()
+    private val flingZoomSpec =
+        FloatExponentialDecaySpec(frictionMultiplier = 1.5f).generateDecayAnimationSpec<Float>()
 
     @Suppress("unused")
     fun setScale(scale: Float, notify: Boolean = true) {
@@ -269,6 +276,7 @@ internal class ZoomPanRotateState(
     suspend fun stopAnimations() {
         apiAnimatable.stop()
         userAnimatable.stop()
+        userFloatAnimatable.stop()
     }
 
     override fun onScaleRatio(scaleRatio: Float, centroid: Offset) {
@@ -350,6 +358,20 @@ internal class ZoomPanRotateState(
                     scrollX = value.x,
                     scrollY = value.y
                 )
+            }
+        }
+    }
+
+    override fun onFlingZoom(velocity: Float, centroid: Offset) {
+        if (!isZoomingEnabled || !isFlingZoomEnabled) return
+
+        scope?.launch {
+            userFloatAnimatable.snapTo(scale)
+            userFloatAnimatable.animateDecay(
+                initialVelocity = velocity,
+                animationSpec = flingZoomSpec,
+            ) {
+                onScaleRatio(value / scale, centroid)
             }
         }
     }

@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -102,61 +101,6 @@ var MapState.shouldLoopScale
     set(value) {
         zoomPanRotateState.shouldLoopScale = value
     }
-
-/**
- * Enable rotation by user gestures.
- */
-fun MapState.enableRotation() {
-    zoomPanRotateState.isRotationEnabled = true
-}
-
-/**
- * Enable scrolling by user gestures. This is enabled by default.
- */
-fun MapState.enableScrolling() {
-    zoomPanRotateState.isScrollingEnabled = true
-}
-
-/**
- * Enable zooming by user gestures. This is enabled by default.
- */
-fun MapState.enableZooming() {
-    zoomPanRotateState.isZoomingEnabled = true
-}
-
-/**
- * Discard rotation gestures. The map can still be programmatically rotated using APIs such as
- * [rotateTo] or [rotation].
- */
-fun MapState.disableRotation() {
-    zoomPanRotateState.isRotationEnabled = false
-}
-
-/**
- * Discard scrolling gestures. The map can still be programmatically scrolled using APIs such as
- * [scrollTo] or [snapScrollTo].
- */
-fun MapState.disableScrolling() {
-    zoomPanRotateState.isScrollingEnabled = false
-}
-
-/**
- * Discard zooming gestures. The map can still be programmatically zoomed using [scale].
- */
-fun MapState.disableZooming() {
-    zoomPanRotateState.isZoomingEnabled = false
-}
-
-/**
- * Disable gesture detection. The map view can still be transformed programmatically.
- */
-fun MapState.disableGestures() {
-    with (zoomPanRotateState) {
-        isRotationEnabled = false
-        isScrollingEnabled = false
-        isZoomingEnabled = false
-    }
-}
 
 /**
  * Sets the padding of the visible area of the map viewport, for the purpose of camera moves.
@@ -483,31 +427,6 @@ fun MapState.centroidSnapshotFlow(): Flow<Point> {
  */
 val MapState.fullSize: IntSize
     get() = IntSize(zoomPanRotateState.fullWidth, zoomPanRotateState.fullHeight)
-
-/**
- * Registers a tap callback for tap gestures. The callback is invoked with the relative coordinates
- * of the tapped point on the map.
- * Note: the tap gesture is detected only after the [ViewConfiguration.doubleTapMinTimeMillis] has
- * passed, because the layout's gesture detector also detects double-tap gestures.
- */
-fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
-    this.tapCb = tapCb
-}
-
-/**
- * Registers a callback for long press gestures. The callback is invoked with the relative coordinates
- * of the pressed point on the map.
- */
-fun MapState.onLongPress(longPressCb: (x: Double, y: Double) -> Unit) {
-    this.longPressCb = longPressCb
-}
-
-/**
- * Registers a callback for touch down event.
- */
-fun MapState.onTouchDown(cb: () -> Unit) {
-    touchDownCb = cb
-}
 
 /**
  * Stops all currently running animations. If other animations are scheduled to run (inside running
