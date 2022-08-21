@@ -6,7 +6,6 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.PI
@@ -95,11 +94,8 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     }
 
                     /* When releasing from two fingers tap, only one of the two pointers is pressed.
-                     * Note that this only detects the release of the two fingers. To be sure that
-                     * it's a genuine two-fingers tap, we need to also check the zoom and pan (see
-                     * below) */
+                     * Note that this only detects the release of the two fingers. */
                     if (event.changes.size == 2
-                        && event.changes.fastAll { !it.positionChanged() }
                         && event.changes.fastAny { it.pressed }
                         && event.changes.fastAny { !it.pressed }
                     ) {
@@ -116,7 +112,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
 
             // If there where some zooming involved, there might be some zoom fling.
             // Then, no need to go further since we'll next check for two-fingers tap and fling.
-            if (zoom != 1f) {
+            if (zoom != 1f && pastTouchSlop) {
                 val velocity = runCatching {
                     zoomVelocityTracker.calculateVelocity()
                 }.getOrDefault(Velocity.Zero).x
@@ -128,8 +124,9 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                 return@awaitPointerEventScope
             }
 
-            // In addition to not zooming, if there where no pan, it might be a two fingers tap
-            if (pan == Offset.Zero) {
+            // In addition to not zooming, if there where no pan or the fingers didn't move enough
+            // to trigger a zoom or pan, it might be a two fingers tap.
+            if (pan == Offset.Zero || !pastTouchSlop) {
                 if (centroidTwoFingers != Offset.Unspecified) {
                     onTwoFingersTap(centroidTwoFingers)
                 }
