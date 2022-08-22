@@ -1,5 +1,7 @@
 package ovh.plrapps.mapcompose.ui.layout
 
+import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,6 +26,7 @@ internal fun ZoomPanRotate(
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val flingSpec = rememberSplineBasedDecay<Offset>()
 
     Layout(
         content = content,
@@ -38,7 +41,7 @@ internal fun ZoomPanRotate(
                     },
                     onTouchDown = gestureListener::onTouchDown,
                     onTwoFingersTap = gestureListener::onTwoFingersTap,
-                    onFling = { velocity -> gestureListener.onFling(velocity) },
+                    onFling = { velocity -> gestureListener.onFling(flingSpec, velocity) },
                     onFlingZoom = { centroid, velocity ->
                         gestureListener.onFlingZoom(velocity, centroid)
                     }
@@ -79,7 +82,7 @@ internal interface GestureListener {
     fun onScaleRatio(scaleRatio: Float, centroid: Offset)
     fun onRotationDelta(rotationDelta: Float)
     fun onScrollDelta(scrollDelta: Offset)
-    fun onFling(velocity: Velocity)
+    fun onFling(flingSpec: DecayAnimationSpec<Offset>, velocity: Velocity)
     fun onFlingZoom(velocity: Float, centroid: Offset)
     fun onTouchDown()
     fun onPress()

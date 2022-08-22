@@ -1,14 +1,13 @@
 package ovh.plrapps.mapcompose.ui.state
 
-import androidx.compose.animation.SplineBasedFloatDecayAnimationSpec
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.*
+import ovh.plrapps.mapcompose.core.GestureConfiguration
 import ovh.plrapps.mapcompose.ui.layout.*
 import ovh.plrapps.mapcompose.utils.*
 import kotlin.coroutines.Continuation
@@ -23,7 +22,8 @@ internal class ZoomPanRotateState(
     minimumScaleMode: MinimumScaleMode,
     maxScale: Float,
     scale: Float,
-    rotation: AngleDegree
+    rotation: AngleDegree,
+    gestureConfiguration: GestureConfiguration
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
@@ -52,7 +52,7 @@ internal class ZoomPanRotateState(
     internal var isRotationEnabled by mutableStateOf(false)
     internal var isScrollingEnabled by mutableStateOf(true)
     internal var isZoomingEnabled by mutableStateOf(true)
-    internal var isFlingZoomEnabled by  mutableStateOf(true)
+    internal var isFlingZoomEnabled by mutableStateOf(true)
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
     internal var scale by mutableStateOf(scale)
@@ -107,10 +107,10 @@ internal class ZoomPanRotateState(
 
     private val doubleTapSpec =
         TweenSpec<Float>(durationMillis = 300, easing = LinearOutSlowInEasing)
-    private val flingSpec =
-        SplineBasedFloatDecayAnimationSpec(Density(2f)).generateDecayAnimationSpec<Offset>()
     private val flingZoomSpec =
-        FloatExponentialDecaySpec(frictionMultiplier = 1.5f).generateDecayAnimationSpec<Float>()
+        FloatExponentialDecaySpec(
+            frictionMultiplier = gestureConfiguration.flingZoomFriction
+        ).generateDecayAnimationSpec<Float>()
 
     @Suppress("unused")
     fun setScale(scale: Float, notify: Boolean = true) {
@@ -337,7 +337,7 @@ internal class ZoomPanRotateState(
         setScroll(scrollX, scrollY)
     }
 
-    override fun onFling(velocity: Velocity) {
+    override fun onFling(flingSpec: DecayAnimationSpec<Offset>, velocity: Velocity) {
         if (!isScrollingEnabled) return
 
         val rotRad = -rotation.toRad()

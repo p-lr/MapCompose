@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import ovh.plrapps.mapcompose.core.GestureConfiguration
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.core.throttle
@@ -48,7 +49,8 @@ class MapState(
         minimumScaleMode = initialValues.minimumScaleMode,
         maxScale = initialValues.maxScale,
         scale = initialValues.scale,
-        rotation = initialValues.rotation
+        rotation = initialValues.rotation,
+        gestureConfiguration = initialValues.gestureConfiguration
     )
     internal val markerRenderState = MarkerRenderState()
     internal val markerState = MarkerState(scope, markerRenderState)
@@ -204,6 +206,7 @@ class InitialValues internal constructor() {
     internal var highFidelityColors: Boolean = true
     internal var preloadingPadding: Int = 0
     internal var isFilteringBitmap: (MapState) -> Boolean = { true }
+    internal var gestureConfiguration: GestureConfiguration = GestureConfiguration()
 
     /**
      * Init the scroll position. Defaults to centering on the provided scroll destination.
@@ -295,6 +298,13 @@ class InitialValues internal constructor() {
      */
     fun bitmapFilteringEnabled(predicate: (state: MapState) -> Boolean) = apply {
         isFilteringBitmap = predicate
+    }
+
+    /**
+     * Customize gestures.
+     */
+    fun configureGestures(gestureConfigurationBlock: GestureConfiguration.() -> Unit) {
+        this.gestureConfiguration.gestureConfigurationBlock()
     }
 }
 
