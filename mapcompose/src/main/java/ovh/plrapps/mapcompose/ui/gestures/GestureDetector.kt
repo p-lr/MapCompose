@@ -51,10 +51,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                 if (!canceled) {
                     val zoomChange = event.calculateZoom()
                     val rotationChange = event.calculateRotation()
-                    var uptime = 0L
-                    val panChange = event.calculatePan { uptime_ ->
-                        uptime = uptime_
-                    }
+                    val panChange = event.calculatePan()
                     pan += panChange
                     zoom *= zoomChange
                     rotation += rotationChange
@@ -75,6 +72,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     }
 
                     if (pastTouchSlop) {
+                        val uptime = event.changes.maxByOrNull { it.uptimeMillis }?.uptimeMillis ?: 0L
                         panVelocityTracker.addPosition(uptime, pan)
                         zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
 
@@ -146,40 +144,6 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                 }
             }
         }
-    }
-}
-
-private fun PointerEvent.calculatePan(uptimeConsumer: (Long) -> Unit): Offset {
-    val currentCentroid = calculateCurrentCentroid(uptimeConsumer)
-    if (currentCentroid == Offset.Unspecified) {
-        return Offset.Zero
-    }
-    val previousCentroid = calculateCentroid(useCurrent = false)
-    return currentCentroid - previousCentroid
-}
-
-private fun PointerEvent.calculateCurrentCentroid(
-    uptimeConsumer: (Long) -> Unit
-): Offset {
-    var centroid = Offset.Zero
-    var centroidWeight = 0
-    var mostRecentUptime = 0L
-
-    changes.fastForEach { change ->
-        if (change.uptimeMillis > mostRecentUptime) {
-            mostRecentUptime = change.uptimeMillis
-        }
-        if (change.pressed && change.previousPressed) {
-            val position = change.position
-            centroid += position
-            centroidWeight++
-        }
-    }
-    uptimeConsumer(mostRecentUptime)
-    return if (centroidWeight == 0) {
-        Offset.Unspecified
-    } else {
-        centroid / centroidWeight.toFloat()
     }
 }
 

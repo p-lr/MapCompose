@@ -123,6 +123,7 @@ internal suspend fun PointerInputScope.detectTapGestures(
 
                             pressScope.cancel()
 
+                            /* Depending on the velocity, we might trigger a fling */
                             zoomVelocityTracker.calculateVelocity()
                             val velocity = runCatching {
                                 -zoomVelocityTracker.calculateVelocity()
