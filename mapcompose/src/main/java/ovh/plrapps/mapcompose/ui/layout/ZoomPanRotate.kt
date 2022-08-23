@@ -53,6 +53,9 @@ internal fun ZoomPanRotate(
                     onTap = { offset, tapConsumed -> gestureListener.onTap(offset, tapConsumed) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
                     onDoubleTapZoom = { centroid, zoom -> gestureListener.onScaleRatio(zoom, centroid)},
+                    onDoubleTapZoomFling = { centroid, velocity ->
+                        gestureListener.onFlingZoom(velocity, centroid)
+                    },
                     onPress = { gestureListener.onPress() },
                     onLongPress = { offset -> gestureListener.onLongPress(offset) },
                     shouldConsumeTap = { offset -> gestureListener.shouldConsumeTapGesture(offset) }

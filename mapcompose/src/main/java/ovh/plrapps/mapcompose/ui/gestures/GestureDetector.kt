@@ -149,7 +149,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
     }
 }
 
-fun PointerEvent.calculatePan(uptimeConsumer: (Long) -> Unit): Offset {
+private fun PointerEvent.calculatePan(uptimeConsumer: (Long) -> Unit): Offset {
     val currentCentroid = calculateCurrentCentroid(uptimeConsumer)
     if (currentCentroid == Offset.Unspecified) {
         return Offset.Zero
@@ -158,7 +158,7 @@ fun PointerEvent.calculatePan(uptimeConsumer: (Long) -> Unit): Offset {
     return currentCentroid - previousCentroid
 }
 
-fun PointerEvent.calculateCurrentCentroid(
+private fun PointerEvent.calculateCurrentCentroid(
     uptimeConsumer: (Long) -> Unit
 ): Offset {
     var centroid = Offset.Zero

@@ -3,13 +3,16 @@ package ovh.plrapps.mapcompose.ui.gestures
 import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlin.math.abs
 
 private val NoPressGesture: suspend PressGestureScope.(Offset) -> Unit = { }
 
@@ -26,6 +29,7 @@ private val NoPressGesture: suspend PressGestureScope.(Offset) -> Unit = { }
 internal suspend fun PointerInputScope.detectTapGestures(
     onDoubleTap: ((Offset) -> Unit)? = null,
     onDoubleTapZoom: (centroid: Offset, zoom: Float) -> Unit,
+    onDoubleTapZoomFling: (centroid: Offset, velocity: Float) -> Unit,
     onLongPress: ((Offset) -> Unit)? = null,
     onPress: suspend PressGestureScope.(Offset) -> Unit = NoPressGesture,
     onTap: ((Offset, Boolean) -> Unit)? = null,
@@ -34,6 +38,9 @@ internal suspend fun PointerInputScope.detectTapGestures(
     // special signal to indicate to the sending side that it shouldn't intercept and consume
     // cancel/up events as we're only require down events
     val pressScope = PressGestureScopeImpl(this@detectTapGestures)
+
+    val flingZoomThreshold = 1f
+    val flingZoomVelocityMaxRange = -4f..4f
 
     forEachGesture {
         awaitPointerEventScope {
@@ -95,12 +102,15 @@ internal suspend fun PointerInputScope.detectTapGestures(
                             pressScope.release()
                             onDoubleTap(secondUp.position)
                         } else {
+                            val zoomVelocityTracker = VelocityTracker()
                             do {
                                 val event = awaitPointerEvent()
                                 val canceled = event.changes.fastAny { it.isConsumed }
                                 if (!canceled) {
                                     val dy = event.calculatePan().y
                                     val zoom = (size.height + dy * density) / size.height
+                                    val uptime = event.changes.maxByOrNull { it.uptimeMillis }?.uptimeMillis ?: 0L
+                                    zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
                                     onDoubleTapZoom(secondDown.position, zoom)
 
                                     event.changes.fastForEach {
@@ -112,6 +122,18 @@ internal suspend fun PointerInputScope.detectTapGestures(
                             } while (!canceled && event.changes.fastAny { it.pressed })
 
                             pressScope.cancel()
+
+                            zoomVelocityTracker.calculateVelocity()
+                            val velocity = runCatching {
+                                -zoomVelocityTracker.calculateVelocity()
+                            }.getOrDefault(Velocity.Zero).x
+
+                            if (abs(velocity) > flingZoomThreshold) {
+                                onDoubleTapZoomFling(
+                                    secondDown.position,
+                                    velocity.coerceIn(flingZoomVelocityMaxRange)
+                                )
+                            }
                         }
                     }
                 }
