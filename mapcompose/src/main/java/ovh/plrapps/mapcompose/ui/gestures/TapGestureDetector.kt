@@ -103,14 +103,16 @@ internal suspend fun PointerInputScope.detectTapGestures(
                             onDoubleTap(secondUp.position)
                         } else {
                             val zoomVelocityTracker = VelocityTracker()
+                            var pan = Offset.Zero
                             do {
                                 val event = awaitPointerEvent()
                                 val canceled = event.changes.fastAny { it.isConsumed }
                                 if (!canceled) {
-                                    val dy = event.calculatePan().y
-                                    val zoom = (size.height + dy * density) / size.height
+                                    val panChange = event.calculatePan()
+                                    pan += panChange
+                                    val zoom = (size.height + panChange.y * density) / size.height
                                     val uptime = event.changes.maxByOrNull { it.uptimeMillis }?.uptimeMillis ?: 0L
-                                    zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
+                                    zoomVelocityTracker.addPosition(uptime, pan)
                                     onDoubleTapZoom(secondDown.position, zoom)
 
                                     event.changes.fastForEach {
@@ -126,8 +128,8 @@ internal suspend fun PointerInputScope.detectTapGestures(
                             /* Depending on the velocity, we might trigger a fling */
                             zoomVelocityTracker.calculateVelocity()
                             val velocity = runCatching {
-                                -zoomVelocityTracker.calculateVelocity()
-                            }.getOrDefault(Velocity.Zero).x
+                                zoomVelocityTracker.calculateVelocity()
+                            }.getOrDefault(Velocity.Zero).y
 
                             if (abs(velocity) > flingZoomThreshold) {
                                 onDoubleTapZoomFling(
