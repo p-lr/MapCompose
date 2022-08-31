@@ -2,10 +2,13 @@ package ovh.plrapps.mapcompose.ui.gestures
 
 import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.PI
@@ -30,6 +33,8 @@ internal suspend fun PointerInputScope.detectTransformGestures(
     val flingZoomThreshold = 1f
     val flingZoomVelocityMaxRange = -3f..3f
 
+    val twoFingersReleaseTolerance = 150 // in Ms
+
     forEachGesture {
         awaitPointerEventScope {
             var rotation = 0f
@@ -45,6 +50,8 @@ internal suspend fun PointerInputScope.detectTransformGestures(
             val zoomVelocityTracker = VelocityTracker()
             var canceled: Boolean
             var centroidTwoFingers = Offset.Unspecified
+            var lastTwoFingersDown = 0L
+            var lastTime = 0L
             do {
                 val event = awaitPointerEvent()
                 canceled = event.changes.fastAny { it.isConsumed }
@@ -72,9 +79,17 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     }
 
                     if (pastTouchSlop) {
-                        val uptime = event.changes.maxByOrNull { it.uptimeMillis }?.uptimeMillis ?: 0L
+                        val uptime =
+                            event.changes.maxByOrNull { it.uptimeMillis }?.uptimeMillis ?: 0L
+                        lastTime = uptime
                         panVelocityTracker.addPosition(uptime, pan)
-                        zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
+
+                        /* For the fling velocity, only take into account zoom values when the two
+                         * fingers are down */
+                        if (event.changes.size == 2 && event.changes.fastAll { it.pressed }) {
+                            zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
+                            lastTwoFingersDown = uptime
+                        }
 
                         val centroid = event.calculateCentroid(useCurrent = false)
                         val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
@@ -115,7 +130,11 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     zoomVelocityTracker.calculateVelocity()
                 }.getOrDefault(Velocity.Zero).x
 
-                if (abs(velocity) > flingZoomThreshold && centroidTwoFingers != Offset.Unspecified) {
+                if (abs(velocity) > flingZoomThreshold
+                    && centroidTwoFingers != Offset.Unspecified
+                    // Tolerate a slight delay between the release of the first and second finger
+                    && (lastTime - lastTwoFingersDown) < twoFingersReleaseTolerance
+                ) {
                     onFlingZoom(centroidTwoFingers, velocity.coerceIn(flingZoomVelocityMaxRange))
                 }
 
