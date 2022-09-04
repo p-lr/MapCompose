@@ -31,9 +31,9 @@ internal suspend fun PointerInputScope.detectTransformGestures(
     val flingVelocityMaxRange = -8000f..8000f
 
     val flingZoomThreshold = 1f
-    val flingZoomVelocityMaxRange = -3f..3f
+    val flingZoomMaxVelocity = 2500f
 
-    val twoFingersReleaseTolerance = 150 // in Ms
+    val twoFingersReleaseTolerance = 150 // in ms
 
     forEachGesture {
         awaitPointerEventScope {
@@ -84,10 +84,11 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                         lastTime = uptime
                         panVelocityTracker.addPosition(uptime, pan)
 
-                        /* For the fling velocity, only take into account zoom values when the two
-                         * fingers are down */
+                        /* For the fling velocity, only take into account the centroid size when the
+                         * two fingers are down */
                         if (event.changes.size == 2 && event.changes.fastAll { it.pressed }) {
-                            zoomVelocityTracker.addPosition(uptime, Offset(zoom, zoom))
+                            val size = event.calculateCentroidSize(useCurrent = true)
+                            zoomVelocityTracker.addPosition(uptime, Offset(size, size))
                             lastTwoFingersDown = uptime
                         }
 
@@ -135,7 +136,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                     // Tolerate a slight delay between the release of the first and second finger
                     && (lastTime - lastTwoFingersDown) < twoFingersReleaseTolerance
                 ) {
-                    onFlingZoom(centroidTwoFingers, velocity.coerceIn(flingZoomVelocityMaxRange))
+                    onFlingZoom(centroidTwoFingers, velocity / flingZoomMaxVelocity)
                 }
 
                 return@awaitPointerEventScope

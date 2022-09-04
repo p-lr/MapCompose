@@ -40,7 +40,7 @@ internal suspend fun PointerInputScope.detectTapGestures(
     val pressScope = PressGestureScopeImpl(this@detectTapGestures)
 
     val flingZoomThreshold = 1f
-    val flingZoomVelocityMaxRange = -4f..4f
+    val flingZoomMaxVelocity = 2500f
 
     forEachGesture {
         awaitPointerEventScope {
@@ -134,7 +134,7 @@ internal suspend fun PointerInputScope.detectTapGestures(
                             if (abs(velocity) > flingZoomThreshold) {
                                 onDoubleTapZoomFling(
                                     secondDown.position,
-                                    velocity.coerceIn(flingZoomVelocityMaxRange)
+                                    velocity / flingZoomMaxVelocity
                                 )
                             }
                         }
