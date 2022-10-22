@@ -43,8 +43,8 @@ fun MapContainer(
 Inspired by [MapView](https://github.com/p-lr/MapView), every aspects of the library have
 been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
 
-This project holds the source code of this library, plus a demo app (which is useful to get started).
-To test the demo, just clone the repo and launch the demo app from Android Studio Canary (for now).
+This project holds the source code of this library, plus a demo app - which is useful to get started.
+To test the demo, just clone the repo and launch the demo app from Android Studio.
 
 ## Installation
 
@@ -79,7 +79,7 @@ difficult to predict how views were rendered because there were so many things t
 Now, the rendering is function of a state. If that state changes, the "view" updates accordingly.
 The library exposes its API though `MapState`, which is the _only_ public handle to mutate the state
 of the "view" (or in Compose terms, "composables"). As its name suggests, `MapState` also _owns_ the
-state. Therefore, the composables will always render consistently, even after a device rotation.
+state. Therefore, composables will always render consistently - even after a device rotation.
 
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
@@ -149,13 +149,13 @@ mapState.addMarker("id", x = 0.5, y = 0.5) {
 <img src="doc/readme-files/marker.png">
 </p>
 
-A marker is composable which you supply (in the example above, it's an `Icon`). It can be
+A marker is a composable that you supply (in the example above, it's an `Icon`). It can be
 whatever composable you like. A marker does not scale, but it's position updates as the map scales,
 so it's always attached to the original position. A marker has an anchor point defined - the point
 which is fixed relatively to the map. This anchor point is defined using relative offsets, which are
-applied to the width and height of the marker. For example, to have a marker center horizontally to a
-point, and align at the bottom edge (like a typical map pin would do), you'd pass -0.5f and -1.0f
-(thus, left position is offset by half the width, and top is offset by the full height).
+applied to the width and height of the marker. For example, to have a marker centered horizontally 
+and aligned at the bottom edge (like a typical map pin would do), you'd pass -0.5f and -1.0f as
+relative offsets (left position is offset by half the width, and top is offset by the full height).
 If necessary, an absolute offset expressed in pixels can be applied, in addition to the
 relative offset.
 
@@ -166,8 +166,8 @@ Markers can be moved, removed, and be draggable. See the following APIs: [moveMa
 ### Callouts
 
 Callouts are typically message popups which are, like markers, attached to a specific position.
-However, they automatically dismiss on touch down (this is the default behavior, which can be
-changed). To add a callout, use [addCallout](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
+However, they automatically dismiss on touch down. This is default behavior can be changed. 
+To add a callout, use [addCallout](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
 
 <p align="center">
 <img src="doc/readme-files/callout.png">
@@ -177,7 +177,7 @@ Callouts can be programmatically removed (if automatic dismiss was disabled).
 
 ### Paths
 
-To add a path, follow these three steps:
+To add a path, follow these steps:
 
 ```kotlin
 // 1. Get a PathDataBuilder
@@ -194,8 +194,8 @@ mapState.addPath("pathName", pathData, color = Color(0xFF448AFF), width = 12.dp)
 ```
 
 It's important to note that the only way to get a `PathDataBuilder` is by using the
-`makePathDataBuilder` function. Once you've built your `PathData` instance, you can use the
-use the [addPath](https://github.com/p-lr/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
+`makePathDataBuilder` function. Once you've built your `PathData` instance, you can use
+the [addPath](https://github.com/p-lr/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
 API.
 
 <p align="center">
@@ -223,8 +223,8 @@ the map.
 *scroll and/or scale animation*
 
 When animating the scale, we generally do so while maintaining the center of the screen at
-a specific position. When animating the scroll position, we can do so with or without animating the
-scale altogether, using [scrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L188)
+a specific position. Likewise, when animating the scroll position, we can do so with or without 
+animating the scale altogether, using [scrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L188)
 and [snapScrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L161).
 
 *rotation animation*
@@ -232,7 +232,7 @@ and [snapScrollTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295
 For animating the rotation while keeping the current scale and scroll, use the
 [rotateTo](https://github.com/p-lr/MapCompose/blob/08c0f68f654c1ce27a295f3fb6c25e9cf4274de9/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/LayoutApi.kt#L149) API.
 
-Both `scrollTo` and `rotateTo` are suspending functions. That means you know exactly when
+Both `scrollTo` and `rotateTo` are suspending functions. Therefore, you know exactly when
 an animation finishes, and you can easily chain animations inside a coroutine.
 
 ```kotlin
@@ -247,8 +247,8 @@ For a detailed example, see the "AnimationDemo".
 
 ## Design changes and differences with MapView
 
-* In MapView, you had to define bounds before you could add markers. There's no more such concept
-in MapCompose. Now, coordinates are normalized. For example, (x=0.5, y=0.5) is a point located at
+* In MapView, you had to define bounds before you could add markers. There's no such concept
+in MapCompose anymore. Now, coordinates are normalized. For example, (x=0.5, y=0.5) is a point located at
 the center of the map. Normalized coordinates are easier to reason about, and application code can
 still translate this coordinate system to a custom one.
 
