@@ -50,7 +50,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.3.0'
+implementation 'ovh.plrapps:mapcompose:2.3.1'
 ```
 
 ## Basics

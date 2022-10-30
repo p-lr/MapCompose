@@ -43,7 +43,8 @@ android {
 
 dependencies {
     implementation "androidx.compose.material:material:$compose_libs_version"
-    implementation "androidx.compose.ui:ui-tooling:$compose_libs_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_libs_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_libs_version"
     implementation "androidx.compose.ui:ui-util:$compose_libs_version"
     implementation "androidx.compose.ui:ui-unit:$compose_libs_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
