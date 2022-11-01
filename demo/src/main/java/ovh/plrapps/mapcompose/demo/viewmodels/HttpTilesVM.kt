@@ -34,7 +34,7 @@ class HttpTilesVM : ViewModel() {
 private fun makeTileStreamProvider() =
     TileStreamProvider { row, col, zoomLvl ->
         try {
-            val url = URL("https://plrapps.ovh:8080/mapcompose-tile/$zoomLvl/$row/$col.jpg")
+            val url = URL("https://raw.githubusercontent.com/p-lr/MapCompose/master/demo/src/main/assets/tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
