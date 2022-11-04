@@ -516,12 +516,12 @@ internal class ZoomPanRotateState(
 
     private fun constrainScrollX(scrollX: Float): Float {
         val offset = scrollOffsetRatio.x * layoutSize.width
-        return scrollX.coerceIn(-offset, max(0f, fullWidth * scale - layoutSize.width + offset))
+        return scrollX.coerceIn(-offset, max(offset, fullWidth * scale - layoutSize.width + offset))
     }
 
     private fun constrainScrollY(scrollY: Float): Float {
         val offset = scrollOffsetRatio.y * layoutSize.height
-        return scrollY.coerceIn(-offset, max(0f, fullHeight * scale - layoutSize.height + offset))
+        return scrollY.coerceIn(-offset, max(offset, fullHeight * scale - layoutSize.height + offset))
     }
 
     internal fun constrainScale(scale: Float): Float {
