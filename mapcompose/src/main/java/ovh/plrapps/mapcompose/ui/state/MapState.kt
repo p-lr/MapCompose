@@ -195,9 +195,9 @@ class MapState(
  */
 @Suppress("unused")
 class InitialValues internal constructor() {
-    internal var x = 0.0
-    internal var y = 0.0
-    internal var screenOffset: Offset = Offset.Zero
+    internal var x = 0.5
+    internal var y = 0.5
+    internal var screenOffset: Offset = Offset(-0.5f, -0.5f)
     internal var scale: Float = 1f
     internal var minimumScaleMode: MinimumScaleMode = Fit
     internal var maxScale: Float = 2f

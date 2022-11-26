@@ -13,7 +13,6 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096) {
-            scroll(0.5, 0.5)
             scale(1.2f)
         }.apply {
             addLayer(tileStreamProvider)

@@ -22,7 +22,6 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096) {
-            scroll(0.5, 0.5)
             scale(0f) // zoom-out to minimum scale
         }.apply {
             addLayer(tileStreamProvider)
