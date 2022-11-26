@@ -21,7 +21,10 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
     var markerCount = 0
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
+        MapState(4, 4096, 4096) {
+            scroll(0.5, 0.5)
+            scale(0f) // zoom-out to minimum scale
+        }.apply {
             addLayer(tileStreamProvider)
             onMarkerMove { id, x, y, _, _ ->
                 println("move $id $x $y")
@@ -36,7 +39,7 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
                 println("on long press $x $y")
             }
             enableRotation()
-            scale = 0f // zoom-out to minimum scale
+            setScrollOffsetRatio(0.5f, 0.5f)
         }
     )
 

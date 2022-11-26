@@ -40,14 +40,14 @@ internal fun TileCanvas(
     ) {
         withTransform({
             /* Geometric transformations seem to be applied in reversed order of declaration */
-            translate(left = -zoomPRState.scrollX, top = -zoomPRState.scrollY)
             rotate(
                 degrees = zoomPRState.rotation,
                 pivot = Offset(
-                    x = zoomPRState.centroidX.toFloat() * zoomPRState.fullWidth * zoomPRState.scale,
-                    y = zoomPRState.centroidY.toFloat() * zoomPRState.fullHeight * zoomPRState.scale
+                    x = zoomPRState.pivotX.toFloat(),
+                    y = zoomPRState.pivotY.toFloat()
                 )
             )
+            translate(left = -zoomPRState.scrollX, top = -zoomPRState.scrollY)
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
             paint.isFilterBitmap = isFilteringBitmap()

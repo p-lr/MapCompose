@@ -154,8 +154,8 @@ class MapState(
     private fun updateViewport(): Viewport {
         val padding = preloadingPadding
         return viewport.apply {
-            left = zoomPanRotateState.scrollX.toInt() - padding - zoomPanRotateState.padding.x
-            top = zoomPanRotateState.scrollY.toInt() - padding - zoomPanRotateState.padding.y
+            left = zoomPanRotateState.scrollX.toInt() - padding
+            top = zoomPanRotateState.scrollY.toInt() - padding
             right = left + zoomPanRotateState.layoutSize.width + padding * 2
             bottom = top + zoomPanRotateState.layoutSize.height + padding * 2
             angleRad = zoomPanRotateState.rotation.toRad()

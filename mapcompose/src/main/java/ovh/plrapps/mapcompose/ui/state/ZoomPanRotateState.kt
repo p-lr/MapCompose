@@ -37,7 +37,7 @@ internal class ZoomPanRotateState(
      */
     internal suspend fun awaitLayout() {
         if (scope != null) return
-        suspendCoroutine<Unit> {
+        suspendCoroutine {
             onLayoutContinuations.add(it)
         }
     }
@@ -60,6 +60,9 @@ internal class ZoomPanRotateState(
     internal var scrollX by mutableStateOf(0f)
     internal var scrollY by mutableStateOf(0f)
 
+    internal var pivotX: Double by mutableStateOf(0.0)
+    internal var pivotY: Double by mutableStateOf(0.0)
+
     internal var centroidX: Double by mutableStateOf(0.0)
     internal var centroidY: Double by mutableStateOf(0.0)
 
@@ -79,11 +82,6 @@ internal class ZoomPanRotateState(
         }
 
     internal var shouldLoopScale by mutableStateOf(false)
-
-    /**
-     * When scaled out beyond the scaled permitted by [Fill], the padding is used by the layout.
-     */
-    internal var padding: IntOffset by mutableStateOf(IntOffset.Zero)
 
     internal var scrollOffsetRatio = Offset(0f, 0f)
         set(value) {
@@ -115,7 +113,6 @@ internal class ZoomPanRotateState(
     @Suppress("unused")
     fun setScale(scale: Float, notify: Boolean = true) {
         this.scale = constrainScale(scale)
-        updatePadding()
         updateCentroid()
         if (notify) notifyStateChanged()
     }
@@ -409,8 +406,8 @@ internal class ZoomPanRotateState(
     private fun <T> offsetToRelative(focalPt: Offset, block: (Double, Double) -> T): T {
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
-        val x = (scrollX - padding.x + focalPtRotated.x).toDouble() / (scale * fullWidth)
-        val y = (scrollY - padding.y + focalPtRotated.y).toDouble() / (scale * fullHeight)
+        val x = (scrollX + focalPtRotated.x).toDouble() / (scale * fullWidth)
+        val y = (scrollY + focalPtRotated.y).toDouble() / (scale * fullHeight)
         return block(x, y)
     }
 
@@ -515,13 +512,41 @@ internal class ZoomPanRotateState(
     }
 
     private fun constrainScrollX(scrollX: Float): Float {
-        val offset = scrollOffsetRatio.x * layoutSize.width
-        return scrollX.coerceIn(-offset, max(offset, fullWidth * scale - layoutSize.width + offset))
+        val angle = rotation.toRad()
+
+        val layoutDimension =
+            polarRadius(layoutSize.width.toFloat(), layoutSize.height.toFloat(), angle)
+        val bias = (layoutDimension - layoutSize.width) / 2
+
+        return if (fullWidth * scale < layoutDimension) {
+            val offset = scrollOffsetRatio.x * fullWidth * scale
+            scrollX.coerceIn(fullWidth * scale - layoutDimension - offset + bias, offset + bias)
+        } else {
+            val offset = scrollOffsetRatio.x * layoutDimension
+            scrollX.coerceIn(
+                -offset + bias,
+                offset + bias + fullWidth * scale - layoutDimension
+            )
+        }
     }
 
     private fun constrainScrollY(scrollY: Float): Float {
-        val offset = scrollOffsetRatio.y * layoutSize.height
-        return scrollY.coerceIn(-offset, max(offset, fullHeight * scale - layoutSize.height + offset))
+        val angle = rotation.toRad()
+
+        val layoutDimension =
+            polarRadius(layoutSize.height.toFloat(), layoutSize.width.toFloat(), angle)
+        val bias = (layoutDimension - layoutSize.height) / 2
+
+        return if (fullHeight * scale < layoutDimension) {
+            val offset = scrollOffsetRatio.y * fullHeight * scale
+            scrollY.coerceIn(fullHeight * scale - layoutDimension - offset + bias, offset + bias)
+        } else {
+            val offset = scrollOffsetRatio.y * layoutDimension
+            scrollY.coerceIn(
+                -offset + bias,
+                offset + bias + fullHeight * scale - layoutDimension
+            )
+        }
     }
 
     internal fun constrainScale(scale: Float): Float {
@@ -529,14 +554,11 @@ internal class ZoomPanRotateState(
     }
 
     private fun updateCentroid() {
-        centroidX = (scrollX + min(
-            layoutSize.width.toDouble() / 2,
-            fullWidth * scale.toDouble() / 2
-        )) / (fullWidth * scale)
-        centroidY = (scrollY + min(
-            layoutSize.height.toDouble() / 2,
-            fullHeight * scale.toDouble() / 2
-        )) / (fullHeight * scale)
+        pivotX = layoutSize.width.toDouble() / 2
+        pivotY = layoutSize.height.toDouble() / 2
+
+        centroidX = (scrollX + pivotX) / (fullWidth * scale)
+        centroidY = (scrollY + pivotY) / (fullHeight * scale)
     }
 
     private fun recalculateMinScale() {
@@ -551,25 +573,14 @@ internal class ZoomPanRotateState(
         setScale(scale)
     }
 
-    private fun updatePadding() {
-        val paddingX = if (fullWidth * scale >= layoutSize.width) {
-            0
-        } else {
-            layoutSize.width / 2 - (fullWidth * scale).roundToInt() / 2
-        }
-
-        val paddingY = if (fullHeight * scale >= layoutSize.height) {
-            0
-        } else {
-            layoutSize.height / 2 - (fullHeight * scale).roundToInt() / 2
-        }
-        padding = IntOffset(paddingX, paddingY)
-    }
-
     private fun notifyStateChanged() {
         if (layoutSize != IntSize.Zero) {
             stateChangeListener.onStateChanged()
         }
+    }
+
+    private fun polarRadius(a: Float, b: Float, angle: AngleRad): Float {
+        return a * b / sqrt((a * sin(angle)).pow(2) + (b * cos(angle)).pow(2))
     }
 }
 

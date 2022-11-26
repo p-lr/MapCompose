@@ -29,7 +29,6 @@ fun MapUI(
                 .background(state.mapBackground),
             gestureListener = zoomPRState,
             layoutSizeChangeListener = zoomPRState,
-            padding = zoomPRState.padding,
         ) {
             TileCanvas(
                 modifier = Modifier,
