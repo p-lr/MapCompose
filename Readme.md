@@ -1,11 +1,11 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.3.0-brightgreen)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/Compose-1.3.1-brightgreen)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
 
 🎉 News:
+- Proper support of `setScrollOffsetRatio` api, along with performance improvements.
 - New gestures added (zoom fling, double tap to zoom, two fingers tap)
 - Marker clustering and lazy-loading. New examples added to the demo app
-- Performance of markers greatly improved
 
 # MapCompose
 
@@ -50,7 +50,7 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.3.1'
+implementation 'ovh.plrapps:mapcompose:2.4.0'
 ```
 
 ## Basics
