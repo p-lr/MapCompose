@@ -2,7 +2,6 @@ package ovh.plrapps.mapcompose.ui.state.markers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +44,6 @@ internal class MarkerState(
         absoluteOffset: Offset,
         zIndex: Float,
         clickable: Boolean,
-        clipShape: Shape?,
         isConstrainedInBounds: Boolean,
         clickableAreaScale: Offset,
         clickableAreaCenterOffset: Offset,
@@ -61,7 +59,6 @@ internal class MarkerState(
             absoluteOffset,
             zIndex,
             clickable,
-            clipShape,
             isConstrainedInBounds,
             clickableAreaScale,
             clickableAreaCenterOffset,

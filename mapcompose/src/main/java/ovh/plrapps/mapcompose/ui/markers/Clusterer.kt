@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.markers
 
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
@@ -381,7 +380,6 @@ internal class Clusterer(
             relativeOffset = Offset(-0.5f, -0.5f),
             absoluteOffset = Offset.Zero,
             zIndex = 0f,
-            clipShape = CircleShape,
             isConstrainedInBounds = true,
             clickableAreaScale = Offset(1f, 1f),
             clickableAreaCenterOffset = Offset(0f, 0f),

@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shape
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import java.util.*
 
@@ -16,7 +15,6 @@ internal class MarkerData(
     val absoluteOffset: Offset,
     zIndex: Float,
     clickable: Boolean,
-    clipShape: Shape?,
     isConstrainedInBounds: Boolean,
     clickableAreaScale: Offset,
     clickableAreaCenterOffset: Offset,
@@ -30,7 +28,6 @@ internal class MarkerData(
     var isClickable: Boolean by mutableStateOf(clickable)
     var clickableAreaScale by mutableStateOf(clickableAreaScale)
     var clickableAreaCenterOffset by mutableStateOf(clickableAreaCenterOffset)
-    var clipShape: Shape? by mutableStateOf(clipShape)
     var zIndex: Float by mutableStateOf(zIndex)
     var isConstrainedInBounds by mutableStateOf(isConstrainedInBounds)
 

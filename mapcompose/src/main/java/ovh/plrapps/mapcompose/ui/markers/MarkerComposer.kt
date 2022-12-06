@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -36,11 +35,6 @@ internal fun MarkerComposer(
                 Box(
                     Modifier
                         .layoutId(data)
-                        .then(
-                            data.clipShape?.let {
-                                Modifier.clip(it)
-                            } ?: Modifier
-                        )
                         .then(
                             if (data.isDraggable) {
                                 Modifier.pointerInput(Unit) {

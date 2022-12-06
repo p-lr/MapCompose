@@ -91,7 +91,6 @@ internal class MarkerRenderState {
                 absoluteOffset,
                 zIndex,
                 clickable,
-                clipShape = null,
                 isConstrainedInBounds,
                 clickableAreaScale = Offset(1f, 1f),
                 clickableAreaCenterOffset = Offset(0f, 0f),
