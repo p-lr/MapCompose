@@ -17,15 +17,12 @@ An example of setting up:
 
 ```kotlin
 /* Inside your view-model */
-val tileStreamProvider =
-    TileStreamProvider { row, col, zoomLvl ->
-        FileInputStream(File("path/{$zoomLvl}/{$row}/{$col}.jpg")) // or it can be a remote HTTP fetch
-    }
+val tileStreamProvider = TileStreamProvider { row, col, zoomLvl ->
+    FileInputStream(File("path/{$zoomLvl}/{$row}/{$col}.jpg")) // or it can be a remote HTTP fetch
+}
 
 val state: MapState by mutableStateOf(
-    MapState(4, 4096, 4096) {
-        scroll(0.5, 0.5)
-    }.apply {
+    MapState(4, 4096, 4096).apply {
         addLayer(tileStreamProvider)
         enableRotation()
     }
