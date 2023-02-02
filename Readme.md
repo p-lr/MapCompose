@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/Compose-1.3-brightgreen)](https://developer.android.com/jetpack/androidx/releases/compose-compiler)
+[![](https://img.shields.io/badge/ComposeBOM-2023.01.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
 - Proper support of `setScrollOffsetRatio` api, along with performance improvements.
@@ -49,6 +49,10 @@ Add this to your module's build.gradle
 ```groovy
 implementation 'ovh.plrapps:mapcompose:2.4.1'
 ```
+
+Starting with v.2.4.1, the library is using the 
+[compose BOM](https://developer.android.com/jetpack/compose/bom/bom). The version of the BOM is
+specified in the release notes. The demo app shows an example of how to use it.
 
 ## Basics
 
