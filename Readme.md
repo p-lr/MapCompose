@@ -77,18 +77,18 @@ system, we had references on views and mutated their state directly. While that 
 the state often ended-up scattered between views own state and application state. Sometimes, it was
 difficult to predict how views were rendered because there were so many things to take into account.
 
-Now, the rendering is function of a state. If that state changes, the "view" updates accordingly.
-The library exposes its API though `MapState`, which is the _only_ public handle to mutate the state
-of the "view" (or in Compose terms, "composables"). As its name suggests, `MapState` also _owns_ the
-state. Therefore, composables will always render consistently - even after a device rotation.
+Now, the rendering is a function of a state. If that state changes, the "view" updates accordingly.
 
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
 composable. The code sample at the top of this readme shows an example. Then, whenever you need to
 update the map (add a marker, a path, change the scale, etc.), you invoke APIs on your `MapState`
-instance. All public APIs are located under the
-[api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) package. The following sections provide
-details on the `MapState` class, and give examples of how to add markers, callouts, and paths.
+instance. As its name suggests, `MapState` also _owns_ the state. Therefore, composables will always
+render consistently - even after a device rotation.
+
+All public APIs are located under the[api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) 
+package. The following sections provide details on the `MapState` class, and give examples of how to
+add markers, callouts, and paths.
 
 ### MapState
 
@@ -99,7 +99,7 @@ The `MapState` class expects three parameters for its construction:
 
 ### Layers
 
-MapCompose supports layers though the ability to add several tile pyramids. Each level is made of
+MapCompose supports layers - e.g it's possible to add several tile pyramids. Each level is made of
 the superposition of tiles from all pyramids at the given level. For example, at the second level
 (starting from the lowest scale), tiles would look like the image below when three layers are added.
 
