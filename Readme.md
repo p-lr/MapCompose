@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/ComposeBOM-2023.01.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
+[![](https://img.shields.io/badge/ComposeBOM-2023.03.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
 - Proper support of `setScrollOffsetRatio` api, along with performance improvements.
