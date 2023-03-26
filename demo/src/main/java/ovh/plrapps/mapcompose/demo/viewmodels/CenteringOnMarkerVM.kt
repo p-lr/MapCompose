@@ -12,10 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.addLayer
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.centerOnMarker
-import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -24,7 +21,9 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
+        MapState(4, 4096, 4096) {
+            rotation(45f)
+        }.apply {
             addLayer(tileStreamProvider)
             addMarker("parking", 0.2457938, 0.3746023) {
                 Icon(
@@ -34,13 +33,13 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
                     tint = Color(0xCC2196F3)
                 )
             }
-            scale = 1f
+            enableRotation()
         }
     )
 
     fun onCenter() {
         viewModelScope.launch {
-            state.centerOnMarker("parking", 1f)
+            state.centerOnMarker("parking", destScale = 1f, destAngle = 0f)
         }
     }
 }

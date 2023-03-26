@@ -26,10 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.scrollTo
+import ovh.plrapps.mapcompose.api.centerOnMarker
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
-import ovh.plrapps.mapcompose.demo.ui.widgets.Marker
 import ovh.plrapps.mapcompose.demo.viewmodels.VisibleAreaPaddingVM
 import ovh.plrapps.mapcompose.ui.MapUI
 
@@ -43,6 +41,7 @@ fun VisibleAreaPaddingDemo(
     var rightObstructionEnabled by remember { mutableStateOf(false) }
     var topObstructionEnabled by remember { mutableStateOf(false) }
     var bottomObstructionEnabled by remember { mutableStateOf(false) }
+
     Column {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -85,7 +84,9 @@ fun VisibleAreaPaddingDemo(
             ) {
                 Surface(
                     color = obstructionColor,
-                    modifier = Modifier.fillMaxHeight().width(obstructionSize)
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(obstructionSize)
                 ) {}
             }
             androidx.compose.animation.AnimatedVisibility(
@@ -96,7 +97,9 @@ fun VisibleAreaPaddingDemo(
             ) {
                 Surface(
                     color = obstructionColor,
-                    modifier = Modifier.fillMaxHeight().width(obstructionSize)
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(obstructionSize)
                 ) {}
             }
             androidx.compose.animation.AnimatedVisibility(
@@ -107,7 +110,9 @@ fun VisibleAreaPaddingDemo(
             ) {
                 Surface(
                     color = obstructionColor,
-                    modifier = Modifier.fillMaxWidth().height(obstructionSize)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(obstructionSize)
                 ) {}
             }
             androidx.compose.animation.AnimatedVisibility(
@@ -118,20 +123,21 @@ fun VisibleAreaPaddingDemo(
             ) {
                 Surface(
                     color = obstructionColor,
-                    modifier = Modifier.fillMaxWidth().height(obstructionSize)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(obstructionSize)
                 ) {}
             }
         }
     }
 
-    viewModel.state.addMarker("m0", 0.2, 0.2) { Marker() }
-    viewModel.state.setVisibleAreaPadding(
-        left = if (leftObstructionEnabled) obstructionSize else 0.dp,
-        right = if (rightObstructionEnabled) obstructionSize else 0.dp,
-        top = if (topObstructionEnabled) obstructionSize else 0.dp,
-        bottom = if (bottomObstructionEnabled) obstructionSize else 0.dp
-    )
     LaunchedEffect(leftObstructionEnabled, rightObstructionEnabled, topObstructionEnabled, bottomObstructionEnabled) {
-        viewModel.state.scrollTo(0.2, 0.2)
+        viewModel.state.setVisibleAreaPadding(
+            left = if (leftObstructionEnabled) obstructionSize else 0.dp,
+            right = if (rightObstructionEnabled) obstructionSize else 0.dp,
+            top = if (topObstructionEnabled) obstructionSize else 0.dp,
+            bottom = if (bottomObstructionEnabled) obstructionSize else 0.dp
+        )
+        viewModel.state.centerOnMarker("m0")
     }
 }

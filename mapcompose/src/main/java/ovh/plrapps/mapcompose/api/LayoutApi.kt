@@ -2,14 +2,11 @@
 
 package ovh.plrapps.mapcompose.api
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -103,26 +100,22 @@ var MapState.shouldLoopScale
     }
 
 /**
- * Sets the padding of the visible area of the map viewport, for the purpose of camera moves.
+ * Sets the padding of the visible area of the map viewport in [Dp], for the purpose of camera moves.
  * For example, if you have some UI obscuring the map on the left, you can set the appropriate
  * left padding. Then, when you use the scrollTo methods, the map will take that into account, by
  * centering on the visible portion of the viewport.
  */
-@SuppressLint("ComposableNaming")
-@Composable
 fun MapState.setVisibleAreaPadding(left: Dp = 0.dp, right: Dp = 0.dp, top: Dp = 0.dp, bottom: Dp = 0.dp) {
-    with(LocalDensity.current) {
-        setVisibleAreaPadding(
-            left = left.toPx().roundToInt(),
-            right = right.toPx().roundToInt(),
-            top = top.toPx().roundToInt(),
-            bottom = bottom.toPx().roundToInt()
-        )
-    }
+    setVisibleAreaPadding(
+        left = dpToPx(left.value).roundToInt(),
+        right = dpToPx(right.value).roundToInt(),
+        top = dpToPx(top.value).roundToInt(),
+        bottom = dpToPx(bottom.value).roundToInt()
+    )
 }
 
 /**
- * Sets the padding of the visible area of the map viewport, for the purpose of camera moves.
+ * Sets the padding of the visible area of the map viewport in pixels, for the purpose of camera moves.
  * For example, if you have some UI obscuring the map on the left, you can set the appropriate
  * left padding. Then, when you use the scrollTo methods, the map will take that into account, by
  * centering on the visible portion of the viewport.
@@ -281,7 +274,7 @@ suspend fun MapState.scrollTo(
         val destScrollY = (y * fullHeight * effectiveDstScale + offsetY).toFloat().withVisibleAreaVerticalOffset(this)
 
         withRetry(maxAnimationsRetries, animationsRetriesInterval) {
-            smoothScrollAndScale(
+            smoothScrollScaleRotate(
                 destScrollX,
                 destScrollY,
                 effectiveDstScale,
@@ -341,11 +334,11 @@ private fun Point.applyVisibleAreaOffset(zoomPanRotateState: ZoomPanRotateState)
     }
 }
 
-private fun Float.withVisibleAreaHorizontalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
+internal fun Float.withVisibleAreaHorizontalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
     return this - zoomPanRotateState.visibleAreaOffset.x
 }
 
-private fun Float.withVisibleAreaVerticalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
+internal fun Float.withVisibleAreaVerticalOffset(zoomPanRotateState: ZoomPanRotateState): Float {
     return this - zoomPanRotateState.visibleAreaOffset.y
 }
 

@@ -167,7 +167,7 @@ Markers can be moved, removed, and be draggable. See the following APIs: [moveMa
 ### Callouts
 
 Callouts are typically message popups which are, like markers, attached to a specific position.
-However, they automatically dismiss on touch down. This is default behavior can be changed. 
+However, they automatically dismiss on touch down. This default behavior can be changed. 
 To add a callout, use [addCallout](https://github.com/p-lr/MapCompose/blob/2fbf0967290ffe01d63a6c65a3022568ef48b9dd/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/MarkerApi.kt#L220).
 
 <p align="center">

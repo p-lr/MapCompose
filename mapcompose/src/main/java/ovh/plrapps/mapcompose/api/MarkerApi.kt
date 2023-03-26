@@ -17,9 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
-import ovh.plrapps.mapcompose.utils.rotateX
-import ovh.plrapps.mapcompose.utils.rotateY
-import ovh.plrapps.mapcompose.utils.toRad
+import ovh.plrapps.mapcompose.utils.*
 import ovh.plrapps.mapcompose.utils.withRetry
 
 /**
@@ -400,6 +398,29 @@ fun MapState.moveMarkerBy(id: String, deltaPx: Offset) {
 }
 
 /**
+ * Center on a marker, animating the scroll.
+ *
+ * @param id The id of the marker
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
+ */
+suspend fun MapState.centerOnMarker(
+    id: String,
+    animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    with(zoomPanRotateState) {
+        markerState.getMarker(id)?.also {
+            awaitLayout()
+            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat().withVisibleAreaHorizontalOffset(this)
+            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat().withVisibleAreaVerticalOffset(this)
+
+            withRetry(maxAnimationsRetries, animationsRetriesInterval) {
+                smoothScrollTo(destScrollX, destScrollY, animationSpec)
+            }
+        }
+    }
+}
+
+/**
  * Center on a marker, animating the scroll position and the scale.
  *
  * @param id The id of the marker
@@ -415,11 +436,11 @@ suspend fun MapState.centerOnMarker(
         markerState.getMarker(id)?.also {
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat()
+            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat().withVisibleAreaHorizontalOffset(this)
+            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat().withVisibleAreaVerticalOffset(this)
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
-                smoothScrollAndScale(
+                smoothScrollScaleRotate(
                     destScrollX,
                     destScrollY,
                     destScale,
@@ -431,23 +452,34 @@ suspend fun MapState.centerOnMarker(
 }
 
 /**
- * Center on a marker, animating the scroll.
+ * Center on a marker, animating the scroll position, the scale, and the rotation.
  *
  * @param id The id of the marker
+ * @param destScale The destination scale
+ * @param destAngle The destination angle in decimal degrees
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness.
  */
 suspend fun MapState.centerOnMarker(
     id: String,
+    destScale: Float,
+    destAngle: AngleDegree,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
         markerState.getMarker(id)?.also {
             awaitLayout()
-            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2).toFloat()
-            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2).toFloat()
+            val destScaleCst = constrainScale(destScale)
+            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2).toFloat().withVisibleAreaHorizontalOffset(this)
+            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2).toFloat().withVisibleAreaVerticalOffset(this)
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
-                smoothScrollTo(destScrollX, destScrollY, animationSpec)
+                smoothScrollScaleRotate(
+                    destScrollX,
+                    destScrollY,
+                    destScale,
+                    destAngle,
+                    animationSpec
+                )
             }
         }
     }

@@ -205,7 +205,7 @@ internal class ZoomPanRotateState(
      * @param destScale The final scale value the layout should animate to.
      * @param animationSpec The [AnimationSpec] the animation should use.
      */
-    suspend fun smoothScrollAndScale(
+    suspend fun smoothScrollScaleRotate(
         destScrollX: Float,
         destScrollY: Float,
         destScale: Float,
@@ -224,6 +224,46 @@ internal class ZoomPanRotateState(
                     scrollX = lerp(startScrollX, destScrollX, value),
                     scrollY = lerp(startScrollY, destScrollY, value)
                 )
+            }
+        }
+    }
+
+    /**
+     * Animates the scroll, the scale, and the rotation together with the supplied destination values.
+     *
+     * @param destScrollX Horizontal scroll of the destination point.
+     * @param destScrollY Vertical scroll of the destination point.
+     * @param destScale The final scale value the layout should animate to.
+     * @param destAngle The final angle in decimal degrees the layout should animate to.
+     * @param animationSpec The [AnimationSpec] the animation should use.
+     */
+    suspend fun smoothScrollScaleRotate(
+        destScrollX: Float,
+        destScrollY: Float,
+        destScale: Float,
+        destAngle: AngleDegree,
+        animationSpec: AnimationSpec<Float>
+    ): Boolean {
+        val startScrollX = this.scrollX
+        val startScrollY = this.scrollY
+        val startScale = this.scale
+
+        val currRotation = this@ZoomPanRotateState.rotation
+        var targetAngle = (destAngle % 360)
+        if (abs(targetAngle - currRotation) > 180) {
+            targetAngle += if (targetAngle > currRotation) -360 else 360
+        }
+
+        return invokeAndCheckSuccess {
+            userAnimatable.stop()
+            apiAnimatable.snapTo(0f)
+            apiAnimatable.animateTo(1f, animationSpec) {
+                setScale(lerp(startScale, destScale, value))
+                setScroll(
+                    scrollX = lerp(startScrollX, destScrollX, value),
+                    scrollY = lerp(startScrollY, destScrollY, value)
+                )
+                setRotation(lerp(currRotation, targetAngle, value))
             }
         }
     }
@@ -251,7 +291,7 @@ internal class ZoomPanRotateState(
         val destScrollX = getScrollAtOffsetAndScale(startScrollX, focusX, destScaleCst / startScale)
         val destScrollY = getScrollAtOffsetAndScale(startScrollY, focusY, destScaleCst / startScale)
 
-        return smoothScrollAndScale(destScrollX, destScrollY, destScale, animationSpec)
+        return smoothScrollScaleRotate(destScrollX, destScrollY, destScale, animationSpec)
     }
 
     /**
