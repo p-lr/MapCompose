@@ -121,7 +121,10 @@ fun MapState.setVisibleAreaPadding(left: Dp = 0.dp, right: Dp = 0.dp, top: Dp = 
  * centering on the visible portion of the viewport.
  */
 fun MapState.setVisibleAreaPadding(left: Int = 0, right: Int = 0, top: Int = 0, bottom: Int = 0) {
-    zoomPanRotateState.visibleAreaOffset = IntOffset((left - right) / 2, (top - bottom) / 2)
+    val angle = -zoomPanRotateState.rotation.toRad()
+    val offsetX = rotateX((left - right) / 2.0, (top - bottom) / 2.0, angle)
+    val offsetY = rotateY((left - right) / 2.0, (top - bottom) / 2.0, angle)
+    zoomPanRotateState.visibleAreaOffset = IntOffset(offsetX.toInt(), offsetY.toInt())
 }
 
 /**
