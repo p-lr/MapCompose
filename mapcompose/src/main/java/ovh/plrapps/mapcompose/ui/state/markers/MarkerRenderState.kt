@@ -9,6 +9,7 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerType
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.removeFirst
+import kotlin.math.pow
 
 internal class MarkerRenderState {
     internal val markers = derivedStateOf {
@@ -121,12 +122,25 @@ internal class MarkerRenderState {
         return hasClickable.value
     }
 
+    /**
+     * Get the nearest marker which contains the click position and has the highest z-index.
+     */
     fun getMarkerOnHit(xPx: Int, yPx: Int): MarkerData? {
-        return markers.value.filter { markerData ->
+        val candidates = markers.value.filter { markerData ->
             markerData.isClickable && markerData.contains(xPx, yPx)
-        }.maxWithOrNull { markerData1, markerData2 ->
-            if (markerData1.zIndex > markerData2.zIndex) 1 else -1
         }
+        val highestZ = candidates.maxByOrNull { it.zIndex }?.zIndex ?: return null
+
+        return candidates.filter {
+            it.zIndex == highestZ
+        }.minWithOrNull { markerData1, markerData2 ->
+            if (squareDistance(markerData1, xPx, yPx) > squareDistance(markerData2, xPx, yPx)) 1 else -1
+        }
+    }
+
+    private fun squareDistance(markerData: MarkerData, x: Int, y: Int): Float {
+        val (cx, cy) = markerData.getCenter() ?: return Float.MAX_VALUE
+        return (cx - x).pow(2) + (cy - y).pow(2)
     }
 
     internal fun onCalloutClick(data: MarkerData) {

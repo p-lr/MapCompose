@@ -39,16 +39,22 @@ internal class MarkerData(
     val uuid: UUID = UUID.randomUUID()
 
     fun contains(x: Int, y: Int): Boolean {
-        val xPos = xPlacement ?: return false
-        val yPos = yPlacement ?: return false
+        val (centerX, centerY) = getCenter() ?: return false
 
-        val centerX = xPos + measuredWidth / 2 + measuredWidth * clickableAreaCenterOffset.x
         val deltaX = measuredWidth * clickableAreaScale.x / 2
-        val centerY = yPos + measuredHeight / 2 + measuredHeight * clickableAreaCenterOffset.y
         val deltaY = measuredHeight * clickableAreaScale.y / 2
 
         return (x >= centerX - deltaX && x <= centerX + deltaX
                 && y >= centerY - deltaY && y <= centerY + deltaY)
+    }
+
+    fun getCenter(): Offset? {
+        val xPos = xPlacement ?: return null
+        val yPos = yPlacement ?: return null
+
+        val centerX = xPos + measuredWidth / 2 + measuredWidth * clickableAreaCenterOffset.x
+        val centerY = yPos + measuredHeight / 2 + measuredHeight * clickableAreaCenterOffset.y
+        return Offset(centerX, centerY)
     }
 
     override fun equals(other: Any?): Boolean {
