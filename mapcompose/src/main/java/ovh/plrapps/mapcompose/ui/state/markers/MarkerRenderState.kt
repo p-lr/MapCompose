@@ -122,10 +122,16 @@ internal class MarkerRenderState {
         return hasClickable.value
     }
 
+    fun hasMarkerForHit(xPx: Int, yPx: Int): Boolean {
+        return markers.value.any { markerData ->
+            markerData.isClickable && markerData.contains(xPx, yPx)
+        }
+    }
+
     /**
      * Get the nearest marker which contains the click position and has the highest z-index.
      */
-    fun getMarkerOnHit(xPx: Int, yPx: Int): MarkerData? {
+    fun getMarkerForHit(xPx: Int, yPx: Int): MarkerData? {
         val candidates = markers.value.filter { markerData ->
             markerData.isClickable && markerData.contains(xPx, yPx)
         }

@@ -141,7 +141,7 @@ class MapState(
     override fun detectsLongPress(): Boolean = longPressCb != null
 
     override fun shouldConsumeTapGesture(x: Int, y: Int): Boolean {
-        return markerRenderState.getMarkerOnHit(x, y)?.isClickable ?: false
+        return markerRenderState.hasMarkerForHit(x, y)
     }
 
     internal fun renderVisibleTilesThrottled() {

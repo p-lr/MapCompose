@@ -186,7 +186,7 @@ internal class MarkerState(
     }
 
     fun onHit(x: Int, y: Int) {
-        markerRenderState.getMarkerOnHit(x, y)?.also { markerData ->
+        markerRenderState.getMarkerForHit(x, y)?.also { markerData ->
             /* If it's a cluster, run the corresponding click behavior. */
             if (markerData.type is MarkerType.Cluster) {
                 val clusterer = clusterersById[markerData.type.clustererId]
