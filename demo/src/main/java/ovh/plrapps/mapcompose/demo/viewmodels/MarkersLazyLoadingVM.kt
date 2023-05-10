@@ -70,5 +70,9 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
                 tint = Color(0xEEF44336)
             )
         }
+
+        state.onMarkerClick { id, x, y ->
+            println("marker click $id $x $y")
+        }
     }
 }

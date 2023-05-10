@@ -19,6 +19,7 @@ internal class MarkerData(
     clickableAreaScale: Offset,
     clickableAreaCenterOffset: Offset,
     val renderingStrategy: RenderingStrategy,
+    val type: MarkerType,
     val c: @Composable () -> Unit
 ) {
     var x: Double by mutableStateOf(x)
@@ -35,7 +36,6 @@ internal class MarkerData(
     var measuredHeight = 0
     var xPlacement: Int? = null
     var yPlacement: Int? = null
-    var data: Any? = null
     val uuid: UUID = UUID.randomUUID()
 
     fun contains(x: Int, y: Int): Boolean {

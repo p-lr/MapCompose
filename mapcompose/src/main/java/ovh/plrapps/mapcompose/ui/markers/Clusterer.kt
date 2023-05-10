@@ -72,16 +72,17 @@ internal class Clusterer(
         }
     }
 
-    fun onPlaceableClick(markerData: MarkerData) {
-        val cluster = markerData.data as? Cluster ?: return
+    fun onPlaceableClick(clusterData: MarkerData) {
+        if (clusterData.type !is MarkerType.Cluster) return
+        val markersData = clusterData.type.markersData
         when (clusterClickBehavior) {
             is Custom -> {
                 clusterClickBehavior.onClick(
-                    ClusterInfo(cluster.x, cluster.y, cluster.markers.map { it.markerData })
+                    ClusterInfo(clusterData.x, clusterData.y, markersData)
                 )
             }
             Default -> {
-                defaultClusterClickListener(cluster)
+                defaultClusterClickListener(markersData)
             }
             None -> {
             }
@@ -329,23 +330,22 @@ internal class Clusterer(
     }
 
     private fun Cluster.addToMap() {
-        val markerData = makeClusterMarkerData(id, x, y) {
+        val markersData = markers.map { it.markerData }
+        val markerData = makeClusterMarkerData(id, x, y, markersData) {
             clusterFactory(markers.map { it.id })()
         }
-        /* Add the cluster as bundled data for later retrieval on cluster click */
-        markerData.data = this
         markerRenderState.addClustererManagedMarker(markerData)
     }
 
-    private fun defaultClusterClickListener(cluster: Cluster) {
-        if (cluster.markers.isEmpty()) return
+    private fun defaultClusterClickListener(markers: List<MarkerData>) {
+        if (markers.isEmpty()) return
 
         /* Compute the bounding box */
         var minX: Double = Double.MAX_VALUE
         var maxX: Double = Double.MIN_VALUE
         var minY: Double = Double.MAX_VALUE
         var maxY: Double = Double.MIN_VALUE
-        cluster.markers.forEach {
+        markers.forEach {
             minX = if (it.x < minX) it.x else minX
             maxX = if (it.x > maxX) it.x else maxX
             minY = if (it.y < minY) it.y else minY
@@ -373,6 +373,7 @@ internal class Clusterer(
         id: String,
         x: Double,
         y: Double,
+        markersData: List<MarkerData>,
         c: @Composable () -> Unit
     ): MarkerData {
         return MarkerData(
@@ -385,6 +386,7 @@ internal class Clusterer(
             clickableAreaCenterOffset = Offset(0f, 0f),
             clickable = true,
             renderingStrategy = RenderingStrategy.Clustering(this@Clusterer.id),
+            type = MarkerType.Cluster(clustererId = this@Clusterer.id, markersData),
             c = c
         )
     }

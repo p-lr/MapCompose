@@ -11,6 +11,7 @@ import ovh.plrapps.mapcompose.ui.markers.LazyLoader
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
+import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerType
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 
 internal class MarkerState(
@@ -52,18 +53,19 @@ internal class MarkerState(
     ) {
         if (hasMarker(id)) return
         markers.value += MarkerData(
-            id,
-            x,
-            y,
-            relativeOffset,
-            absoluteOffset,
-            zIndex,
-            clickable,
-            isConstrainedInBounds,
-            clickableAreaScale,
-            clickableAreaCenterOffset,
-            renderingStrategy,
-            c
+            id = id,
+            x = x,
+            y = y,
+            relativeOffset = relativeOffset,
+            absoluteOffset = absoluteOffset,
+            zIndex = zIndex,
+            clickable = clickable,
+            isConstrainedInBounds = isConstrainedInBounds,
+            clickableAreaScale = clickableAreaScale,
+            clickableAreaCenterOffset = clickableAreaCenterOffset,
+            renderingStrategy = renderingStrategy,
+            type = MarkerType.Marker,
+            c = c
         )
     }
 
@@ -185,13 +187,13 @@ internal class MarkerState(
 
     fun onHit(x: Int, y: Int) {
         markerRenderState.getMarkerOnHit(x, y)?.also { markerData ->
-            /* Invoke user callback, if any */
-            markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
-
-            /* If it's managed by a clusterer, it might have something to do with this event */
-            if (markerData.renderingStrategy is RenderingStrategy.Clustering) {
-                val clusterer = clusterersById[markerData.renderingStrategy.clustererId]
+            /* If it's a cluster, run the corresponding click behavior. */
+            if (markerData.type is MarkerType.Cluster) {
+                val clusterer = clusterersById[markerData.type.clustererId]
                 clusterer?.onPlaceableClick(markerData)
+            } else {
+                /* It's not a cluster. Invoke user callback, if any. */
+                markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
             }
         }
     }

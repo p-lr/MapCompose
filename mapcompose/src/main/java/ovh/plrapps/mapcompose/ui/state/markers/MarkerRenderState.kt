@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
+import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerType
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.removeFirst
 
@@ -84,18 +85,19 @@ internal class MarkerRenderState {
     ) {
         val markerData =
             MarkerData(
-                id,
-                x,
-                y,
-                relativeOffset,
-                absoluteOffset,
-                zIndex,
-                clickable,
-                isConstrainedInBounds,
+                id = id,
+                x = x,
+                y = y,
+                relativeOffset = relativeOffset,
+                absoluteOffset = absoluteOffset,
+                zIndex = zIndex,
+                clickable = clickable,
+                isConstrainedInBounds = isConstrainedInBounds,
                 clickableAreaScale = Offset(1f, 1f),
                 clickableAreaCenterOffset = Offset(0f, 0f),
                 renderingStrategy = RenderingStrategy.Default,
-                c
+                type = MarkerType.Callout,
+                c = c
             )
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
