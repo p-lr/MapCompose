@@ -97,7 +97,7 @@ fun MapState.addMarker(
     clickable: Boolean = true,
     clipShape: Shape? = null,
     isConstrainedInBounds: Boolean = true,
-    clickableAreaRelativeOffset: Offset = Offset(1f, 1f),
+    clickableAreaScale: Offset = Offset(1f, 1f),
     clickableAreaCenterOffset: Offset = Offset(0f, 0f),
     renderingStrategy: RenderingStrategy = RenderingStrategy.Default,
     c: @Composable () -> Unit
@@ -111,7 +111,7 @@ fun MapState.addMarker(
         zIndex,
         clickable,
         isConstrainedInBounds,
-        clickableAreaRelativeOffset,
+        clickableAreaScale,
         clickableAreaCenterOffset,
         renderingStrategy,
         c
