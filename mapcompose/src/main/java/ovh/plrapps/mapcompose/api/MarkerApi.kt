@@ -128,7 +128,7 @@ fun MapState.addMarker(
  * @param clusteringThreshold When the distance between two markers goes below that threshold, a
  * cluster is formed. Defaults to 50 dp. There's one exception: when the scale reaches max scale,
  * in which case clustering is disabled.
- * @param clusterClickBehavior Defines the behavior when a cluster is clicked
+ * @param clusterClickBehavior Defines the behavior when a cluster is clicked.
  * @param clusterFactory Compose code for a cluster. Receives the list of marker ids which are fused
  * to form the cluster.
  */
@@ -140,11 +140,11 @@ fun MapState.addClusterer(
     clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
 ) {
     markerState.addClusterer(
-        this,
-        id,
-        clusteringThreshold,
-        clusterClickBehavior.toInternal(),
-        clusterFactory
+        mapState = this,
+        id = id,
+        clusteringThreshold = clusteringThreshold,
+        clusterClickBehavior = clusterClickBehavior.toInternal(),
+        clusterFactory = clusterFactory
     )
 }
 

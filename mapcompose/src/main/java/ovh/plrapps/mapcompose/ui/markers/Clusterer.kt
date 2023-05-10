@@ -380,7 +380,7 @@ internal class Clusterer(
             id, x, y,
             relativeOffset = Offset(-0.5f, -0.5f),
             absoluteOffset = Offset.Zero,
-            zIndex = 0f,
+            zIndex = markersData.maxOfOrNull { it.zIndex } ?: 0f,
             isConstrainedInBounds = true,
             clickableAreaScale = Offset(1f, 1f),
             clickableAreaCenterOffset = Offset(0f, 0f),

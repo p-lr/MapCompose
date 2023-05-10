@@ -136,13 +136,13 @@ internal class MarkerState(
         clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
     ) {
         val clusterer = Clusterer(
-            id,
-            clusteringThreshold,
-            mapState,
-            markerRenderState,
-            markers,
-            clusterClickBehavior,
-            clusterFactory
+            id = id,
+            clusteringThreshold = clusteringThreshold,
+            mapState = mapState,
+            markerRenderState = markerRenderState,
+            markersDataFlow = markers,
+            clusterClickBehavior = clusterClickBehavior,
+            clusterFactory = clusterFactory
         )
         clusterersById[id] = clusterer
     }
