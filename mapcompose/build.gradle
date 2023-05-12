@@ -40,7 +40,10 @@ android {
     }
 
     publishing {
-        singleVariant("release")
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 
     namespace 'ovh.plrapps.mapcompose'
@@ -48,8 +51,8 @@ android {
 
 dependencies {
     // Compose - See https://developer.android.com/jetpack/compose/setup#bom-version-mapping
-    implementation platform('androidx.compose:compose-bom:2023.05.01')
-    implementation "androidx.compose.material:material"
+    api platform('androidx.compose:compose-bom:2023.05.01')
+    api "androidx.compose.foundation:foundation"
     implementation "androidx.compose.ui:ui-tooling-preview"
     debugImplementation "androidx.compose.ui:ui-tooling"
     implementation "androidx.compose.ui:ui-util"
@@ -63,11 +66,6 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
 }
 
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set("sources")
-    from android.sourceSets.main.java.source
-}
-
 ext.'signing.keyId' = System.getenv('signingKeyId')
 ext.'signing.password' = System.getenv('signingPwd')
 ext.'signing.secretKeyRingFile' = System.getenv('signingKeyFile')
@@ -76,13 +74,11 @@ afterEvaluate { project ->
     publishing {
         publications {
             release(MavenPublication) {
+                from components.release
 
                 groupId = GROUP
                 artifactId = ARTIFACT_ID
                 version = VERSION_NAME  // see gradle.properties
-
-                artifact bundleReleaseAar
-                artifact androidSourcesJar
 
                 pom {
                     name = POM_NAME
