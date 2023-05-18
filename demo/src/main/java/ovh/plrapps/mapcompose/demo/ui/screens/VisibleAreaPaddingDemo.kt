@@ -4,6 +4,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
@@ -42,33 +44,37 @@ fun VisibleAreaPaddingDemo(
     var topObstructionEnabled by remember { mutableStateOf(false) }
     var bottomObstructionEnabled by remember { mutableStateOf(false) }
 
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.clickable { leftObstructionEnabled = !leftObstructionEnabled },
             ) {
-                Switch(leftObstructionEnabled, onCheckedChange = { leftObstructionEnabled = !leftObstructionEnabled })
-                Text("Left")
+                Switch(leftObstructionEnabled, onCheckedChange = null)
+                Text("Left", modifier = Modifier.padding(start = 4.dp))
             }
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.clickable { rightObstructionEnabled = !rightObstructionEnabled },
             ) {
-                Switch(rightObstructionEnabled, onCheckedChange = { rightObstructionEnabled = !rightObstructionEnabled })
-                Text("Right")
+                Switch(rightObstructionEnabled, onCheckedChange = null)
+                Text("Right", modifier = Modifier.padding(start = 4.dp))
             }
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.clickable { topObstructionEnabled = !topObstructionEnabled },
             ) {
-                Switch(topObstructionEnabled, onCheckedChange = { topObstructionEnabled = !topObstructionEnabled })
-                Text("Top")
+                Switch(topObstructionEnabled, onCheckedChange = null)
+                Text("Top", modifier = Modifier.padding(start = 4.dp))
             }
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.clickable { bottomObstructionEnabled = !bottomObstructionEnabled },
             ) {
-                Switch(bottomObstructionEnabled, onCheckedChange = { bottomObstructionEnabled = !bottomObstructionEnabled })
-                Text("Bottom")
+                Switch(bottomObstructionEnabled, onCheckedChange = null)
+                Text("Bottom", modifier = Modifier.padding(start = 4.dp))
             }
         }
         Box {

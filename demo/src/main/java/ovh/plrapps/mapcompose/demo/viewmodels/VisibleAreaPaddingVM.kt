@@ -16,6 +16,7 @@ class VisibleAreaPaddingVM(application: Application) : AndroidViewModel(applicat
         MapState(4, 4096, 4096) {
             scale(1.2f)
         }.apply {
+            enableRotation()
             addLayer(tileStreamProvider)
             addMarker("m0", 0.5, 0.5) { Marker() }
         }
