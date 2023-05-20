@@ -533,6 +533,13 @@ fun MapState.addCallout(
 }
 
 /**
+ * Check whether a callout was already added or not.
+ */
+fun MapState.hasCallout(id: String): Boolean {
+    return markerRenderState.hasCallout(id)
+}
+
+/**
  * Updates the clickable property of an existing callout.
  *
  * @param id The id of the marker
@@ -543,6 +550,17 @@ fun MapState.updateCalloutClickable(
     clickable: Boolean
 ) {
     markerRenderState.callouts[id]?.markerData?.isClickable = clickable
+}
+
+/**
+ * Moves a callout.
+ *
+ * @param id The id of the callout.
+ * @param x The normalized X position on the map, in range [0..1]
+ * @param y The normalized Y position on the map, in range [0..1]
+ */
+fun MapState.moveCallout(id: String, x: Double, y: Double) {
+    markerRenderState.moveCallout(id, x, y)
 }
 
 /**

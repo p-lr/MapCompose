@@ -103,6 +103,15 @@ internal class MarkerRenderState {
         callouts[id] = CalloutData(markerData, autoDismiss)
     }
 
+    fun hasCallout(id: String): Boolean = callouts.containsKey(id)
+
+    fun moveCallout(id: String, x: Double, y: Double) {
+        callouts[id]?.markerData?.also {
+            it.x = if (it.isConstrainedInBounds) x.coerceIn(0.0, 1.0) else x
+            it.y = if (it.isConstrainedInBounds) y.coerceIn(0.0, 1.0) else y
+        }
+    }
+
     fun removeCallout(id: String): Boolean {
         return callouts.remove(id) != null
     }
