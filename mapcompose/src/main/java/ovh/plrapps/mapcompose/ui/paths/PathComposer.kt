@@ -76,11 +76,18 @@ class PathDataBuilder internal constructor(
     /**
      * Add a point to the path. Values are relative coordinates (in range [0f..1f]).
      */
-    fun addPoint(x: Double, y: Double) {
-        points.add(
-            Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat())
-        )
+    fun addPoint(x: Double, y: Double) = apply {
+        points.add(createOffset(x, y))
     }
+
+    /**
+     * Add points to the path. Values are relative coordinates (in range [0f..1f]).
+     */
+    fun addPoints(points: List<Pair<Double, Double>>) = apply {
+        this.points += points.map { (x, y) -> createOffset(x, y) }
+    }
+
+    private fun createOffset(x: Double, y: Double) = Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat())
 
     fun build(): PathData? {
         /* If there is only one point, the path has no sense */
