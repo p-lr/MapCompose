@@ -32,6 +32,10 @@ internal class PathState {
         return pathState.remove(id) != null
     }
 
+    fun removeAllPaths() {
+        pathState.clear()
+    }
+
     fun updatePath(
         id: String,
         pathData: PathData? = null,

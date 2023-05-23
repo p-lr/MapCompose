@@ -53,13 +53,8 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 "tracks/$trackName.txt"
             )?.bufferedReader()?.lineSequence()
                 ?: return@with
-            val builder = makePathDataBuilder()
-            for (line in lines) {
-                val values = line.split(',')
-                builder.addPoint(values[0].toDouble(), values[1].toDouble())
-            }
-            val pathData = builder.build() ?: return@with
-            addPath(trackName, pathData, color = color, width = 12.dp)
+            val points = lines.map { line -> line.split(",").map(String::toDouble).let { it[0] to it[1] } }.toList()
+            addPath(trackName, points, color = color, width = 12.dp)
         }
     }
 }
