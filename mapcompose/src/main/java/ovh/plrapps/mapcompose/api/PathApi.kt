@@ -93,6 +93,13 @@ fun MapState.removePath(id: String) {
 }
 
 /**
+ * Removes all paths.
+ */
+fun MapState.removeAllPaths() {
+    pathState.removeAllPaths()
+}
+
+/**
  * Check whether a path was already added or not.
  *
  * @param id The id of the path
