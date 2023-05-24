@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
-import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -40,12 +39,9 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
 
     /**
      * In this sample, we retrieve track points from text files in the assets.
-     * To add a path, follow these steps:
-     *
-     * 1. Retrieve a [PathDataBuilder] from the [MapState] instance, using [makePathDataBuilder]
-     * 2. Add each point using [PathDataBuilder.addPoint]
-     * 3. Build a [PathData] using [PathDataBuilder.build]
-     * 4. Add the path to the map using [addPath]
+     * To add a path, use the [addPath] api. From inside the builder block, you can add individual
+     * points or a list of points.
+     * Here, since we're getting points from a sequence, we add them on the fly using [PathDataBuilder.addPoint].
      */
     private fun addTrack(trackName: String, color: Color? = null) {
         with(state) {
@@ -53,8 +49,13 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 "tracks/$trackName.txt"
             )?.bufferedReader()?.lineSequence()
                 ?: return@with
-            val points = lines.map { line -> line.split(",").map(String::toDouble).let { it[0] to it[1] } }.toList()
-            addPath(trackName, points, color = color, width = 12.dp)
+
+            addPath(trackName, color = color, width = 12.dp) {
+                for (line in lines) {
+                    val values = line.split(',').map(String::toDouble)
+                    addPoint(values[0], values[1])
+                }
+            }
         }
     }
 }
