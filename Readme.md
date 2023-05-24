@@ -178,26 +178,15 @@ Callouts can be programmatically removed (if automatic dismiss was disabled).
 
 ### Paths
 
-To add a path, follow these steps:
+To add a path, use the `addPath` api:
 
 ```kotlin
-// 1. Get a PathDataBuilder
-val builder: PathDataBuilder = mapState.makePathDataBuilder()
-
-// 2. Build the path
-for (point in points) {
-    builder.addPoint(point.x, point.y)
+mapState.addPath("pathId", color = Color(0xFF448AFF), width = 12.dp) {
+  addPoints(points)
 }
-val pathData = builder.build()
-
-// 3. Use the API
-mapState.addPath("pathName", pathData, color = Color(0xFF448AFF), width = 12.dp)
 ```
 
-It's important to note that the only way to get a `PathDataBuilder` is by using the
-`makePathDataBuilder` function. Once you've built your `PathData` instance, you can use
-the [addPath](https://github.com/p-lr/MapCompose/blob/ac8ead5c7eb9f925e12565822e77b026a6c5fce0/mapcompose/src/main/java/ovh/plrapps/mapcompose/api/PathApi.kt#L10)
-API.
+The demo app shows a complete example.
 
 <p align="center">
 <img src="doc/readme-files/path.png">
