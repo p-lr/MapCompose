@@ -47,8 +47,7 @@ fun MapState.addPath(
  * @param count The number of points to draw after [offset]
  * @param builder The builder block from with to add individual points or list of points.
  *
- * @return The [PathData] which can later be used for [updatePath] api, or null if the path couldn't
- * be created.
+ * @return The [PathData] which can be used for adding other paths.
  */
 fun MapState.addPath(
     id: String,
