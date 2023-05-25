@@ -19,12 +19,14 @@ internal class PathState {
         width: Dp? = null,
         color: Color? = null,
         offset: Int? = null,
-        count: Int? = null
+        count: Int? = null,
+        simplify: Boolean = true
     ) {
         pathState[id] = DrawablePathState(id, path).apply {
             val p = this
             width?.also { p.width = it }
             color?.also { p.color = it }
+            p.simplify = simplify
             setOffsetAndCount(offset, count)
         }
     }
@@ -44,7 +46,8 @@ internal class PathState {
         width: Dp? = null,
         color: Color? = null,
         offset: Int? = null,
-        count: Int? = null
+        count: Int? = null,
+        simplify: Boolean? = null
     ) {
         pathState[id]?.apply {
             val path = this
@@ -52,6 +55,7 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
+            simplify?.also { path.simplify = it }
             setOffsetAndCount(offset, count)
         }
     }
@@ -82,6 +86,7 @@ internal class DrawablePathState(
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
      */
     var offsetAndCount: IntOffset by mutableStateOf(IntOffset(0, pathData.data.size))
+    var simplify: Boolean by mutableStateOf(true)
 
     private val _paint = Paint()    // Create this only once
     val paint: Paint

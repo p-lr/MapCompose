@@ -46,32 +46,40 @@ internal fun PathCanvas(
     val offsetAndCount = drawablePathState.offsetAndCount
     val offset = offsetAndCount.x
     val count = offsetAndCount.y
+    val simplify = drawablePathState.simplify
     val epsilon = with(LocalDensity.current) {
-        (2.dp / zoomPRState.scale).toPx().toDouble()
+        (1.dp / zoomPRState.scale).toPx().toDouble()
     }
-    val path by produceState(initialValue = drawablePathState.lastRenderedPath, offsetAndCount, zoomPRState.scale) {
+    val path by produceState(
+        initialValue = drawablePathState.lastRenderedPath,
+        key1 = offsetAndCount,
+        key2 = zoomPRState.scale,
+        key3 = simplify
+    ) {
         value = withContext(Dispatchers.Default) {
             with(drawablePathState) {
                 val p = Path()
                 val subList = pathData.data.subList(offset, offset + count)
-                val simplified = runCatching {
-                    val out = mutableListOf<Offset>()
-                    ramerDouglasPeucker(subList, epsilon, out)
-                    out
-                }.getOrElse {
-                    subList
-                }
-                for ((i, point) in simplified.withIndex()) {
+                val toRender = if (simplify) {
+                    runCatching {
+                        val out = mutableListOf<Offset>()
+                        ramerDouglasPeucker(subList, epsilon, out)
+                        out
+                    }.getOrElse {
+                        subList
+                    }
+                } else subList
+                for ((i, point) in toRender.withIndex()) {
                     if (i == 0) {
                         p.moveTo(point.x, point.y)
                     } else {
                         p.lineTo(point.x, point.y)
                     }
                 }
-                drawablePathState.lastRenderedPath = p
                 p
             }
         }
+        drawablePathState.lastRenderedPath = value
     }
 
     Canvas(

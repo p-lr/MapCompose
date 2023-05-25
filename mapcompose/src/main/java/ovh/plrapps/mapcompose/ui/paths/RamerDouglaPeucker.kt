@@ -4,26 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.math.hypot
 
 
-internal fun perpendicularDistance(pt: Offset, lineStart: Offset, lineEnd: Offset): Double {
-    var dx = lineEnd.x - lineStart.x
-    var dy = lineEnd.y - lineStart.y
-
-    // Normalize
-    val mag = hypot(dx, dy)
-    if (mag > 0.0) { dx /= mag; dy /= mag }
-    val pvx = pt.x - lineStart.x
-    val pvy = pt.y - lineStart.y
-
-    // Get dot product (project pv onto normalized direction)
-    val pvdot = dx * pvx + dy * pvy
-
-    // Scale line direction vector and substract it from pv
-    val ax = pvx - pvdot * dx
-    val ay = pvy - pvdot * dy
-
-    return hypot(ax.toDouble(), ay.toDouble())
-}
-
 internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Double, out: MutableList<Offset>) {
     if (pointList.size < 2) throw IllegalArgumentException("Not enough points to simplify")
 
@@ -56,4 +36,24 @@ internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Double, out: 
         out.add(pointList.first())
         out.add(pointList.last())
     }
+}
+
+private fun perpendicularDistance(pt: Offset, lineStart: Offset, lineEnd: Offset): Double {
+    var dx = lineEnd.x - lineStart.x
+    var dy = lineEnd.y - lineStart.y
+
+    // Normalize
+    val mag = hypot(dx, dy)
+    if (mag > 0.0) { dx /= mag; dy /= mag }
+    val pvx = pt.x - lineStart.x
+    val pvy = pt.y - lineStart.y
+
+    // Get dot product (project pv onto normalized direction)
+    val pvdot = dx * pvx + dy * pvy
+
+    // Scale line direction vector and substract it from pv
+    val ax = pvx - pvdot * dx
+    val ay = pvy - pvdot * dy
+
+    return hypot(ax.toDouble(), ay.toDouble())
 }
