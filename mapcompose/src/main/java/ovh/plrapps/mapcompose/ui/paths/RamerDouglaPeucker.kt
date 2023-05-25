@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.math.hypot
 
 
-internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Double, out: MutableList<Offset>) {
+internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Float, out: MutableList<Offset>) {
     if (pointList.size < 2) throw IllegalArgumentException("Not enough points to simplify")
 
     // Find the point with the maximum distance from line between start and end

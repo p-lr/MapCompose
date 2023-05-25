@@ -16,8 +16,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
@@ -47,9 +45,8 @@ internal fun PathCanvas(
     val offset = offsetAndCount.x
     val count = offsetAndCount.y
     val simplify = drawablePathState.simplify
-    val epsilon = with(LocalDensity.current) {
-        (1.dp / zoomPRState.scale).toPx().toDouble()
-    }
+    val epsilon = 1f / zoomPRState.scale
+
     val path by produceState(
         initialValue = drawablePathState.lastRenderedPath,
         key1 = offsetAndCount,
