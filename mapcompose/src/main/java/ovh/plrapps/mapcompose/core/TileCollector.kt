@@ -13,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.math.pow
 
 
 /**
@@ -115,7 +116,7 @@ internal class TileCollector(
 
             bitmapLoadingOptions.inMutable = true
             bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
-            bitmapLoadingOptions.inSampleSize = spec.subSample
+            bitmapLoadingOptions.inSampleSize = (2.0.pow(spec.subSample)).toInt()
 
             val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
