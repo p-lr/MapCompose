@@ -49,6 +49,8 @@ internal class TileCollector(
     private val bitmapConfig: Bitmap.Config,
     private val tileSize: Int
 ) {
+    @Volatile
+    var isIdle: Boolean = true
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
@@ -176,11 +178,13 @@ internal class TileCollector(
             select<Unit> {
                 tilesDownloadedFromWorker.onReceive {
                     specsBeingProcessed.remove(it)
+                    isIdle = specsBeingProcessed.isEmpty()
                 }
                 tileSpecs.onReceive {
                     if (it !in specsBeingProcessed) {
-                        /* Add it to the list of locations being processed */
+                        /* Add it to the list of specs being processed */
                         specsBeingProcessed.add(it)
+                        isIdle = false
 
                         /* Now download the tile */
                         tilesToDownload.send(it)

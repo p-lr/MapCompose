@@ -304,18 +304,8 @@ internal class TileCanvasState(
         /* Always perform partial eviction */
         partialEviction(visibleTiles, layerIds, opacities)
 
-        if (aggressiveAttempt) {
-            /**
-             * If not all tiles at current level (or also current sub-sample) are fetched, abort
-             * the attempt.
-             */
-            val nTilesAtCurrentLevel = tilesCollected.count {
-                it.zoom == currentLevel && it.subSample == currentSubSample && it.alpha == 1f
-                        && it.layerIds == layerIds
-            }
-            if (nTilesAtCurrentLevel < visibleStateFlow.value?.visibleTiles?.count ?: Int.MAX_VALUE) {
-                return
-            }
+        /* Only perform aggressive eviction when tile collector is idle */
+        if (aggressiveAttempt && tileCollector.isIdle) {
             aggressiveEviction(currentLevel, currentSubSample, layerIds)
         }
     }
