@@ -8,8 +8,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
@@ -66,7 +64,7 @@ internal class TileCollector(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapFlow: Flow<Bitmap>,
+        bitmapPool: Pool<Bitmap>
     ) = coroutineScope {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
@@ -77,7 +75,7 @@ internal class TileCollector(
                 tilesDownloadedFromWorker,
                 tilesOutput,
                 layers,
-                bitmapFlow
+                bitmapPool
             )
         }
         tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
@@ -88,7 +86,7 @@ internal class TileCollector(
         tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapFlow: Flow<Bitmap>
+        bitmapPool: Pool<Bitmap>
     ) = launch(dispatcher) {
 
         val layerIds = layers.map { it.id }
@@ -102,6 +100,10 @@ internal class TileCollector(
         }
         val canvas = Canvas()
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+        fun getBitmap(): Bitmap {
+            return bitmapPool.get() ?: Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
+        }
 
         suspend fun getBitmap(
             spec: TileSpec,
@@ -134,7 +136,7 @@ internal class TileCollector(
             val bitmapForLayers = layers.mapIndexed { index, layer ->
                 async {
                     /* Attempt to reuse an existing bitmap for the first layer */
-                    getBitmap(spec, layer, if (index == 0) bitmapFlow.single() else null)
+                    getBitmap(spec, layer, if (index == 0) getBitmap() else null)
                 }
             }.awaitAll()
 

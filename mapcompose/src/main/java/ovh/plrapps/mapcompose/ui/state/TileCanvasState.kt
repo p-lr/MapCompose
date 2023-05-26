@@ -50,19 +50,6 @@ internal class TileCanvasState(
         }
     internal var colorFilterProvider: ColorFilterProvider? by mutableStateOf(null)
 
-    /**
-     * A [Flow] of [Bitmap] that first collects from the [bitmapPool] on this view-model's
-     * background thread. If the pool was empty, a new [Bitmap] is allocated from the calling thread.
-     * [bitmapPool]'s `put` is also invoked fom this background thread. Therefore, [bitmapPool]
-     * usage is thread confined.
-     */
-    private val bitmapFlow: Flow<Bitmap> = flow {
-        val bitmap = bitmapPool.get()
-        emit(bitmap)
-    }.flowOn(singleThreadDispatcher).map {
-        it ?: Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
-    }
-
     private val bitmapConfig = if (highFidelityColors) {
         Bitmap.Config.ARGB_8888
     } else {
@@ -115,12 +102,12 @@ internal class TileCanvasState(
         /* Launch the TileCollector */
         tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig, tileSize)
         scope.launch {
-            _layerFlow.collectLatest {
+            _layerFlow.collectLatest { layers ->
                 tileCollector.collectTiles(
-                    visibleTileLocationsChannel,
-                    tilesOutput,
-                    it,
-                    bitmapFlow
+                    tileSpecs = visibleTileLocationsChannel,
+                    tilesOutput = tilesOutput,
+                    layers = layers,
+                    bitmapPool = bitmapPool
                 )
             }
         }

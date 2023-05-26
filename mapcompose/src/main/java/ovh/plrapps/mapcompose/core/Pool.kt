@@ -1,17 +1,27 @@
 package ovh.plrapps.mapcompose.core
 
+import kotlinx.coroutines.channels.Channel
+import java.util.concurrent.atomic.AtomicInteger
+
 /**
  * A simple pool of objects.
- * This class isn't thread-safe.
+ * This class is thread-safe.
  */
-internal class Pool<T>(private val threshold: Int = 300) {
+internal class Pool<T>(threshold: Int = 300) {
+    private val _size = AtomicInteger(0)
     val size: Int
-        get() = pool.size
+        get() = _size.get()
 
-    private val pool = ArrayDeque<T>()
+    private val pool = Channel<T>(threshold)
 
-    fun get(): T? = pool.removeFirstOrNull()
+    fun get(): T? {
+        return pool.tryReceive().getOrNull().also {
+            if (it != null) _size.decrementAndGet()
+        }
+    }
     fun put(o: T) {
-        if (size < threshold) pool.add(o)
+        pool.trySend(o).also {
+            if (it.isSuccess) _size.incrementAndGet()
+        }
     }
 }

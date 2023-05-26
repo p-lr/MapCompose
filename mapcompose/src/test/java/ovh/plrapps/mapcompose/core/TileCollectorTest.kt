@@ -6,10 +6,6 @@ import android.os.Build
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
@@ -60,13 +56,6 @@ class TileCollectorTest {
 
         val tileStreamProvider = TileStreamProvider { _, _, _ -> FileInputStream(imageFile) }
 
-        val bitmapFlow: Flow<Bitmap> = flow {
-            val bitmap = pool.get()
-            emit(bitmap)
-        }.flowOn(Dispatchers.Unconfined).map {
-            it ?: Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
-        }
-
         val bitmapReference = try {
             val inputStream = FileInputStream(imageFile)
             val bitmapLoadingOptions = BitmapFactory.Options().apply {
@@ -102,7 +91,7 @@ class TileCollectorTest {
         /* Start collecting tiles */
         val tileCollector = TileCollector(1, Bitmap.Config.RGB_565, tileSize)
         val tileCollectorJob = launch {
-            tileCollector.collectTiles(visibleTileLocationsChannel, tilesOutput, layers, bitmapFlow)
+            tileCollector.collectTiles(visibleTileLocationsChannel, tilesOutput, layers, pool)
         }
 
         launch {
