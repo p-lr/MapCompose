@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
@@ -42,22 +43,21 @@ internal fun PathCanvas(
     drawablePathState: DrawablePathState
 ) {
     val offsetAndCount = drawablePathState.offsetAndCount
-    val offset = offsetAndCount.x
-    val count = offsetAndCount.y
-    val simplify = drawablePathState.simplify
-    val epsilon = 1f / zoomPRState.scale
 
     val path by produceState(
         initialValue = drawablePathState.lastRenderedPath,
         key1 = offsetAndCount,
-        key2 = zoomPRState.scale,
-        key3 = simplify
+        key2 = zoomPRState.scale,   // epsilon might be equal to 0
+        key3 = drawablePathState.simplify,
     ) {
         value = withContext(Dispatchers.Default) {
             with(drawablePathState) {
                 val p = Path()
+                val offset = offsetAndCount.x
+                val count = offsetAndCount.y
+                val epsilon = drawablePathState.simplify / zoomPRState.scale
                 val subList = pathData.data.subList(offset, offset + count)
-                val toRender = if (simplify) {
+                val toRender = if (epsilon > 0f) {
                     runCatching {
                         val out = mutableListOf<Offset>()
                         ramerDouglasPeucker(subList, epsilon, out)
@@ -79,6 +79,10 @@ internal fun PathCanvas(
         drawablePathState.lastRenderedPath = value
     }
 
+    val widthPx = with(LocalDensity.current) {
+        drawablePathState.width.toPx()
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -98,7 +102,7 @@ internal fun PathCanvas(
         }) {
             with(drawablePathState) {
                 val paint = paint.apply {
-                    strokeWidth = width.value / zoomPRState.scale
+                    strokeWidth = widthPx / zoomPRState.scale
                     strokeCap = Paint.Cap.ROUND
                 }
                 if (visible) {
@@ -113,7 +117,10 @@ internal fun PathCanvas(
 
 class PathData internal constructor(
     internal val data: List<Offset>,
-)
+) {
+    val size: Int
+        get() = data.size
+}
 
 class PathDataBuilder internal constructor(
     private val fullWidth: Int,

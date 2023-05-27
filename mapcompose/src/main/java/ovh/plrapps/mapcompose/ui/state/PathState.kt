@@ -20,15 +20,10 @@ internal class PathState {
         color: Color? = null,
         offset: Int? = null,
         count: Int? = null,
-        simplify: Boolean = true
+        simplify: Float? = null
     ) {
-        pathState[id] = DrawablePathState(id, path).apply {
-            val p = this
-            width?.also { p.width = it }
-            color?.also { p.color = it }
-            p.simplify = simplify
-            setOffsetAndCount(offset, count)
-        }
+        if (hasPath(id)) return
+        pathState[id] = DrawablePathState(id, path, width, color, offset, count, simplify)
     }
 
     fun removePath(id: String): Boolean {
@@ -47,7 +42,7 @@ internal class PathState {
         color: Color? = null,
         offset: Int? = null,
         count: Int? = null,
-        simplify: Boolean? = null
+        simplify: Float? = null
     ) {
         pathState[id]?.apply {
             val path = this
@@ -55,38 +50,37 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
-            simplify?.also { path.simplify = it }
-            setOffsetAndCount(offset, count)
+            simplify?.also { path.simplify = it.coerceAtLeast(0f) }
+            if (offset != null || count != null) {
+                offsetAndCount = coerceOffsetAndCount(offset, count)
+            }
         }
     }
 
-    /**
-     * Beware that "count" + "offset" shouldn't exceed the path length, or an exception will
-     * be thrown.
-     */
-    private fun DrawablePathState.setOffsetAndCount(offset: Int?, cnt: Int?) {
-        val ofst = offset?.coerceIn(0, pathData.data.size) ?: 0
-        val count = cnt?.coerceIn(
-            0, (pathData.data.size - ofst)
-        ) ?: pathData.data.size
-        offsetAndCount = IntOffset(ofst, count)
+    fun hasPath(id: String): Boolean {
+        return pathState.keys.contains(id)
     }
 }
 
 internal class DrawablePathState(
     val id: String,
-    pathData: PathData
+    pathData: PathData,
+    width: Dp?,
+    color: Color?,
+    offset: Int?,
+    count: Int?,
+    simplify: Float?
 ) {
     var lastRenderedPath: Path = Path()
     var pathData by mutableStateOf(pathData)
     var visible by mutableStateOf(true)
-    var width: Dp by mutableStateOf(8.dp)
-    var color: Color by mutableStateOf(Color(0xFF448AFF))
+    var width: Dp by mutableStateOf(width ?: 4.dp)
+    var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
      */
-    var offsetAndCount: IntOffset by mutableStateOf(IntOffset(0, pathData.data.size))
-    var simplify: Boolean by mutableStateOf(true)
+    var offsetAndCount: IntOffset by mutableStateOf(initializeOffsetAndCount(offset, count))
+    var simplify: Float by mutableStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
 
     private val _paint = Paint()    // Create this only once
     val paint: Paint
@@ -95,6 +89,24 @@ internal class DrawablePathState(
             style = Paint.Style.STROKE
         }
 
+    private fun initializeOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
+        val ofst = offset?.coerceIn(0, pathData.data.size) ?: 0
+        val count = cnt?.coerceIn(
+            0, (pathData.data.size - ofst)
+        ) ?: pathData.data.size
+        return IntOffset(ofst, count)
+    }
+
+    /**
+     * Ensure that "count" + "offset" shouldn't exceed the path length.
+     */
+    fun coerceOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
+        val ofst = offset?.coerceIn(0, pathData.data.size) ?: offsetAndCount.x
+        val count = cnt?.coerceIn(
+            0, (pathData.data.size - ofst)
+        ) ?: offsetAndCount.y
+        return IntOffset(ofst, count)
+    }
 
     override fun hashCode(): Int {
         var hash = id.hashCode()

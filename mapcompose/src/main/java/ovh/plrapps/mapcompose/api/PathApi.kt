@@ -9,17 +9,18 @@ import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
- * Adds a path, optionally setting some properties. The default values are:
+ * Adds a path, optionally setting some properties.
  *
  * @param id The unique identifier of the path
- * @param pathData
- * @param width The width of the path, in [Dp]. Defaults to 8.dp
+ * @param pathData Obtained from [PathDataBuilder.build]
+ * @param width The width of the path, in [Dp]. Defaults to 4.dp
  * @param color The color of the path. Defaults to Color(0xFF448AFF)
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points added
  * to built [pathData].
- * @param simplify Whether the path is simplified depending on the scale to improve performance.
- * Defaults to true.
+ * @param simplify By default, the path is simplified depending on the scale to improve performance.
+ * Higher values increase the simplification effect, while a value of 0f effectively disables path
+ * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
  */
 fun MapState.addPath(
     id: String,
@@ -28,22 +29,23 @@ fun MapState.addPath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
-    simplify: Boolean = true
+    simplify: Float? = null
 ) {
     pathState.addPath(id, pathData, width, color, offset, count, simplify)
 }
 
 /**
- * Adds a path, optionally setting some properties. The default values are:
+ * Adds a path, optionally setting some properties.
  *
  * @param id The unique identifier of the path
- * @param width The width of the path, in [Dp]. Defaults to 8.dp
+ * @param width The width of the path, in [Dp]. Defaults to 4.dp
  * @param color The color of the path. Defaults to Color(0xFF448AFF)
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points
  * provided inside the [builder] block.
- * @param simplify Whether the path is simplified depending on the scale to improve performance.
- * Defaults to true.
+ * @param simplify By default, the path is simplified depending on the scale to improve performance.
+ * Higher values increase the simplification effect, while a value of 0f effectively disables path
+ * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
  * @param builder The builder block from with to add individual points or list of points.
  *
  * @return The [PathData] which can be used for adding other paths.
@@ -54,7 +56,7 @@ fun MapState.addPath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
-    simplify: Boolean = true,
+    simplify: Float? = null,
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
@@ -72,7 +74,9 @@ fun MapState.addPath(
  * @param color The color of the path
  * @param offset The number of points to skip from the beginning of the path
  * @param count The number of points to draw after [offset]
- * @param simplify Whether the path is simplified depending on the scale to improve performance
+ * @param simplify By default, the path is simplified depending on the scale to improve performance.
+ * Higher values increase the simplification effect, while a value of 0f effectively disables path
+ * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
  */
 fun MapState.updatePath(
     id: String,
@@ -82,7 +86,7 @@ fun MapState.updatePath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
-    simplify: Boolean? = null
+    simplify: Float? = null
 ) {
     pathState.updatePath(id, pathData, visible, width, color, offset, count, simplify)
 }
@@ -109,7 +113,7 @@ fun MapState.removeAllPaths() {
  * @param id The id of the path
  */
 fun MapState.hasPath(id: String): Boolean {
-    return pathState.pathState.keys.contains(id)
+    return pathState.hasPath(id)
 }
 
 /**
