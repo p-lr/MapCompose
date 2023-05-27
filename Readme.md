@@ -43,6 +43,33 @@ been revisited. MapCompose brings the same level of performance as MapView, with
 This project holds the source code of this library, plus a demo app - which is useful to get started.
 To test the demo, just clone the repo and launch the demo app from Android Studio.
 
+## Clustering
+
+Marker clustering regroups markers of close proximity into clusters. The video below shows how it works.
+
+https://github.com/p-lr/MapCompose/assets/15638794/c60d9afa-1a5b-42a2-a85a-b8da6932bd62
+
+The sample below shows the relevant part of the code. We can still add regular markers (not managed by a cluster), such as the red marker in the video.
+
+```kotlin
+/* Add clusterer */
+state.addClusterer("default") { ids ->
+   { Cluster(size = ids.size) }
+}
+
+/* Add marker managed by the clusterer */
+state.addMarker(
+    id = "marker",
+    x = 0.2,
+    y = 0.3,
+    renderingStrategy = RenderingStrategy.Clustering("default"),
+) {
+    Marker()
+}
+```
+
+
+
 ## Installation
 
 Add this to your module's build.gradle
