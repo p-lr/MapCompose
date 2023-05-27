@@ -47,9 +47,10 @@ To test the demo, just clone the repo and launch the demo app from Android Studi
 
 Marker clustering regroups markers of close proximity into clusters. The video below shows how it works.
 
-https://github.com/p-lr/MapCompose/assets/15638794/c60d9afa-1a5b-42a2-a85a-b8da6932bd62
+https://github.com/p-lr/MapCompose/assets/15638794/de48cb1b-396b-44d3-b47a-e3d719e8f38a
 
 The sample below shows the relevant part of the code. We can still add regular markers (not managed by a cluster), such as the red marker in the video.
+See the [full code](demo/src/main/java/ovh/plrapps/mapcompose/demo/viewmodels/MarkersClusteringVM.kt).
 
 ```kotlin
 /* Add clusterer */
@@ -68,6 +69,7 @@ state.addMarker(
 }
 ```
 
+There's an example in the demo app.
 
 
 ## Installation
