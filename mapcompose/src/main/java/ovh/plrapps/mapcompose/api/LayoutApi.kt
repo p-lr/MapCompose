@@ -19,6 +19,7 @@ import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.VisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import ovh.plrapps.mapcompose.utils.*
 import kotlin.math.min
@@ -147,10 +148,7 @@ suspend fun MapState.setVisibleAreaPadding(
  * Variant of [MapState.setVisibleAreaPadding] using pixels.
  */
 fun MapState.setVisibleAreaPadding(left: Int = 0, right: Int = 0, top: Int = 0, bottom: Int = 0) {
-    val angle = -zoomPanRotateState.rotation.toRad()
-    val offsetX = rotateX((left - right) / 2.0, (top - bottom) / 2.0, angle)
-    val offsetY = rotateY((left - right) / 2.0, (top - bottom) / 2.0, angle)
-    zoomPanRotateState.visibleAreaOffset = IntOffset(offsetX.toInt(), offsetY.toInt())
+    zoomPanRotateState.visibleAreaPadding = VisibleAreaPadding(left, top, right, bottom)
 }
 
 /**
@@ -266,8 +264,9 @@ suspend fun MapState.snapScrollTo(
         val offsetX = screenOffset.x * layoutSize.width
         val offsetY = screenOffset.y * layoutSize.height
 
-        val destScrollX = (x * fullWidth * scale + offsetX - visibleAreaOffset.x).toFloat()
-        val destScrollY = (y * fullHeight * scale + offsetY - visibleAreaOffset.y).toFloat()
+        val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
+        val destScrollX = (x * fullWidth * scale + offsetX - paddingOffset.x).toFloat()
+        val destScrollY = (y * fullHeight * scale + offsetY - paddingOffset.y).toFloat()
 
         setScroll(destScrollX, destScrollY)
     }
@@ -299,8 +298,9 @@ suspend fun MapState.scrollTo(
 
         val effectiveDstScale = constrainScale(destScale)
 
-        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX - visibleAreaOffset.x).toFloat()
-        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY - visibleAreaOffset.y).toFloat()
+        val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
+        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX - paddingOffset.x).toFloat()
+        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY - paddingOffset.y).toFloat()
 
         withRetry(maxAnimationsRetries, animationsRetriesInterval) {
             smoothScrollScaleRotate(
@@ -371,16 +371,15 @@ private fun ZoomPanRotateState.calculateScrollTo(
     val rotatedNormalizedArea =
         normalizedArea.rotate(Point(centerX / xAxisScale, centerY), -rotation.toRad())
     val rotatedArea = rotatedNormalizedArea.scaleAxis(xAxisScale)
+    val visibleAreaMargin = visibleAreaPadding.getRotatedMargin(rotation)
 
     val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
-    val availableViewportWidth = (layoutSize.width - visibleAreaOffset.x * 2) * (1 - padding.x)
-    val areaWidthLayoutFraction = areaWidth / availableViewportWidth
-    val horizontalScale = 1 / areaWidthLayoutFraction
+    val availableViewportWidth = (layoutSize.width - visibleAreaMargin.x) * ( 1 - padding.x)
+    val horizontalScale = availableViewportWidth / areaWidth
 
     val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
-    val availableViewportHeight = (layoutSize.height - visibleAreaOffset.y * 2) * (1 - padding.y)
-    val areaHeightLayoutFraction = areaHeight / availableViewportHeight
-    val verticalScale = 1 / areaHeightLayoutFraction
+    val availableViewportHeight = (layoutSize.height - visibleAreaMargin.y) * (1 - padding.y)
+    val verticalScale = availableViewportHeight / areaHeight
 
     val targetScale = min(horizontalScale, verticalScale).toFloat()
     val effectiveTargetScale = constrainScale(targetScale)

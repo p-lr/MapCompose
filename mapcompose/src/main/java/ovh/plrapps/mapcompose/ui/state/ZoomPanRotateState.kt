@@ -3,7 +3,6 @@ package ovh.plrapps.mapcompose.ui.state
 import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.*
@@ -68,10 +67,7 @@ internal class ZoomPanRotateState(
 
     internal var layoutSize by mutableStateOf(IntSize(0, 0))
 
-    /**
-     * Offset of the conceptual center of the map when moving the camera to a position
-     */
-    internal var visibleAreaOffset= IntOffset(0, 0)
+    internal var visibleAreaPadding = VisibleAreaPadding(0, 0, 0, 0)
 
     internal var minScale by mutableStateOf(0f)   // should only be changed through MinimumScaleMode
 
@@ -623,6 +619,11 @@ internal class ZoomPanRotateState(
         return a * b / sqrt((a * sin(angle)).pow(2) + (b * cos(angle)).pow(2))
     }
 }
+
+/**
+ * The padding to apply when some UI is obscuring the map on it's borders.
+ */
+internal data class VisibleAreaPadding(val left: Int, val top: Int, val right: Int, val bottom: Int)
 
 interface ZoomPanRotateStateListener {
     fun onStateChanged()
