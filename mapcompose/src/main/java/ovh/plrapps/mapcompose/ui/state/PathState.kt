@@ -2,13 +2,19 @@ package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Paint
 import android.graphics.Path
-import androidx.compose.runtime.*
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.neverEqualPolicy
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.model.Cap
 
 internal class PathState {
     val pathState = mutableStateMapOf<String, DrawablePathState>()
@@ -16,14 +22,15 @@ internal class PathState {
     fun addPath(
         id: String,
         path: PathData,
-        width: Dp? = null,
-        color: Color? = null,
-        offset: Int? = null,
-        count: Int? = null,
-        simplify: Float? = null
+        width: Dp?,
+        color: Color?,
+        offset: Int?,
+        count: Int?,
+        cap: Cap,
+        simplify: Float?
     ) {
         if (hasPath(id)) return
-        pathState[id] = DrawablePathState(id, path, width, color, offset, count, simplify)
+        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify)
     }
 
     fun removePath(id: String): Boolean {
@@ -42,6 +49,7 @@ internal class PathState {
         color: Color? = null,
         offset: Int? = null,
         count: Int? = null,
+        cap: Cap? = null,
         simplify: Float? = null
     ) {
         pathState[id]?.apply {
@@ -50,6 +58,7 @@ internal class PathState {
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
+            cap?.also { path.cap = it }
             simplify?.also { path.simplify = it.coerceAtLeast(0f) }
             if (offset != null || count != null) {
                 offsetAndCount = coerceOffsetAndCount(offset, count)
@@ -69,6 +78,7 @@ internal class DrawablePathState(
     color: Color?,
     offset: Int?,
     count: Int?,
+    cap: Cap,
     simplify: Float?
 ) {
     var lastRenderedPath: Path = Path()
@@ -76,6 +86,8 @@ internal class DrawablePathState(
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
+    var cap: Cap by mutableStateOf(cap)
+
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
      */
@@ -83,11 +95,20 @@ internal class DrawablePathState(
     var simplify: Float by mutableStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
 
     private val _paint = Paint()    // Create this only once
-    val paint: Paint
-        get() = _paint.apply {
-            color = this@DrawablePathState.color.toArgb()
+
+    val paint: Paint by derivedStateOf(
+        policy = neverEqualPolicy()
+    ) {
+        _paint.apply {
+            this.color = this@DrawablePathState.color.toArgb()
             style = Paint.Style.STROKE
+            strokeCap = when (this@DrawablePathState.cap) {
+                Cap.Butt -> Paint.Cap.BUTT
+                Cap.Round -> Paint.Cap.ROUND
+                Cap.Square -> Paint.Cap.SQUARE
+            }
         }
+    }
 
     private fun initializeOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
         val ofst = offset?.coerceIn(0, pathData.data.size) ?: 0

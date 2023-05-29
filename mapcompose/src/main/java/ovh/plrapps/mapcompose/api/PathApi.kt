@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
+import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -18,6 +19,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points added
  * to built [pathData].
+ * @param cap The cap style at the start and end of the path. Defaults to [Cap.Round].
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
@@ -29,9 +31,10 @@ fun MapState.addPath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
+    cap: Cap = Cap.Round,
     simplify: Float? = null
 ) {
-    pathState.addPath(id, pathData, width, color, offset, count, simplify)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify)
 }
 
 /**
@@ -43,6 +46,7 @@ fun MapState.addPath(
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points
  * provided inside the [builder] block.
+ * @param cap The cap style at the start and end of the path. Defaults to [Cap.Round].
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
@@ -56,11 +60,12 @@ fun MapState.addPath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
+    cap: Cap = Cap.Round,
     simplify: Float? = null,
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
-    pathState.addPath(id, pathData, width, color, offset, count, simplify)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify)
     return pathData
 }
 
@@ -74,6 +79,7 @@ fun MapState.addPath(
  * @param color The color of the path
  * @param offset The number of points to skip from the beginning of the path
  * @param count The number of points to draw after [offset]
+ * @param cap The cap style at the start and end of the path
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
@@ -86,9 +92,10 @@ fun MapState.updatePath(
     color: Color? = null,
     offset: Int? = null,
     count: Int? = null,
+    cap: Cap? = null,
     simplify: Float? = null
 ) {
-    pathState.updatePath(id, pathData, visible, width, color, offset, count, simplify)
+    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify)
 }
 
 /**

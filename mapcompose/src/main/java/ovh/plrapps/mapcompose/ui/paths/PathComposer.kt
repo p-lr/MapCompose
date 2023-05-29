@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.paths
 
-import android.graphics.Paint
 import android.graphics.Path
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -103,7 +102,6 @@ internal fun PathCanvas(
             with(drawablePathState) {
                 val paint = paint.apply {
                     strokeWidth = widthPx / zoomPRState.scale
-                    strokeCap = Paint.Cap.ROUND
                 }
                 if (visible) {
                     drawIntoCanvas {
