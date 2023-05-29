@@ -3,7 +3,7 @@
 [![](https://img.shields.io/badge/ComposeBOM-2023.05.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
-- Proper support of `setScrollOffsetRatio` api, along with performance improvements.
+- Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
 - New gestures added (zoom fling, double tap to zoom, two fingers tap)
 - Marker clustering and lazy-loading. New examples added to the demo app
 
@@ -49,7 +49,7 @@ Marker clustering regroups markers of close proximity into clusters. The video b
 
 https://github.com/p-lr/MapCompose/assets/15638794/de48cb1b-396b-44d3-b47a-e3d719e8f38a
 
-The sample below shows the relevant part of the code. We can still add regular markers (not managed by a cluster), such as the red marker in the video.
+The sample below shows the relevant part of the code. We can still add regular markers (not managed by a clusterer), such as the red marker in the video.
 See the [full code](demo/src/main/java/ovh/plrapps/mapcompose/demo/viewmodels/MarkersClusteringVM.kt).
 
 ```kotlin
@@ -76,7 +76,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.6.0'
+implementation 'ovh.plrapps:mapcompose:2.7.0'
 ```
 
 Starting with v.2.4.1, the library is using the 
@@ -210,7 +210,7 @@ Callouts can be programmatically removed (if automatic dismiss was disabled).
 To add a path, use the `addPath` api:
 
 ```kotlin
-mapState.addPath("pathId", color = Color(0xFF448AFF), width = 12.dp) {
+mapState.addPath("pathId", color = Color(0xFF448AFF)) {
   addPoints(points)
 }
 ```
