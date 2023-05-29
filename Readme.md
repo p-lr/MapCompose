@@ -37,9 +37,6 @@ fun MapContainer(
 }
 ```
 
-Inspired by [MapView](https://github.com/p-lr/MapView), every aspects of the library have
-been revisited. MapCompose brings the same level of performance as MapView, with a simplified API.
-
 This project holds the source code of this library, plus a demo app - which is useful to get started.
 To test the demo, just clone the repo and launch the demo app from Android Studio.
 
@@ -115,7 +112,7 @@ update the map (add a marker, a path, change the scale, etc.), you invoke APIs o
 instance. As its name suggests, `MapState` also _owns_ the state. Therefore, composables will always
 render consistently - even after a device rotation.
 
-All public APIs are located under the[api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) 
+All public APIs are located under the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) 
 package. The following sections provide details on the `MapState` class, and give examples of how to
 add markers, callouts, and paths.
 
@@ -220,19 +217,6 @@ The demo app shows a complete example.
 <p align="center">
 <img src="doc/readme-files/path.png">
 </p>
-
-## State change listener
-
-In order to get notified whenever the state (scale, scroll, rotation) changes, you can register a
-callback using `setStateChangeListener` API:
-
-```kotlin
-mapState.setStateChangeListener {
-   println("scale: $scale, scroll: $scroll, rotation: $rotation")
-}
-```
-
-To unregister, use `removeStateChangeListener()`.
 
 ## Animate state change
 
