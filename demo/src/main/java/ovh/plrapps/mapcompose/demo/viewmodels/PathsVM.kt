@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -50,7 +49,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             )?.bufferedReader()?.lineSequence()
                 ?: return@with
 
-            addPath(trackName, color = color, width = 12.dp) {
+            addPath(trackName, color = color) {
                 for (line in lines) {
                     val values = line.split(',').map(String::toDouble)
                     addPoint(values[0], values[1])

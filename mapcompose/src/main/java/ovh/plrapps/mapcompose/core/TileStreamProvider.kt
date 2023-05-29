@@ -11,6 +11,8 @@ import java.io.InputStream
  * [TileStreamProvider].
  *
  * If [getTileStream] returns null, the tile is simply ignored by the tile processing machinery.
+ * The library does not handle exceptions thrown from [getTileStream]. Such errors are treated as
+ * unrecoverable failures.
  */
 fun interface TileStreamProvider {
     suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?

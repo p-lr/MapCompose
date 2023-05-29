@@ -410,8 +410,9 @@ suspend fun MapState.centerOnMarker(
     with(zoomPanRotateState) {
         markerState.getMarker(id)?.also {
             awaitLayout()
-            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2 - visibleAreaOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2 - visibleAreaOffset.y).toFloat()
+            val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
+            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2 - paddingOffset.x).toFloat()
+            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2 - paddingOffset.y).toFloat()
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollTo(destScrollX, destScrollY, animationSpec)
@@ -436,8 +437,9 @@ suspend fun MapState.centerOnMarker(
         markerState.getMarker(id)?.also {
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - visibleAreaOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - visibleAreaOffset.y).toFloat()
+            val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
+            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x).toFloat()
+            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y).toFloat()
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollScaleRotate(
@@ -469,8 +471,9 @@ suspend fun MapState.centerOnMarker(
         markerState.getMarker(id)?.also {
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - visibleAreaOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - visibleAreaOffset.y).toFloat()
+            val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
+            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x).toFloat()
+            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y).toFloat()
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollScaleRotate(

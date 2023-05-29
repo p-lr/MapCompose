@@ -1,9 +1,13 @@
 package ovh.plrapps.mapcompose.ui.paths
 
+import android.graphics.Path
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -11,6 +15,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
 import ovh.plrapps.mapcompose.ui.state.PathState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
@@ -22,7 +29,9 @@ internal fun PathComposer(
     pathState: PathState
 ) {
     for (path in pathState.pathState.values) {
-        PathCanvas(modifier, zoomPRState, path)
+        key(path.id) {
+            PathCanvas(modifier, zoomPRState, path)
+        }
     }
 }
 
@@ -32,6 +41,47 @@ internal fun PathCanvas(
     zoomPRState: ZoomPanRotateState,
     drawablePathState: DrawablePathState
 ) {
+    val offsetAndCount = drawablePathState.offsetAndCount
+
+    val path by produceState(
+        initialValue = drawablePathState.lastRenderedPath,
+        key1 = offsetAndCount,
+        key2 = zoomPRState.scale,   // epsilon might be equal to 0
+        key3 = drawablePathState.simplify,
+    ) {
+        value = withContext(Dispatchers.Default) {
+            with(drawablePathState) {
+                val p = Path()
+                val offset = offsetAndCount.x
+                val count = offsetAndCount.y
+                val epsilon = drawablePathState.simplify / zoomPRState.scale
+                val subList = pathData.data.subList(offset, offset + count)
+                val toRender = if (epsilon > 0f) {
+                    runCatching {
+                        val out = mutableListOf<Offset>()
+                        ramerDouglasPeucker(subList, epsilon, out)
+                        out
+                    }.getOrElse {
+                        subList
+                    }
+                } else subList
+                for ((i, point) in toRender.withIndex()) {
+                    if (i == 0) {
+                        p.moveTo(point.x, point.y)
+                    } else {
+                        p.lineTo(point.x, point.y)
+                    }
+                }
+                p
+            }
+        }
+        drawablePathState.lastRenderedPath = value
+    }
+
+    val widthPx = with(LocalDensity.current) {
+        drawablePathState.width.toPx()
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -51,11 +101,11 @@ internal fun PathCanvas(
         }) {
             with(drawablePathState) {
                 val paint = paint.apply {
-                    strokeWidth = width.value / zoomPRState.scale
+                    strokeWidth = widthPx / zoomPRState.scale
                 }
                 if (visible) {
                     drawIntoCanvas {
-                        it.nativeCanvas.drawLines(pathData.data, offset, count, paint)
+                        it.nativeCanvas.drawPath(path, paint)
                     }
                 }
             }
@@ -64,8 +114,11 @@ internal fun PathCanvas(
 }
 
 class PathData internal constructor(
-    internal val data: FloatArray
-)
+    internal val data: List<Offset>,
+) {
+    val size: Int
+        get() = data.size
+}
 
 class PathDataBuilder internal constructor(
     private val fullWidth: Int,
@@ -93,28 +146,7 @@ class PathDataBuilder internal constructor(
         /* If there is only one point, the path has no sense */
         if (points.size < 2) return null
 
-        val size = points.size * 4 - 4
-        val lines = FloatArray(size)
-
-        var i = 0
-        var init = true
-        for (point in points) {
-            if (init) {
-                lines[i] = point.x
-                lines[i + 1] = point.y
-                init = false
-                i += 2
-            } else {
-                lines[i] = point.x
-                lines[i + 1] = point.y
-                if (i + 2 >= size) break
-                lines[i + 2] = lines[i]
-                lines[i + 3] = lines[i + 1]
-                i += 4
-            }
-        }
-
-        return PathData(lines)
+        return PathData(points)
     }
 }
 

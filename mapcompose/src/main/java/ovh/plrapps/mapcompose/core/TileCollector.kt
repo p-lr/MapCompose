@@ -8,13 +8,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.math.pow
 
 
 /**
@@ -49,6 +48,8 @@ internal class TileCollector(
     private val bitmapConfig: Bitmap.Config,
     private val tileSize: Int
 ) {
+    @Volatile
+    var isIdle: Boolean = true
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
@@ -64,7 +65,7 @@ internal class TileCollector(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapFlow: Flow<Bitmap>,
+        bitmapPool: Pool<Bitmap>
     ) = coroutineScope {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
@@ -75,7 +76,7 @@ internal class TileCollector(
                 tilesDownloadedFromWorker,
                 tilesOutput,
                 layers,
-                bitmapFlow
+                bitmapPool
             )
         }
         tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
@@ -86,7 +87,7 @@ internal class TileCollector(
         tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapFlow: Flow<Bitmap>
+        bitmapPool: Pool<Bitmap>
     ) = launch(dispatcher) {
 
         val layerIds = layers.map { it.id }
@@ -101,6 +102,10 @@ internal class TileCollector(
         val canvas = Canvas()
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
+        fun getBitmap(): Bitmap {
+            return bitmapPool.get() ?: Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
+        }
+
         suspend fun getBitmap(
             spec: TileSpec,
             layer: Layer,
@@ -111,7 +116,7 @@ internal class TileCollector(
 
             bitmapLoadingOptions.inMutable = true
             bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
-            bitmapLoadingOptions.inSampleSize = spec.subSample
+            bitmapLoadingOptions.inSampleSize = (2.0.pow(spec.subSample)).toInt()
 
             val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
@@ -132,7 +137,7 @@ internal class TileCollector(
             val bitmapForLayers = layers.mapIndexed { index, layer ->
                 async {
                     /* Attempt to reuse an existing bitmap for the first layer */
-                    getBitmap(spec, layer, if (index == 0) bitmapFlow.single() else null)
+                    getBitmap(spec, layer, if (index == 0) getBitmap() else null)
                 }
             }.awaitAll()
 
@@ -176,11 +181,13 @@ internal class TileCollector(
             select<Unit> {
                 tilesDownloadedFromWorker.onReceive {
                     specsBeingProcessed.remove(it)
+                    isIdle = specsBeingProcessed.isEmpty()
                 }
                 tileSpecs.onReceive {
                     if (it !in specsBeingProcessed) {
-                        /* Add it to the list of locations being processed */
+                        /* Add it to the list of specs being processed */
                         specsBeingProcessed.add(it)
+                        isIdle = false
 
                         /* Now download the tile */
                         tilesToDownload.send(it)

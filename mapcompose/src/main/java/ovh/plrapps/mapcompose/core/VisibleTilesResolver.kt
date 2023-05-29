@@ -159,7 +159,7 @@ internal class VisibleTilesResolver(
 
     // internal for test purposes
     internal fun getSubSample(scale: Float): Int {
-        return if (scale < scaleForLevel[0]?.toFloat() ?: Float.MIN_VALUE) {
+        return if (scale < (scaleForLevel[0]?.toFloat() ?: Float.MIN_VALUE)) {
             ceil(ln((scaleForLevel[0] ?: error("")).toDouble() / scale) / ln(2.0)).toInt()
         } else {
             0
