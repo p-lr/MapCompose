@@ -96,6 +96,7 @@ internal class DrawablePathState(
 
     private val _paint = Paint().apply {// Create this only once
         style = Paint.Style.STROKE
+        strokeJoin = Paint.Join.ROUND
     }
 
     val paint: Paint by derivedStateOf(
