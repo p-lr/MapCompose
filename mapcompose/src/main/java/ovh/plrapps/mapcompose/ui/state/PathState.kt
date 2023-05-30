@@ -94,14 +94,18 @@ internal class DrawablePathState(
     var offsetAndCount: IntOffset by mutableStateOf(initializeOffsetAndCount(offset, count))
     var simplify: Float by mutableStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
 
-    private val _paint = Paint()    // Create this only once
+    private val _paint = Paint().apply {// Create this only once
+        style = Paint.Style.STROKE
+    }
 
     val paint: Paint by derivedStateOf(
+        /* Native Paint objects are considered equals when they have the same effect on text
+         * measurement. However, we're mutating some properties which does not affect text
+         * measurement, such as color or strokeCap. */
         policy = neverEqualPolicy()
     ) {
         _paint.apply {
             this.color = this@DrawablePathState.color.toArgb()
-            style = Paint.Style.STROKE
             strokeCap = when (this@DrawablePathState.cap) {
                 Cap.Butt -> Paint.Cap.BUTT
                 Cap.Round -> Paint.Cap.ROUND
