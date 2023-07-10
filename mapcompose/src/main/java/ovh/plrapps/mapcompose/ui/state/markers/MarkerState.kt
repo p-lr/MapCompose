@@ -185,8 +185,8 @@ internal class MarkerState(
         }
     }
 
-    fun onHit(x: Int, y: Int) {
-        markerRenderState.getMarkerForHit(x, y)?.also { markerData ->
+    fun onHit(x: Int, y: Int): Boolean {
+        return markerRenderState.getMarkerForHit(x, y)?.also { markerData ->
             /* If it's a cluster, run the corresponding click behavior. */
             if (markerData.type is MarkerType.Cluster) {
                 val clusterer = clusterersById[markerData.type.clustererId]
@@ -195,7 +195,7 @@ internal class MarkerState(
                 /* It's not a cluster. Invoke user callback, if any. */
                 markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
             }
-        }
+        } != null
     }
 
     private suspend fun renderRegularMarkers() {

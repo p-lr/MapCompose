@@ -422,13 +422,10 @@ internal class ZoomPanRotateState(
         stateChangeListener.onPress()
     }
 
-    override fun onTap(focalPt: Offset, tapConsumed: Boolean) {
-        if (!stateChangeListener.detectsTapGesture()) return
+    override fun onTap(focalPt: Offset) {
+        if (!stateChangeListener.detectsTap()) return
         offsetToRelative(focalPt) { x, y ->
-            /* Also compute pixels coordinates relatively to the layout,  */
-            relativeToAbsolute(x, y) { xPx, yPx ->
-                stateChangeListener.onTap(x, y, xPx, yPx, tapConsumed)
-            }
+            stateChangeListener.onTap(x, y)
         }
     }
 
@@ -447,7 +444,7 @@ internal class ZoomPanRotateState(
         return block(x, y)
     }
 
-    private fun <T> relativeToAbsolute(x: Double, y: Double, block: (Int, Int) -> T): T {
+    private fun <T> relativeToMarkerLayoutCoords(x: Double, y: Double, block: (Int, Int) -> T): T {
         val xFullPx = x * fullWidth * scale
         val yFullPx = y * fullHeight * scale
         val centerX = centroidX * fullWidth * scale
@@ -517,8 +514,8 @@ internal class ZoomPanRotateState(
 
     override fun shouldConsumeTapGesture(focalPt: Offset): Boolean {
         return offsetToRelative(focalPt) { x, y ->
-            relativeToAbsolute(x, y) { xPx, yPx ->
-                stateChangeListener.shouldConsumeTapGesture(xPx, yPx)
+            relativeToMarkerLayoutCoords(x, y) { xPx, yPx ->
+                stateChangeListener.interceptsTap(x, y, xPx, yPx)
             }
         }
     }
@@ -630,8 +627,8 @@ interface ZoomPanRotateStateListener {
     fun onTouchDown()
     fun onPress()
     fun onLongPress(x: Double, y: Double)
-    fun onTap(x: Double, y: Double, xPx: Int, yPx: Int, tapConsumed: Boolean)
-    fun detectsTapGesture(): Boolean
+    fun onTap(x: Double, y: Double)
+    fun detectsTap(): Boolean
     fun detectsLongPress(): Boolean
-    fun shouldConsumeTapGesture(x: Int, y: Int): Boolean
+    fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean
 }

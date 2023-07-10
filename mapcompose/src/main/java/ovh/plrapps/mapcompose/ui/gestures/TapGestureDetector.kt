@@ -32,7 +32,7 @@ internal suspend fun PointerInputScope.detectTapGestures(
     onDoubleTapZoomFling: (centroid: Offset, velocity: Float) -> Unit,
     onLongPress: ((Offset) -> Unit)? = null,
     onPress: suspend PressGestureScope.(Offset) -> Unit = NoPressGesture,
-    onTap: ((Offset, Boolean) -> Unit)? = null,
+    onTap: ((Offset) -> Unit)? = null,
     shouldConsumeTap: ((Offset) -> Boolean)? = null
 ) = coroutineScope {
     // special signal to indicate to the sending side that it shouldn't intercept and consume
@@ -74,20 +74,13 @@ internal suspend fun PointerInputScope.detectTapGestures(
             if (upOrCancel != null) {
                 // tap was successful.
                 val tapConsumed = shouldConsumeTap?.invoke(upOrCancel.position) ?: false
-                if (onDoubleTap == null || tapConsumed) {
-                    onTap?.invoke(
-                        upOrCancel.position,
-                        tapConsumed
-                    ) // no need to check for double-tap.
-                } else {
+
+                if (onDoubleTap != null && !tapConsumed) {
                     // check for second tap
                     val secondDown = awaitSecondDown(upOrCancel)
 
-                    if (secondDown == null) {
-                        onTap?.invoke(
-                            upOrCancel.position,
-                            tapConsumed
-                        ) // no valid second tap started
+                    if (secondDown == null) { // no valid second tap started
+                        onTap?.invoke(upOrCancel.position)
                     } else {
                         // Second tap down detected
                         pressScope.reset()

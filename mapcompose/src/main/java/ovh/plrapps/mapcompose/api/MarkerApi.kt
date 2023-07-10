@@ -34,8 +34,8 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * @param zIndex A marker with larger zIndex will be drawn on top of all markers with smaller zIndex.
  * When markers have the same zIndex, the original order in which the parent placed the marker is used.
  * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
- * is registered using [onMarkerClick], that listener will only be invoked for that marker if
- * [clickable] is true.
+ * is registered using [onMarkerClick], that listener will be invoked for that marker if [clickable]
+ * is true.
  * @param clipShape Was originally introduced to clip the ripple effect when the library had a click
  * listener for each marker. However the library doesn't work like that anymore.
  * As of 2.4.1, this parameter is made no-op, and will be removed in a future major version.
@@ -331,10 +331,8 @@ fun MapState.onMarkerMove(
 
 /**
  * Register a callback which will be invoked when a marker is tapped.
- * Beware that this clicked listener will only be invoked if the marker is clickable, and when the
+ * Beware that this click listener will only be invoked if the marker is clickable, and when the
  * click gesture isn't already consumed by some other composable (like a button).
- * Since double-tap events are also listened (for zoom-in gesture), this click listener is invoked
- * with a slight delay.
  */
 fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     markerState.markerClickCb = cb

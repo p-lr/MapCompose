@@ -23,6 +23,9 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
+ * @param clickable Controls whether the path is clickable. Default is false. If a click listener
+ * is registered using [onPathClick], that listener will be invoked for that marker if [clickable]
+ * is true.
  */
 fun MapState.addPath(
     id: String,
@@ -32,9 +35,10 @@ fun MapState.addPath(
     offset: Int? = null,
     count: Int? = null,
     cap: Cap = Cap.Round,
-    simplify: Float? = null
+    simplify: Float? = null,
+    clickable: Boolean = false
 ) {
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable)
 }
 
 /**
@@ -50,6 +54,9 @@ fun MapState.addPath(
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
+ * @param clickable Controls whether the path is clickable. Default is false. If a click listener
+ * is registered using [onPathClick], that listener will be invoked for that marker if [clickable]
+ * is true.
  * @param builder The builder block from with to add individual points or list of points.
  *
  * @return The [PathData] which can be used for adding other paths.
@@ -62,10 +69,11 @@ fun MapState.addPath(
     count: Int? = null,
     cap: Cap = Cap.Round,
     simplify: Float? = null,
+    clickable: Boolean = false,
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable)
     return pathData
 }
 
@@ -83,6 +91,7 @@ fun MapState.addPath(
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
+ * @param clickable Controls whether the path is clickable.
  */
 fun MapState.updatePath(
     id: String,
@@ -93,9 +102,10 @@ fun MapState.updatePath(
     offset: Int? = null,
     count: Int? = null,
     cap: Cap? = null,
-    simplify: Float? = null
+    simplify: Float? = null,
+    clickable: Boolean? = null
 ) {
-    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify)
+    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable)
 }
 
 /**
@@ -130,4 +140,13 @@ fun MapState.hasPath(id: String): Boolean {
  */
 fun MapState.makePathDataBuilder(): PathDataBuilder {
     return PathDataBuilder(zoomPanRotateState.fullWidth, zoomPanRotateState.fullHeight)
+}
+
+/**
+ * Register a callback which will be invoked when a path is tapped.
+ * Beware that this click listener will only be invoked if the path is clickable, and when the
+ * click gesture isn't already consumed by some other composable (like a button), or a marker.
+ */
+fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
+    pathState.pathClickCb = cb
 }

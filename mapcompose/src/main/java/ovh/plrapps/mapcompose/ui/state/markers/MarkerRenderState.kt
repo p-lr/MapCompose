@@ -125,22 +125,10 @@ internal class MarkerRenderState {
     }
 
     /**
-     * When at least one rendered marker is clickable, we need to get notified on tap gesture.
-     */
-    fun requiresTapGesture(): Boolean {
-        return hasClickable.value
-    }
-
-    fun hasMarkerForHit(xPx: Int, yPx: Int): Boolean {
-        return markers.value.any { markerData ->
-            markerData.isClickable && markerData.contains(xPx, yPx)
-        }
-    }
-
-    /**
      * Get the nearest marker which contains the click position and has the highest z-index.
      */
     fun getMarkerForHit(xPx: Int, yPx: Int): MarkerData? {
+        if (!hasClickable.value) return null
         val candidates = markers.value.filter { markerData ->
             markerData.isClickable && markerData.contains(xPx, yPx)
         }

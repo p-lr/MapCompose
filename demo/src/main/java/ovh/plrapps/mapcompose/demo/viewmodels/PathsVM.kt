@@ -3,12 +3,15 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
+import ovh.plrapps.mapcompose.demo.ui.widgets.Callout
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -23,6 +26,22 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             addLayer(tileStreamProvider)
             shouldLoopScale = true
             enableRotation()
+
+            /**
+             * To demonstrate path click, add a callout.
+             */
+            onPathClick { id, x, y ->
+                var shouldAnimate by mutableStateOf(true)
+                addCallout(
+                    id, x, y,
+                    absoluteOffset = Offset(0f, -20f),
+                ) {
+                    Callout(x, y, title = id, shouldAnimate) {
+                        shouldAnimate = false
+                    }
+                }
+            }
+
             viewModelScope.launch {
                 scrollTo(0.72, 0.3)
             }
@@ -49,7 +68,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             )?.bufferedReader()?.lineSequence()
                 ?: return@with
 
-            addPath(trackName, color = color) {
+            addPath(trackName, color = color, clickable = true) {
                 for (line in lines) {
                     val values = line.split(',').map(String::toDouble)
                     addPoint(values[0], values[1])

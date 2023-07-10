@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RectF
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -15,9 +16,18 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
+import ovh.plrapps.mapcompose.utils.dpToPx
 
 internal class PathState {
     val pathState = mutableStateMapOf<String, DrawablePathState>()
+
+    var pathClickCb: PathClickCb? = null
+
+    private val hasClickable = derivedStateOf {
+        pathState.values.any {
+            it.isClickable
+        }
+    }
 
     fun addPath(
         id: String,
@@ -27,10 +37,11 @@ internal class PathState {
         offset: Int?,
         count: Int?,
         cap: Cap,
-        simplify: Float?
+        simplify: Float?,
+        clickable: Boolean
     ) {
         if (hasPath(id)) return
-        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify)
+        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable)
     }
 
     fun removePath(id: String): Boolean {
@@ -50,7 +61,8 @@ internal class PathState {
         offset: Int? = null,
         count: Int? = null,
         cap: Cap? = null,
-        simplify: Float? = null
+        simplify: Float? = null,
+        clickable: Boolean? = null
     ) {
         pathState[id]?.apply {
             val path = this
@@ -63,11 +75,57 @@ internal class PathState {
             if (offset != null || count != null) {
                 offsetAndCount = coerceOffsetAndCount(offset, count)
             }
+            clickable?.also { path.isClickable = it }
         }
     }
 
     fun hasPath(id: String): Boolean {
         return pathState.keys.contains(id)
+    }
+
+    /**
+     * [x], [y] are the relative coordinates of the tap.
+     */
+    fun onHit(x: Double, y: Double, scale: Float, fullWidth: Int, fullHeight: Int): Boolean {
+        if (!hasClickable.value) return false
+
+        /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
+        val xPx = (x * fullWidth).toFloat()
+        val yPx = (y * fullHeight).toFloat()
+
+        val radius = dpToPx(10f)
+
+        val paint = Paint().apply {
+            style = Paint.Style.STROKE
+            /* The strokeWidth value is set to a fixed value greater than 1f, so that the path
+             * built with getFillPath (see below) is non-hairline. If the path is hairline, the
+             * behavior of Path.op(..) changes. In other words, getFillPath must return true. */
+            strokeWidth = 10f
+        }
+
+        pathState.entries.forEach { (id, pathState) ->
+            val touchPath = Path()
+            touchPath.addCircle(xPx, yPx, radius / scale, Path.Direction.CW)
+
+            val path = pathState.lastRenderedPath
+            val pathCopy = Path()
+            paint.getFillPath(path, pathCopy)
+
+            val intersectOpSuccess = touchPath.op(pathCopy, Path.Op.INTERSECT)
+            val bounds = RectF()
+            if (intersectOpSuccess) {
+                touchPath.computeBounds(bounds, true)
+            }
+
+            if (!bounds.isEmpty) {
+                val xOnPath = (bounds.centerX() / fullWidth).toDouble()
+                val yOnPath = (bounds.centerY() / fullHeight).toDouble()
+
+                pathClickCb?.invoke(id, xOnPath, yOnPath)
+                return true
+            }
+        }
+        return false
     }
 }
 
@@ -79,7 +137,8 @@ internal class DrawablePathState(
     offset: Int?,
     count: Int?,
     cap: Cap,
-    simplify: Float?
+    simplify: Float?,
+    clickable: Boolean,
 ) {
     var lastRenderedPath: Path = Path()
     var pathData by mutableStateOf(pathData)
@@ -87,6 +146,7 @@ internal class DrawablePathState(
     var width: Dp by mutableStateOf(width ?: 4.dp)
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
     var cap: Cap by mutableStateOf(cap)
+    var isClickable: Boolean by mutableStateOf(clickable)
 
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
@@ -152,3 +212,5 @@ internal class DrawablePathState(
         return true
     }
 }
+
+internal typealias PathClickCb = (id: String, x: Double, y: Double) -> Unit
