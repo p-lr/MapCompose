@@ -115,6 +115,9 @@ internal fun PathCanvas(
     }
 }
 
+/**
+ * Once an instance of [PathData] is created, [data] shall not have structural modifications for
+ * subList to work (see [List.subList] doc). */
 class PathData internal constructor(
     internal val data: List<Offset>,
 ) {
@@ -131,6 +134,7 @@ class PathDataBuilder internal constructor(
     /**
      * Add a point to the path. Values are relative coordinates (in range [0f..1f]).
      */
+    @Synchronized
     fun addPoint(x: Double, y: Double) = apply {
         points.add(createOffset(x, y))
     }
@@ -138,17 +142,23 @@ class PathDataBuilder internal constructor(
     /**
      * Add points to the path. Values are relative coordinates (in range [0f..1f]).
      */
+    @Synchronized
     fun addPoints(points: List<Pair<Double, Double>>) = apply {
         this.points += points.map { (x, y) -> createOffset(x, y) }
     }
 
-    private fun createOffset(x: Double, y: Double) = Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat())
+    private fun createOffset(x: Double, y: Double) =
+        Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat())
 
+    @Synchronized
     fun build(): PathData? {
         /* If there is only one point, the path has no sense */
         if (points.size < 2) return null
 
-        return PathData(points)
+        /**
+         * Make a defensive copy (see PathData doc). We don't want structural modifications to
+         * [points] to be visible from the [PathData] instance. */
+        return PathData(points.toList())
     }
 }
 
