@@ -72,7 +72,7 @@ internal class PathState {
             color?.also { path.color = it }
             cap?.also { path.cap = it }
             simplify?.also { path.simplify = it.coerceAtLeast(0f) }
-            if (offset != null || count != null) {
+            if (offset != null || count != null || pathData != null) {
                 offsetAndCount = coerceOffsetAndCount(offset, count)
             }
             clickable?.also { path.isClickable = it }
@@ -187,10 +187,8 @@ internal class DrawablePathState(
      * Ensure that "count" + "offset" shouldn't exceed the path length.
      */
     fun coerceOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
-        val ofst = offset?.coerceIn(0, pathData.data.size) ?: offsetAndCount.x
-        val count = cnt?.coerceIn(
-            0, (pathData.data.size - ofst)
-        ) ?: offsetAndCount.y
+        val ofst = (offset ?: offsetAndCount.x).coerceIn(0, pathData.data.size)
+        val count = (cnt ?: offsetAndCount.y).coerceIn(0, (pathData.data.size - ofst))
         return IntOffset(ofst, count)
     }
 
