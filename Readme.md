@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://mvnrepository.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/ComposeBOM-2023.05.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
+[![](https://img.shields.io/badge/ComposeBOM-2023.06.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
 - Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
@@ -73,7 +73,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.7.1'
+implementation 'ovh.plrapps:mapcompose:2.8.1'
 ```
 
 Starting with v.2.4.1, the library is using the 
