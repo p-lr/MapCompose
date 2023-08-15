@@ -56,7 +56,7 @@ class MapState(
     )
     internal val markerRenderState = MarkerRenderState()
     internal val markerState = MarkerState(scope, markerRenderState)
-    internal val pathState = PathState()
+    internal val pathState = PathState(fullWidth, fullHeight)
     internal val visibleTilesResolver =
         VisibleTilesResolver(
             levelCount = levelCount,
@@ -134,7 +134,7 @@ class MapState(
     override fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean {
         val markerHandled = markerState.onHit(xPx, yPx)
         val pathHandled = if (!markerHandled) {
-            pathState.onHit(x, y, zoomPanRotateState.scale, zoomPanRotateState.fullWidth, zoomPanRotateState.fullHeight)
+            pathState.onHit(x, y, zoomPanRotateState.scale)
         } else false
 
         return markerHandled || pathHandled

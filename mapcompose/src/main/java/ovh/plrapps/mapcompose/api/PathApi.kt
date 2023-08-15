@@ -150,3 +150,11 @@ fun MapState.makePathDataBuilder(): PathDataBuilder {
 fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     pathState.pathClickCb = cb
 }
+
+/**
+ * Checks if a circle centered on ([x], [y]) with a radius of [rangePx] at scale 1 intersects the
+ * path with id = [id].
+ */
+fun MapState.isPathWithinRange(id: String, rangePx: Int, x: Double, y: Double): Boolean {
+    return pathState.isPathWithinRange(id, rangePx, x, y)
+}

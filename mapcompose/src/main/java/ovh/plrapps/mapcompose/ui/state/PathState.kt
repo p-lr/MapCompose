@@ -18,7 +18,10 @@ import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.utils.dpToPx
 
-internal class PathState {
+internal class PathState(
+    val fullWidth: Int,
+    val fullHeight: Int
+) {
     val pathState = mutableStateMapOf<String, DrawablePathState>()
 
     var pathClickCb: PathClickCb? = null
@@ -86,21 +89,21 @@ internal class PathState {
     /**
      * [x], [y] are the relative coordinates of the tap.
      */
-    fun onHit(x: Double, y: Double, scale: Float, fullWidth: Int, fullHeight: Int): Boolean {
+    fun onHit(x: Double, y: Double, scale: Float): Boolean {
         if (!hasClickable.value) return false
 
         /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
         val xPx = (x * fullWidth).toFloat()
         val yPx = (y * fullHeight).toFloat()
 
-        val radius = dpToPx(10f)
+        val radius = dpToPx(12f)
 
         val paint = Paint().apply {
             style = Paint.Style.STROKE
             /* The strokeWidth value is set to a fixed value greater than 1f, so that the path
              * built with getFillPath (see below) is non-hairline. If the path is hairline, the
              * behavior of Path.op(..) changes. In other words, getFillPath must return true. */
-            strokeWidth = 10f
+            strokeWidth = 2f
         }
 
         pathState.entries.forEach { (id, pathState) ->
@@ -126,6 +129,40 @@ internal class PathState {
             }
         }
         return false
+    }
+
+    /**
+     * The scale doesn't matter as all computations are done at scale 1.
+     */
+    fun isPathWithinRange(id: String, rangePx: Int, x: Double, y: Double): Boolean {
+        val drawablePathState = pathState[id] ?: return false
+
+        /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
+        val xPx = (x * fullWidth).toFloat()
+        val yPx = (y * fullHeight).toFloat()
+
+        val paint = Paint().apply {
+            style = Paint.Style.STROKE
+            /* The strokeWidth value is set to a fixed value greater than 1f, so that the path
+             * built with getFillPath (see below) is non-hairline. If the path is hairline, the
+             * behavior of Path.op(..) changes. In other words, getFillPath must return true. */
+            strokeWidth = 2f
+        }
+
+        val touchPath = Path()
+        touchPath.addCircle(xPx, yPx, rangePx.toFloat(), Path.Direction.CW)
+
+        val path = drawablePathState.lastRenderedPath
+        val pathCopy = Path()
+        paint.getFillPath(path, pathCopy)
+
+        val intersectOpSuccess = touchPath.op(pathCopy, Path.Op.INTERSECT)
+        val bounds = RectF()
+        if (intersectOpSuccess) {
+            touchPath.computeBounds(bounds, true)
+        }
+
+        return !bounds.isEmpty
     }
 }
 
