@@ -28,7 +28,7 @@ internal fun PathComposer(
     zoomPRState: ZoomPanRotateState,
     pathState: PathState
 ) {
-    for (path in pathState.pathState.values) {
+    for (path in pathState.pathState.values.sortedBy { it.zIndex }) {
         key(path.id) {
             PathCanvas(modifier, zoomPRState, path)
         }

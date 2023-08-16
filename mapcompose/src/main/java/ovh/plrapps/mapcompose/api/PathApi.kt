@@ -26,6 +26,8 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * @param clickable Controls whether the path is clickable. Default is false. If a click listener
  * is registered using [onPathClick], that listener will be invoked for that marker if [clickable]
  * is true.
+ * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
+ * When paths have the same zIndex, the more recently added path is drawn on top of the others.
  */
 fun MapState.addPath(
     id: String,
@@ -36,9 +38,10 @@ fun MapState.addPath(
     count: Int? = null,
     cap: Cap = Cap.Round,
     simplify: Float? = null,
-    clickable: Boolean = false
+    clickable: Boolean = false,
+    zIndex: Float = 0f,
 ) {
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex)
 }
 
 /**
@@ -57,6 +60,8 @@ fun MapState.addPath(
  * @param clickable Controls whether the path is clickable. Default is false. If a click listener
  * is registered using [onPathClick], that listener will be invoked for that marker if [clickable]
  * is true.
+ * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
+ * When paths have the same zIndex, the more recently added path is drawn on top of the others.
  * @param builder The builder block from with to add individual points or list of points.
  *
  * @return The [PathData] which can be used for adding other paths.
@@ -70,10 +75,11 @@ fun MapState.addPath(
     cap: Cap = Cap.Round,
     simplify: Float? = null,
     clickable: Boolean = false,
+    zIndex: Float = 0f,
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex)
     return pathData
 }
 
@@ -91,6 +97,8 @@ fun MapState.addPath(
  * @param simplify By default, the path is simplified depending on the scale to improve performance.
  * Higher values increase the simplification effect, while a value of 0f effectively disables path
  * simplification. Sensible values a typically in the range [0.5f..2f]. Default value is 1f.
+ * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
+ * When paths have the same zIndex, the more recently added path is drawn on top of the others.
  * @param clickable Controls whether the path is clickable.
  */
 fun MapState.updatePath(
@@ -103,9 +111,10 @@ fun MapState.updatePath(
     count: Int? = null,
     cap: Cap? = null,
     simplify: Float? = null,
-    clickable: Boolean? = null
+    clickable: Boolean? = null,
+    zIndex: Float = 0f,
 ) {
-    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable)
+    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable, zIndex)
 }
 
 /**
@@ -149,6 +158,15 @@ fun MapState.makePathDataBuilder(): PathDataBuilder {
  */
 fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     pathState.pathClickCb = cb
+}
+
+/**
+ * When application code lost reference on a [PathData], this api can be useful to retrieve the
+ * [PathData] instance.
+ * A typical use case is to draw a new path on top or underneath the path with id [id].
+ */
+fun MapState.getPathData(id: String): PathData? {
+    return pathState.pathState[id]?.pathData
 }
 
 /**

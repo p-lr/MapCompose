@@ -41,10 +41,11 @@ internal class PathState(
         count: Int?,
         cap: Cap,
         simplify: Float?,
-        clickable: Boolean
+        clickable: Boolean,
+        zIndex: Float
     ) {
         if (hasPath(id)) return
-        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable)
+        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable, zIndex)
     }
 
     fun removePath(id: String): Boolean {
@@ -65,7 +66,8 @@ internal class PathState(
         count: Int? = null,
         cap: Cap? = null,
         simplify: Float? = null,
-        clickable: Boolean? = null
+        clickable: Boolean? = null,
+        zIndex: Float = 0f
     ) {
         pathState[id]?.apply {
             val path = this
@@ -79,6 +81,7 @@ internal class PathState(
                 offsetAndCount = coerceOffsetAndCount(offset, count)
             }
             clickable?.also { path.isClickable = it }
+            this.zIndex = zIndex
         }
     }
 
@@ -106,7 +109,8 @@ internal class PathState(
             strokeWidth = 2f
         }
 
-        pathState.entries.forEach { (id, pathState) ->
+        for ((id, pathState) in pathState.entries.sortedByDescending { it.value.zIndex }) {
+            if (!pathState.isClickable) continue
             val touchPath = Path()
             touchPath.addCircle(xPx, yPx, radius / scale, Path.Direction.CW)
 
@@ -176,6 +180,7 @@ internal class DrawablePathState(
     cap: Cap,
     simplify: Float?,
     clickable: Boolean,
+    zIndex: Float
 ) {
     var lastRenderedPath: Path = Path()
     var pathData by mutableStateOf(pathData)
@@ -184,6 +189,7 @@ internal class DrawablePathState(
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
     var cap: Cap by mutableStateOf(cap)
     var isClickable: Boolean by mutableStateOf(clickable)
+    var zIndex: Float by mutableStateOf(zIndex)
 
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
