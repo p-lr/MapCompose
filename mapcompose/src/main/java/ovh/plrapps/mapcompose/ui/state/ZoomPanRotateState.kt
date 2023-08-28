@@ -24,6 +24,8 @@ internal class ZoomPanRotateState(
     rotation: AngleDegree,
     gestureConfiguration: GestureConfiguration
 ) : GestureListener, LayoutSizeChangeListener {
+    internal var tilePaddingX = 0
+    internal var tilePaddingY = 0
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
 
@@ -595,8 +597,8 @@ internal class ZoomPanRotateState(
     }
 
     private fun recalculateMinScale() {
-        val minScaleX = layoutSize.width.toFloat() / fullWidth
-        val minScaleY = layoutSize.height.toFloat() / fullHeight
+        val minScaleX = layoutSize.width.toFloat() / (fullWidth - tilePaddingX * 2)
+        val minScaleY = layoutSize.height.toFloat() / (fullHeight - tilePaddingY * 2)
         val mode = minimumScaleMode
         minScale = when (mode) {
             Fit -> min(minScaleX, minScaleY)

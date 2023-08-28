@@ -28,6 +28,7 @@ internal fun TileCanvas(
     isFilteringBitmap: () -> Boolean,
 ) {
     val dest = remember { Rect() }
+    val src = remember { Rect() }
     val paint: Paint = remember {
         Paint().apply {
             isAntiAlias = false
@@ -62,13 +63,37 @@ internal fun TileCanvas(
                 val b = t + tileScaled
                 dest.set(l, t, r, b)
 
+                val paddingX = (zoomPRState.tilePaddingX * scaleForLevel).toInt()
+                val paddingY = (zoomPRState.tilePaddingY * scaleForLevel).toInt()
+                val stripLeft = paddingX in tile.col * tileSize .. (tile.col + 1) * tileSize
+                val stripRight = (zoomPRState.fullWidth - zoomPRState.tilePaddingX) in tile.col * tileScaled .. (tile.col + 1) * tileScaled
+                val stripTop = paddingY in tile.row * tileSize .. (tile.row + 1) * tileSize
+                val stripBottom = (zoomPRState.fullHeight - zoomPRState.tilePaddingY) in tile.row * tileScaled .. (tile.row + 1) * tileScaled
+                val sub = if (stripLeft || stripRight || stripTop || stripBottom) {
+                    val stripX = paddingX % tileSize
+                    val stripY = paddingY % tileSize
+                    src.set(
+                        if (stripLeft) stripX else 0,
+                        if (stripTop) stripY else 0,
+                        if (stripRight) tileSize - stripX else tileSize,
+                        if (stripBottom) tileSize - stripY else tileSize
+                    )
+                    dest.set(
+                        if (stripLeft) (l + stripX * tileScaled.toFloat() / tileSize).toInt() else l,
+                        if (stripTop) (t + stripY * tileScaled.toFloat() / tileSize).toInt() else t,
+                        if (stripRight) (r - stripX * tileScaled.toFloat() / tileSize).toInt() else r,
+                        if (stripBottom) (b - stripY * tileScaled.toFloat() / tileSize).toInt() else b
+                    )
+                    src
+                } else null
+
                 val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
 
                 paint.alpha = (tile.alpha * 255).toInt()
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 
                 drawIntoCanvas {
-                    it.nativeCanvas.drawBitmap(tile.bitmap, null, dest, paint)
+                    it.nativeCanvas.drawBitmap(tile.bitmap, sub, dest, paint)
                 }
 
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */

@@ -440,6 +440,11 @@ suspend fun MapState.stopAnimations() {
     zoomPanRotateState.stopAnimations()
 }
 
+fun MapState.setTilePadding(paddingX: Int, paddingY: Int) {
+    zoomPanRotateState.tilePaddingX = paddingX
+    zoomPanRotateState.tilePaddingY = paddingY
+}
+
 /**
  * Returns the visible area expressed in normalized coordinates. This does not account for rotation.
  * When the map isn't rotated, the obtained [BoundingBox] represents the same area as the one

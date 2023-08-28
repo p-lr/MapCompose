@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.setTilePadding
 import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -19,6 +20,7 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
                 addLayer(tileStreamProvider)
                 shouldLoopScale = true
                 enableRotation()
+                setTilePadding(paddingX = 685, paddingY = 1760)
             }
     )
 }
