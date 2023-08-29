@@ -170,9 +170,37 @@ fun MapState.getPathData(id: String): PathData? {
 }
 
 /**
+ * Loops on all paths and snapshots each path properties.
+ * Useful to loop and update paths depending on their properties.
+ */
+fun MapState.allPaths(block: MapState.(properties: PathProperties) -> Unit) {
+    pathState.pathState.values.forEach { drawablePathState ->
+        val properties = PathProperties(
+            id = drawablePathState.id,
+            visible = drawablePathState.visible,
+            width = drawablePathState.width,
+            color = drawablePathState.color,
+            offset = drawablePathState.offsetAndCount.x,
+            count = drawablePathState.offsetAndCount.y,
+            cap = drawablePathState.cap,
+            simplify = drawablePathState.simplify,
+            clickable = drawablePathState.isClickable,
+            zIndex = drawablePathState.zIndex
+        )
+        block(properties)
+    }
+}
+
+/**
  * Checks if a circle centered on ([x], [y]) with a radius of [rangePx] at scale 1 intersects the
  * path with id = [id].
  */
 fun MapState.isPathWithinRange(id: String, rangePx: Int, x: Double, y: Double): Boolean {
     return pathState.isPathWithinRange(id, rangePx, x, y)
 }
+
+data class PathProperties(
+    val id: String, val visible: Boolean, val width: Dp, val color: Color, val offset: Int,
+    val count: Int, val cap: Cap, val simplify: Float, val clickable: Boolean,
+    val zIndex: Float
+)

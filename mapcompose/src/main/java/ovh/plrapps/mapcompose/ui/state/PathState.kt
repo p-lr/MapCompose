@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
+import ovh.plrapps.mapcompose.ui.paths.generatePath
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.utils.dpToPx
 
@@ -156,6 +157,17 @@ internal class PathState(
         val touchPath = Path()
         touchPath.addCircle(xPx, yPx, rangePx.toFloat(), Path.Direction.CW)
 
+        if (drawablePathState.lastRenderedPath.isEmpty) {
+            /* Do this synchronously the first time only. This is necessary when the MapState is
+             * used without any rendering. */
+            drawablePathState.lastRenderedPath = generatePath(
+                pathData = drawablePathState.pathData,
+                offset = drawablePathState.offsetAndCount.x,
+                count = drawablePathState.offsetAndCount.y,
+                simplify = drawablePathState.simplify,
+                scale = 1f
+            )
+        }
         val path = drawablePathState.lastRenderedPath
         val pathCopy = Path()
         paint.getFillPath(path, pathCopy)

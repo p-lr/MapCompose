@@ -49,33 +49,18 @@ internal fun PathCanvas(
         keys = arrayOf(
             pathData,
             offsetAndCount,
-            zoomPRState.scale,   // epsilon might be equal to 0
+            zoomPRState.scale,
             drawablePathState.simplify
         )
     ) {
         value = withContext(Dispatchers.Default) {
-            val p = Path()
-            val offset = offsetAndCount.x
-            val count = offsetAndCount.y
-            val epsilon = drawablePathState.simplify / zoomPRState.scale
-            val subList = pathData.data.subList(offset, offset + count)
-            val toRender = if (epsilon > 0f) {
-                runCatching {
-                    val out = mutableListOf<Offset>()
-                    ramerDouglasPeucker(subList, epsilon, out)
-                    out
-                }.getOrElse {
-                    subList
-                }
-            } else subList
-            for ((i, point) in toRender.withIndex()) {
-                if (i == 0) {
-                    p.moveTo(point.x, point.y)
-                } else {
-                    p.lineTo(point.x, point.y)
-                }
-            }
-            p
+            generatePath(
+                pathData = pathData,
+                offset = offsetAndCount.x,
+                count = offsetAndCount.y,
+                simplify = drawablePathState.simplify,
+                scale = zoomPRState.scale
+            )
         }
         drawablePathState.lastRenderedPath = value
     }
@@ -160,5 +145,28 @@ class PathDataBuilder internal constructor(
          * [points] to be visible from the [PathData] instance. */
         return PathData(points.toList())
     }
+}
+
+internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float): Path {
+    val p = Path()
+    val epsilon = simplify / scale
+    val subList = pathData.data.subList(offset, offset + count)
+    val toRender = if (epsilon > 0f) {
+        runCatching {
+            val out = mutableListOf<Offset>()
+            ramerDouglasPeucker(subList, epsilon, out)
+            out
+        }.getOrElse {
+            subList
+        }
+    } else subList
+    for ((i, point) in toRender.withIndex()) {
+        if (i == 0) {
+            p.moveTo(point.x, point.y)
+        } else {
+            p.lineTo(point.x, point.y)
+        }
+    }
+    return p
 }
 
