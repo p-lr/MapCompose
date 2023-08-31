@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -126,7 +127,7 @@ fun ScaleIndicator(
 }
 
 class ScaleIndicatorController(val widthPx: Int, initScale: Float) {
-    var widthRatio by mutableStateOf(0f)
+    var widthRatio by mutableFloatStateOf(0f)
     var scaleText by mutableStateOf("")
 
     private var snapScale: Float = initScale

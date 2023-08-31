@@ -54,22 +54,22 @@ internal class ZoomPanRotateState(
     internal var isFlingZoomEnabled by mutableStateOf(true)
 
     /* Only source of truth. Don't mutate directly, use appropriate setScale(), setRotation(), etc. */
-    internal var scale by mutableStateOf(scale)
-    internal var rotation: AngleDegree by mutableStateOf(rotation)
-    internal var scrollX by mutableStateOf(0f)
-    internal var scrollY by mutableStateOf(0f)
+    internal var scale by mutableFloatStateOf(scale)
+    internal var rotation: AngleDegree by mutableFloatStateOf(rotation)
+    internal var scrollX by mutableFloatStateOf(0f)
+    internal var scrollY by mutableFloatStateOf(0f)
 
-    internal var pivotX: Double by mutableStateOf(0.0)
-    internal var pivotY: Double by mutableStateOf(0.0)
+    internal var pivotX: Double by mutableDoubleStateOf(0.0)
+    internal var pivotY: Double by mutableDoubleStateOf(0.0)
 
-    internal var centroidX: Double by mutableStateOf(0.0)
-    internal var centroidY: Double by mutableStateOf(0.0)
+    internal var centroidX: Double by mutableDoubleStateOf(0.0)
+    internal var centroidY: Double by mutableDoubleStateOf(0.0)
 
     internal var layoutSize by mutableStateOf(IntSize(0, 0))
 
     internal var visibleAreaPadding = VisibleAreaPadding(0, 0, 0, 0)
 
-    internal var minScale by mutableStateOf(0f)   // should only be changed through MinimumScaleMode
+    internal var minScale by mutableFloatStateOf(0f)   // should only be changed through MinimumScaleMode
 
     var maxScale = maxScale
         set(value) {
