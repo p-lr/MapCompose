@@ -68,7 +68,7 @@ internal class PathState(
         cap: Cap? = null,
         simplify: Float? = null,
         clickable: Boolean? = null,
-        zIndex: Float = 0f
+        zIndex: Float? = null
     ) {
         pathState[id]?.apply {
             val path = this
@@ -82,7 +82,7 @@ internal class PathState(
                 offsetAndCount = coerceOffsetAndCount(offset, count)
             }
             clickable?.also { path.isClickable = it }
-            this.zIndex = zIndex
+            zIndex?.also { path.zIndex = it }
         }
     }
 

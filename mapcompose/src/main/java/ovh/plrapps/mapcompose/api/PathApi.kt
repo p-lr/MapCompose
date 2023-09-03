@@ -112,7 +112,7 @@ fun MapState.updatePath(
     cap: Cap? = null,
     simplify: Float? = null,
     clickable: Boolean? = null,
-    zIndex: Float = 0f,
+    zIndex: Float? = null,
 ) {
     pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable, zIndex)
 }
