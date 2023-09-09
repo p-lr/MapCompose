@@ -6,12 +6,12 @@ sealed class MinimumScaleMode
  * Limit the minimum scale to no less than what would be required to fit inside the container.
  * This is the default mode.
  */
-object Fit : MinimumScaleMode()
+data object Fit : MinimumScaleMode()
 
 /**
  * Limit the minimum scale to no less than what would be required to fill the container.
  */
-object Fill : MinimumScaleMode()
+data object Fill : MinimumScaleMode()
 
 /**
  * Force a specific minimum scale.
