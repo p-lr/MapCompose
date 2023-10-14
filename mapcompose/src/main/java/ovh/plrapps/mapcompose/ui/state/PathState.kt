@@ -5,6 +5,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -201,13 +202,13 @@ internal class DrawablePathState(
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
     var cap: Cap by mutableStateOf(cap)
     var isClickable: Boolean by mutableStateOf(clickable)
-    var zIndex: Float by mutableStateOf(zIndex)
+    var zIndex: Float by mutableFloatStateOf(zIndex)
 
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.
      */
     var offsetAndCount: IntOffset by mutableStateOf(initializeOffsetAndCount(offset, count))
-    var simplify: Float by mutableStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
+    var simplify: Float by mutableFloatStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
 
     private val _paint = Paint().apply {// Create this only once
         style = Paint.Style.STROKE

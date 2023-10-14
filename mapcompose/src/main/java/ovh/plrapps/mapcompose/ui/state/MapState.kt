@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.ui.state
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
@@ -80,7 +81,7 @@ class MapState(
     }
     private val viewport = Viewport()
     internal var preloadingPadding: Int = initialValues.preloadingPadding
-    internal val tileSize by mutableStateOf(tileSize)
+    internal val tileSize by mutableIntStateOf(tileSize)
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var tapCb: LayoutTapCb? = null

@@ -76,12 +76,6 @@ internal class MarkerState(
         } ?: false
     }
 
-    fun removeAll(predicate: (MarkerData) -> Boolean) {
-        markers.value = markers.value.filterNot {
-            predicate(it)
-        }
-    }
-
     fun removeAllMarkers() {
         markers.value = emptyList()
     }
@@ -196,6 +190,12 @@ internal class MarkerState(
                 markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
             }
         } != null
+    }
+
+    private fun removeAll(predicate: (MarkerData) -> Boolean) {
+        markers.value = markers.value.filterNot {
+            predicate(it)
+        }
     }
 
     private suspend fun renderRegularMarkers() {

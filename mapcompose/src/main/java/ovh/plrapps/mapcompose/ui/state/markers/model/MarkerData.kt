@@ -2,6 +2,8 @@ package ovh.plrapps.mapcompose.ui.state.markers.model
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
@@ -22,14 +24,14 @@ internal class MarkerData(
     val type: MarkerType,
     val c: @Composable () -> Unit
 ) {
-    var x: Double by mutableStateOf(x)
-    var y: Double by mutableStateOf(y)
+    var x: Double by mutableDoubleStateOf(x)
+    var y: Double by mutableDoubleStateOf(y)
     var isDraggable by mutableStateOf(false)
     var dragInterceptor: DragInterceptor? by mutableStateOf(null)
     var isClickable: Boolean by mutableStateOf(clickable)
     var clickableAreaScale by mutableStateOf(clickableAreaScale)
     var clickableAreaCenterOffset by mutableStateOf(clickableAreaCenterOffset)
-    var zIndex: Float by mutableStateOf(zIndex)
+    var zIndex: Float by mutableFloatStateOf(zIndex)
     var isConstrainedInBounds by mutableStateOf(isConstrainedInBounds)
 
     var measuredWidth = 0

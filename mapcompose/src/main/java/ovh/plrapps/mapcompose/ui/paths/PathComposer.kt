@@ -110,6 +110,7 @@ class PathData internal constructor(
         get() = data.size
 }
 
+@Suppress("unused")
 class PathDataBuilder internal constructor(
     private val fullWidth: Int,
     private val fullHeight: Int
