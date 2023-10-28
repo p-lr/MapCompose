@@ -11,7 +11,7 @@ sealed interface ClusterClickBehavior
 /**
  * Zoom-in to reveal a subset or all markers of the cluster.
  */
-object Default : ClusterClickBehavior
+data object Default : ClusterClickBehavior
 
 /**
  * When a cluster a clicked, the provided [onClick] callback is invoked.
@@ -28,7 +28,7 @@ data class ClusterData(val x: Double, val y: Double, val markers: List<MarkerDat
 /**
  * Clusters aren't clickable
  */
-object None : ClusterClickBehavior
+data object None : ClusterClickBehavior
 
 /**
  * Convert public api type to internal type.

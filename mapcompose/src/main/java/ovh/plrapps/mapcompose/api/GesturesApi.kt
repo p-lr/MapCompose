@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import androidx.compose.ui.platform.ViewConfiguration

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.ui.state.MapState
