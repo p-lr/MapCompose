@@ -16,11 +16,11 @@ fun LayersDemoSimple(
     modifier: Modifier = Modifier, viewModel: LayersVM = viewModel()
 ) {
     var satelliteSliderValue by remember {
-        mutableFloatStateOf(0.8f)
+        mutableFloatStateOf(1f)
     }
 
     var ignV2SliderValue by remember {
-        mutableFloatStateOf(0.8f)
+        mutableFloatStateOf(0.5f)
     }
 
     Column {

@@ -65,7 +65,7 @@ internal class TileCollector(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapPool: Pool<Bitmap>
+        bitmapPool: BitmapPool
     ) = coroutineScope {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
@@ -87,7 +87,7 @@ internal class TileCollector(
         tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapPool: Pool<Bitmap>
+        bitmapPool: BitmapPool
     ) = launch(dispatcher) {
 
         val layerIds = layers.map { it.id }
@@ -102,12 +102,14 @@ internal class TileCollector(
         val canvas = Canvas()
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
-        fun getBitmap(): Bitmap {
-            return bitmapPool.get() ?: Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
+        fun getBitmapFromPoolOrCreate(subSamplingRatio: Int): Bitmap {
+            val subSampledSize = tileSize / subSamplingRatio
+            return bitmapPool.get(bitmapWidth = subSampledSize) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfig)
         }
 
         suspend fun getBitmap(
             spec: TileSpec,
+            subSamplingRatio: Int,
             layer: Layer,
             inBitmapForced: Bitmap? = null
         ): BitmapForLayer {
@@ -116,7 +118,7 @@ internal class TileCollector(
 
             bitmapLoadingOptions.inMutable = true
             bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
-            bitmapLoadingOptions.inSampleSize = (2.0.pow(spec.subSample)).toInt()
+            bitmapLoadingOptions.inSampleSize = subSamplingRatio
 
             val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
 
@@ -134,10 +136,16 @@ internal class TileCollector(
                 continue
             }
 
+            val subSamplingRatio = 2.0.pow(spec.subSample).toInt()
             val bitmapForLayers = layers.mapIndexed { index, layer ->
                 async {
-                    /* Attempt to reuse an existing bitmap for the first layer */
-                    getBitmap(spec, layer, if (index == 0) getBitmap() else null)
+                    getBitmap(
+                        spec = spec,
+                        subSamplingRatio = subSamplingRatio,
+                        layer = layer,
+                        /* Attempt to reuse an existing bitmap for the first layer */
+                        inBitmapForced = if (index == 0) getBitmapFromPoolOrCreate(subSamplingRatio) else null
+                    )
                 }
             }.awaitAll()
 

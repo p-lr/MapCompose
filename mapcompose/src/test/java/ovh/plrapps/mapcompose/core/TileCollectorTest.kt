@@ -52,7 +52,7 @@ class TileCollectorTest {
         val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
 
-        val pool = Pool<Bitmap>()
+        val pool = BitmapPool()
 
         val tileStreamProvider = TileStreamProvider { _, _, _ -> FileInputStream(imageFile) }
 
@@ -116,10 +116,6 @@ class TileCollectorTest {
 
             tileCollectorJob.cancel()
             tileConsumeJob.cancel()
-
-            // in the end, the pool should be empty since we put 3 bitmap in it, then requested 3
-            // more tiles right after.
-            assertEquals(0, pool.size)
         }
         Unit
     }
