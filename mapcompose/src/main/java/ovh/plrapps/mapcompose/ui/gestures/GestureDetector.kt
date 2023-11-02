@@ -6,6 +6,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.VelocityTracker1D
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
@@ -46,7 +47,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
         awaitFirstDown(requireUnconsumed = false)
         onTouchDown()
         val panVelocityTracker = VelocityTracker()
-        val zoomVelocityTracker = VelocityTracker()
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
         var canceled: Boolean
         var centroidTwoFingers = Offset.Unspecified
         var lastTwoFingersDown = 0L
@@ -87,7 +88,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                      * two fingers are down */
                     if (event.changes.size == 2 && event.changes.fastAll { it.pressed }) {
                         val size = event.calculateCentroidSize(useCurrent = true)
-                        zoomVelocityTracker.addPosition(uptime, Offset(size, size))
+                        zoomVelocityTracker.addDataPoint(uptime, size)
                         lastTwoFingersDown = uptime
                     }
 
@@ -128,7 +129,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
         if (zoom != 1f && pastTouchSlop) {
             val velocity = runCatching {
                 zoomVelocityTracker.calculateVelocity()
-            }.getOrDefault(Velocity.Zero).x
+            }.getOrDefault(0f)
 
             if (abs(velocity) > flingZoomThreshold
                 && centroidTwoFingers != Offset.Unspecified
