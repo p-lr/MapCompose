@@ -11,7 +11,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ovh.plrapps.mapcompose.ui.layout.Fill
@@ -374,7 +381,7 @@ private fun ZoomPanRotateState.calculateScrollTo(
     val visibleAreaMargin = visibleAreaPadding.getRotatedMargin(rotation)
 
     val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
-    val availableViewportWidth = (layoutSize.width - visibleAreaMargin.x) * ( 1 - padding.x)
+    val availableViewportWidth = (layoutSize.width - visibleAreaMargin.x) * (1 - padding.x)
     val horizontalScale = availableViewportWidth / areaWidth
 
     val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
@@ -563,5 +570,26 @@ data class VisibleArea(
  * when creating the instance. */
 internal val visibleAreaMutex = Mutex()
 internal var visibleArea: VisibleArea? = null
+
+/**
+ * The [MapState] is considered idle when its [centroidX] and [centroidY] haven't changed for at
+ * least [thresholdMillis] which is 400ms by default.
+ */
+fun MapState.idleStateFlow(thresholdMillis: Long = 400): StateFlow<Boolean> {
+    val stateFlow = MutableStateFlow(true)
+
+    scope.launch {
+        snapshotFlow {
+            "$centroidX,$centroidY"
+        }.map {
+            stateFlow.value = false
+        }.collectLatest {
+            delay(thresholdMillis)
+            stateFlow.value = true
+        }
+    }
+
+    return stateFlow.asStateFlow()
+}
 
 
