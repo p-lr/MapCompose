@@ -576,7 +576,7 @@ internal var visibleArea: VisibleArea? = null
  * least [thresholdMillis] which is 400ms by default.
  */
 fun MapState.idleStateFlow(thresholdMillis: Long = 400): StateFlow<Boolean> {
-    val stateFlow = MutableStateFlow(true)
+    val stateFlow = MutableStateFlow(false)
 
     scope.launch {
         snapshotFlow {
