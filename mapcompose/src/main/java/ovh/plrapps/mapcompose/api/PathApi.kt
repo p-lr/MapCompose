@@ -153,11 +153,27 @@ fun MapState.makePathDataBuilder(): PathDataBuilder {
 
 /**
  * Register a callback which will be invoked when a path is tapped.
- * Beware that this click listener will only be invoked if the path is clickable, and when the
- * click gesture isn't already consumed by some other composable (like a button), or a marker.
+ * Beware that this click listener will only be invoked if at least one path is clickable, and when
+ * the click gesture isn't already consumed by some other composable (like a button), or a marker.
+ * When several paths hover each other, the [cb] is invoked for the path with the highest z-index.
  */
 fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
     pathState.pathClickCb = cb
+}
+
+/**
+ * Register a callback which will be invoked when one or more paths are tapped.
+ * /!\ This api takes precedence over the [onPathClick] api. When set, the callback registered with
+ * [onPathClick] isn't invoked.
+ * Beware that this click listener will only be invoked if at least one path is clickable, and when
+ * the click gesture isn't already consumed by some other composable (like a button), or a marker.
+ * When several paths hover each other, the [cb] is invoked for all paths, regardless of their
+ * z-index.
+ *
+ * To unregister the callback, set it to null.
+ */
+fun MapState.onPathClickTraversal(cb: ((ids: List<String>, x: Double, y: Double) -> Unit)?) {
+    pathState.pathClickTraversalCb = cb
 }
 
 /**

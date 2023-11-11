@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.generatePath
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
+import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.dpToPx
 
 internal class PathState(
@@ -27,6 +28,7 @@ internal class PathState(
     val pathState = mutableStateMapOf<String, DrawablePathState>()
 
     var pathClickCb: PathClickCb? = null
+    var pathClickTraversalCb: PathClickTraversalCb? = null
 
     private val hasClickable = derivedStateOf {
         pathState.values.any {
@@ -111,6 +113,8 @@ internal class PathState(
             strokeWidth = 2f
         }
 
+        val traversalClickIds = mutableListOf<String>()
+        var traversalClickPosition: Point? = null
         for ((id, pathState) in pathState.entries.sortedByDescending { it.value.zIndex }) {
             if (!pathState.isClickable) continue
             val touchPath = Path()
@@ -130,11 +134,29 @@ internal class PathState(
                 val xOnPath = (bounds.centerX() / fullWidth).toDouble()
                 val yOnPath = (bounds.centerY() / fullHeight).toDouble()
 
-                pathClickCb?.invoke(id, xOnPath, yOnPath)
-                return true
+                if (pathClickTraversalCb == null) {
+                    pathClickCb?.invoke(id, xOnPath, yOnPath)
+                    return true
+                } else {
+                    traversalClickIds.add(id)
+                    if (traversalClickPosition == null) {
+                        traversalClickPosition = Point(xOnPath, yOnPath)
+                    }
+                }
             }
         }
-        return false
+
+        return if (pathClickTraversalCb == null) {
+            false
+        } else {
+            if (traversalClickIds.isNotEmpty()) {
+                val pos = traversalClickPosition
+                if (pos != null) {  // should always be true
+                    pathClickTraversalCb?.invoke(traversalClickIds, pos.x, pos.y)
+                }
+                true
+            } else false
+        }
     }
 
     /**
@@ -268,3 +290,4 @@ internal class DrawablePathState(
 }
 
 internal typealias PathClickCb = (id: String, x: Double, y: Double) -> Unit
+internal typealias PathClickTraversalCb = (ids: List<String>, x: Double, y: Double) -> Unit
