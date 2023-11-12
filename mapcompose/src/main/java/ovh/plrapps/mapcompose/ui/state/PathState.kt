@@ -2,7 +2,6 @@ package ovh.plrapps.mapcompose.ui.state
 
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RectF
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -10,16 +9,18 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
-import ovh.plrapps.mapcompose.ui.paths.generatePath
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.dpToPx
+import ovh.plrapps.mapcompose.utils.getDistance
+import ovh.plrapps.mapcompose.utils.getNearestPoint
 
 internal class PathState(
     val fullWidth: Int,
@@ -105,34 +106,29 @@ internal class PathState(
 
         val radius = dpToPx(12f)
 
-        val paint = Paint().apply {
-            style = Paint.Style.STROKE
-            /* The strokeWidth value is set to a fixed value greater than 1f, so that the path
-             * built with getFillPath (see below) is non-hairline. If the path is hairline, the
-             * behavior of Path.op(..) changes. In other words, getFillPath must return true. */
-            strokeWidth = 2f
-        }
-
         val traversalClickIds = mutableListOf<String>()
         var traversalClickPosition: Point? = null
         for ((id, pathState) in pathState.entries.sortedByDescending { it.value.zIndex }) {
-            if (!pathState.isClickable) continue
-            val touchPath = Path()
-            touchPath.addCircle(xPx, yPx, radius / scale, Path.Direction.CW)
-
-            val path = pathState.lastRenderedPath
-            val pathCopy = Path()
-            paint.getFillPath(path, pathCopy)
-
-            val intersectOpSuccess = touchPath.op(pathCopy, Path.Op.INTERSECT)
-            val bounds = RectF()
-            if (intersectOpSuccess) {
-                touchPath.computeBounds(bounds, true)
+            var d = Float.MAX_VALUE
+            var nearestP1: Offset? = null
+            var nearestP2: Offset? = null
+            for (i in 0 until pathState.pathData.data.size) {
+                if (i + 1 == pathState.pathData.data.size) break
+                val p1 = pathState.pathData.data[i]
+                val p2 = pathState.pathData.data[i + 1]
+                val dist = getDistance(xPx, yPx, p1.x, p1.y, p2.x, p2.y)
+                if (dist < radius / scale && dist < d) {
+                    d = dist
+                    nearestP1 = p1
+                    nearestP2 = p2
+                }
             }
 
-            if (!bounds.isEmpty) {
-                val xOnPath = (bounds.centerX() / fullWidth).toDouble()
-                val yOnPath = (bounds.centerY() / fullHeight).toDouble()
+            if (nearestP1 != null && nearestP2 != null) {
+                val nearest =
+                    getNearestPoint(xPx, yPx, nearestP1.x, nearestP1.y, nearestP2.x, nearestP2.y)
+                val xOnPath = (nearest.x / fullWidth).toDouble()
+                val yOnPath = (nearest.y / fullHeight).toDouble()
 
                 if (pathClickTraversalCb == null) {
                     pathClickCb?.invoke(id, xOnPath, yOnPath)
@@ -169,39 +165,17 @@ internal class PathState(
         val xPx = (x * fullWidth).toFloat()
         val yPx = (y * fullHeight).toFloat()
 
-        val paint = Paint().apply {
-            style = Paint.Style.STROKE
-            /* The strokeWidth value is set to a fixed value greater than 1f, so that the path
-             * built with getFillPath (see below) is non-hairline. If the path is hairline, the
-             * behavior of Path.op(..) changes. In other words, getFillPath must return true. */
-            strokeWidth = 2f
+        for (i in 0 until drawablePathState.pathData.data.size) {
+            if (i + 1 == drawablePathState.pathData.data.size) break
+            val p1 = drawablePathState.pathData.data[i]
+            val p2 = drawablePathState.pathData.data[i + 1]
+            val dist = getDistance(xPx, yPx, p1.x, p1.y, p2.x, p2.y)
+            if (dist < rangePx) {
+                return true
+            }
         }
 
-        val touchPath = Path()
-        touchPath.addCircle(xPx, yPx, rangePx.toFloat(), Path.Direction.CW)
-
-        if (drawablePathState.lastRenderedPath.isEmpty) {
-            /* Do this synchronously the first time only. This is necessary when the MapState is
-             * used without any rendering. */
-            drawablePathState.lastRenderedPath = generatePath(
-                pathData = drawablePathState.pathData,
-                offset = drawablePathState.offsetAndCount.x,
-                count = drawablePathState.offsetAndCount.y,
-                simplify = drawablePathState.simplify,
-                scale = 1f
-            )
-        }
-        val path = drawablePathState.lastRenderedPath
-        val pathCopy = Path()
-        paint.getFillPath(path, pathCopy)
-
-        val intersectOpSuccess = touchPath.op(pathCopy, Path.Op.INTERSECT)
-        val bounds = RectF()
-        if (intersectOpSuccess) {
-            touchPath.computeBounds(bounds, true)
-        }
-
-        return !bounds.isEmpty
+        return false
     }
 }
 
