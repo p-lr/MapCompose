@@ -20,7 +20,9 @@ import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.dpToPx
 import ovh.plrapps.mapcompose.utils.getDistance
+import ovh.plrapps.mapcompose.utils.getDistanceFromBox
 import ovh.plrapps.mapcompose.utils.getNearestPoint
+import ovh.plrapps.mapcompose.utils.isInsideBox
 
 internal class PathState(
     val fullWidth: Int,
@@ -105,10 +107,23 @@ internal class PathState(
         val yPx = (y * fullHeight).toFloat()
 
         val radius = dpToPx(12f)
+        val threshold = radius / scale
 
         val traversalClickIds = mutableListOf<String>()
         var traversalClickPosition: Point? = null
         for ((id, pathState) in pathState.entries.sortedByDescending { it.value.zIndex }) {
+
+            val bb = pathState.pathData.boundingBox ?: continue
+            val (topLeft, bottomRight) = bb
+            val (xMin, yMin) = topLeft
+            val (xMax, yMax) = bottomRight
+
+            /* Don't compute the nearest point for a point outside of the bounding box and with a
+             * distance to the bounding box greater than the threshold */
+            if (!isInsideBox(xPx, yPx, xMin, xMax, yMin, yMax) && getDistanceFromBox(xPx, yPx, xMin, xMax, yMin, yMax) > threshold) {
+                continue
+            }
+
             var d = Float.MAX_VALUE
             var nearestP1: Offset? = null
             var nearestP2: Offset? = null
@@ -117,7 +132,7 @@ internal class PathState(
                 val p1 = pathState.pathData.data[i]
                 val p2 = pathState.pathData.data[i + 1]
                 val dist = getDistance(xPx, yPx, p1.x, p1.y, p2.x, p2.y)
-                if (dist < radius / scale && dist < d) {
+                if (dist < threshold && dist < d) {
                     d = dist
                     nearestP1 = p1
                     nearestP2 = p2

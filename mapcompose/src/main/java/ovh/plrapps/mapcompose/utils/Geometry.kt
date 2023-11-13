@@ -57,3 +57,17 @@ internal fun getNearestPoint(
 
     return Offset(xx, yy)
 }
+
+internal fun isInsideBox(x: Float, y: Float, xMin: Float, xMax: Float, yMin: Float, yMax: Float): Boolean {
+    return x in xMin..xMax && y in yMin..yMax
+}
+
+internal fun getDistanceFromBox(x: Float, y: Float, xMin: Float, xMax: Float, yMin: Float, yMax: Float): Float {
+    return when {
+        x < xMin -> getDistance(x, y, xMin, yMin, xMin, yMax)
+        x > xMax -> getDistance(x, y, xMax, yMin, xMax, yMax)
+        y < yMin -> getDistance(x, y, xMin, yMin, xMax, yMin)
+        y > yMax -> getDistance(x, y, xMin, yMax, xMax, yMax)
+        else -> 0f // inside
+    }
+}

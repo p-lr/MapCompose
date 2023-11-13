@@ -105,6 +105,7 @@ internal fun PathCanvas(
  * subList to work (see [List.subList] doc). */
 class PathData internal constructor(
     internal val data: List<Offset>,
+    internal val boundingBox: Pair<Offset, Offset>?     // topLeft, bottomRight
 ) {
     val size: Int
         get() = data.size
@@ -116,6 +117,10 @@ class PathDataBuilder internal constructor(
     private val fullHeight: Int
 ) {
     private val points = mutableListOf<Offset>()
+    private var xMin: Float? = null
+    private var xMax: Float? = null
+    private var yMin: Float? = null
+    private var yMax: Float? = null
 
     /**
      * Add a point to the path. Values are relative coordinates (in range [0f..1f]).
@@ -133,18 +138,37 @@ class PathDataBuilder internal constructor(
         this.points += points.map { (x, y) -> createOffset(x, y) }
     }
 
-    private fun createOffset(x: Double, y: Double) =
-        Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat())
+    private fun createOffset(x: Double, y: Double): Offset {
+        return Offset((x * fullWidth).toFloat(), (y * fullHeight).toFloat()).also {
+            updateBoundingBox(it.x, it.y)
+        }
+    }
+
+    private fun updateBoundingBox(x: Float, y: Float) {
+        xMin = xMin?.coerceAtMost(x) ?: x
+        xMax = xMax?.coerceAtLeast(x) ?: x
+        yMin = yMin?.coerceAtMost(y) ?: y
+        yMax = yMax?.coerceAtLeast(y) ?: y
+    }
 
     @Synchronized
     fun build(): PathData? {
         /* If there is only one point, the path has no sense */
         if (points.size < 2) return null
 
+        val _xMin = xMin
+        val _xMax = xMax
+        val _yMin = yMin
+        val _yMax = yMax
+
+        val bb = if (_xMin != null && _xMax != null && _yMin != null && _yMax != null) {
+            Pair(Offset(_xMin, _yMin), Offset(_xMax, _yMax))
+        } else null
+
         /**
          * Make a defensive copy (see PathData doc). We don't want structural modifications to
          * [points] to be visible from the [PathData] instance. */
-        return PathData(points.toList())
+        return PathData(points.toList(), bb)
     }
 }
 
