@@ -89,7 +89,7 @@ class TileCollectorTest {
         }
 
         /* Start collecting tiles */
-        val tileCollector = TileCollector(1, Bitmap.Config.RGB_565, tileSize)
+        val tileCollector = TileCollector(1, BitmapConfiguration(Bitmap.Config.RGB_565, 2), tileSize)
         val tileCollectorJob = launch {
             tileCollector.collectTiles(visibleTileLocationsChannel, tilesOutput, layers, pool)
         }

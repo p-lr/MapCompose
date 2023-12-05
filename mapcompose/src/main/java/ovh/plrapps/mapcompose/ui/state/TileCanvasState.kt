@@ -51,9 +51,9 @@ internal class TileCanvasState(
     internal var colorFilterProvider: ColorFilterProvider? by mutableStateOf(null)
 
     private val bitmapConfig = if (highFidelityColors) {
-        Bitmap.Config.ARGB_8888
+        BitmapConfiguration(Bitmap.Config.ARGB_8888, 4)
     } else {
-        Bitmap.Config.RGB_565
+        BitmapConfiguration(Bitmap.Config.RGB_565, 2)
     }
 
     private val lastVisible: VisibleTiles?

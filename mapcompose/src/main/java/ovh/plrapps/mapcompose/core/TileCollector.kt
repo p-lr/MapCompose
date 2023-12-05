@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
+import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -45,7 +46,7 @@ import kotlin.math.pow
  */
 internal class TileCollector(
     private val workerCount: Int,
-    private val bitmapConfig: Bitmap.Config,
+    private val bitmapConfiguration: BitmapConfiguration,
     private val tileSize: Int
 ) {
     @Volatile
@@ -93,18 +94,19 @@ internal class TileCollector(
         val layerIds = layers.map { it.id }
         val bitmapLoadingOptionsForLayer = layerIds.associateWith {
             BitmapFactory.Options().apply {
-                inPreferredConfig = bitmapConfig
+                inPreferredConfig = bitmapConfiguration.bitmapConfig
             }
         }
         val bitmapForLayer = layerIds.associateWith {
-            Bitmap.createBitmap(tileSize, tileSize, bitmapConfig)
+            Bitmap.createBitmap(tileSize, tileSize, bitmapConfiguration.bitmapConfig)
         }
         val canvas = Canvas()
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
         fun getBitmapFromPoolOrCreate(subSamplingRatio: Int): Bitmap {
             val subSampledSize = tileSize / subSamplingRatio
-            return bitmapPool.get(bitmapWidth = subSampledSize) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfig)
+            val allocationByteCount = subSampledSize * subSampledSize * bitmapConfiguration.bytesPerPixel
+            return bitmapPool.get(allocationByteCount) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfiguration.bitmapConfig)
         }
 
         suspend fun getBitmap(
@@ -169,7 +171,8 @@ internal class TileCollector(
                 spec.col,
                 spec.subSample,
                 layerIds,
-                layers.map { it.alpha }).apply {
+                layers.map { it.alpha }
+            ).apply {
                 this.bitmap = resultBitmap
             }
             tilesOutput.send(tile)
@@ -227,5 +230,7 @@ internal class TileCollector(
     }
     private val dispatcher = executor.asCoroutineDispatcher()
 }
+
+internal data class BitmapConfiguration(val bitmapConfig: Config, val bytesPerPixel: Int)
 
 private data class BitmapForLayer(val bitmap: Bitmap?, val layer: Layer)

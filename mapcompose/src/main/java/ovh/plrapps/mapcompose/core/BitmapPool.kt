@@ -7,32 +7,32 @@ import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A pool of bitmaps, internally split by bitmap width.
+ * A pool of bitmaps, internally split by allocation byte count.
  * This class is thread-safe.
  */
 internal class BitmapPool {
     private val pool: ConcurrentHashMap<Int, Channel<Bitmap>> = ConcurrentHashMap<Int, Channel<Bitmap>>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun get(bitmapWidth: Int): Bitmap? {
-        if (pool[bitmapWidth]?.isEmpty == true) {
+    fun get(allocationByteCount: Int): Bitmap? {
+        if (pool[allocationByteCount]?.isEmpty == true) {
             return null
         }
-        return pool[bitmapWidth]?.tryReceive()?.getOrNull()
+        return pool[allocationByteCount]?.tryReceive()?.getOrNull()
     }
 
     fun put(b: Bitmap) {
-        val bitmapWidth = b.width
+        val allocationByteCount = b.allocationByteCount
         /* Since we can't use pool.computeIfAbsent() on api below 24, we're using manual
          * synchronization */
-        if (!pool.containsKey(bitmapWidth)) {
+        if (!pool.containsKey(allocationByteCount)) {
             synchronized(pool) {
-                if (!pool.containsKey(bitmapWidth)) {
-                    pool[bitmapWidth] = Channel(UNLIMITED)
+                if (!pool.containsKey(allocationByteCount)) {
+                    pool[allocationByteCount] = Channel(UNLIMITED)
                 }
             }
         }
 
-        pool[bitmapWidth]?.trySend(b)
+        pool[allocationByteCount]?.trySend(b)
     }
 }
