@@ -70,11 +70,14 @@ class TileCollectorTest {
         fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
             for (tile in tileChannel) {
                 println("received tile ${tile.zoom}-${tile.row}-${tile.col}")
-                assertTrue(tile.bitmap.sameAs(bitmapReference))
+                val bitmap = tile.bitmap
+                assertTrue(tile.bitmap?.sameAs(bitmapReference) ?: false)
 
                 /* Add bitmap to the pool only if they are from level 0 */
                 if (tile.zoom == 0) {
-                    pool.put(tile.bitmap)
+                    if (bitmap != null) {
+                        pool.put(bitmap)
+                    }
                 }
             }
         }

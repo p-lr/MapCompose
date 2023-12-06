@@ -20,7 +20,7 @@ internal data class Tile(
     val layerIds: List<String>,
     val opacities: List<Float>
 ) {
-    lateinit var bitmap: Bitmap
+    var bitmap: Bitmap? = null
     var alpha: Float by mutableStateOf(0f)
 }
 

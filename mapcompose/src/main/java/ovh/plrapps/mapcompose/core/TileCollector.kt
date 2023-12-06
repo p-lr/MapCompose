@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
+import java.io.InputStream
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -109,10 +110,10 @@ internal class TileCollector(
             return bitmapPool.get(allocationByteCount) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfiguration.bitmapConfig)
         }
 
-        suspend fun getBitmap(
-            spec: TileSpec,
+        fun getBitmap(
             subSamplingRatio: Int,
             layer: Layer,
+            inputStream: InputStream,
             inBitmapForced: Bitmap? = null
         ): BitmapForLayer {
             val bitmapLoadingOptions =
@@ -122,11 +123,9 @@ internal class TileCollector(
             bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
             bitmapLoadingOptions.inSampleSize = subSamplingRatio
 
-            val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
-
-            return i.use {
+            return inputStream.use {
                 val bitmap = runCatching {
-                    BitmapFactory.decodeStream(i, null, bitmapLoadingOptions)
+                    BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
                 }.getOrNull()
                 BitmapForLayer(bitmap, layer)
             }
@@ -141,21 +140,39 @@ internal class TileCollector(
             val subSamplingRatio = 2.0.pow(spec.subSample).toInt()
             val bitmapForLayers = layers.mapIndexed { index, layer ->
                 async {
-                    getBitmap(
-                        spec = spec,
-                        subSamplingRatio = subSamplingRatio,
-                        layer = layer,
-                        /* Attempt to reuse an existing bitmap for the first layer */
-                        inBitmapForced = if (index == 0) getBitmapFromPoolOrCreate(subSamplingRatio) else null
-                    )
+                    val i = layer.tileStreamProvider.getTileStream(spec.row, spec.col, spec.zoom)
+                    if (i != null) {
+                        getBitmap(
+                            subSamplingRatio = subSamplingRatio,
+                            layer = layer,
+                            inputStream = i,
+                            /* Attempt to reuse an existing bitmap for the first layer */
+                            inBitmapForced = if (index == 0) getBitmapFromPoolOrCreate(
+                                subSamplingRatio
+                            ) else null
+                        )
+                    } else BitmapForLayer(null, layer)
                 }
             }.awaitAll()
 
             val resultBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: run {
-                /* If the decoding of the first layer failed, skip the rest */
                 tilesDownloaded.send(spec)
+                /* When the decoding failed or if there's nothing to decode, then send back the Tile
+                 * just as in normal processing, so that the actor which submits tiles specs to the
+                 * collector knows that this tile has been processed and does not immediately
+                 * re-sends the same spec. */
+                tilesOutput.send(
+                    Tile(
+                        spec.zoom,
+                        spec.row,
+                        spec.col,
+                        spec.subSample,
+                        layerIds,
+                        layers.map { it.alpha }
+                    )
+                )
                 null
-            } ?: continue
+            } ?: continue // If the decoding of the first layer failed, skip the rest
 
             canvas.setBitmap(resultBitmap)
 

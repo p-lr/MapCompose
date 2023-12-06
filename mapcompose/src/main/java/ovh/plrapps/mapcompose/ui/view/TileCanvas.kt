@@ -53,6 +53,7 @@ internal fun TileCanvas(
             paint.isFilterBitmap = isFilteringBitmap()
 
             for (tile in tilesToRender) {
+                val bitmap = tile.bitmap ?: continue
                 val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                     ?: continue
                 val tileScaled = (tileSize / scaleForLevel).toInt()
@@ -68,7 +69,7 @@ internal fun TileCanvas(
                 paint.colorFilter = colorFilter?.asAndroidColorFilter()
 
                 drawIntoCanvas {
-                    it.nativeCanvas.drawBitmap(tile.bitmap, null, dest, paint)
+                    it.nativeCanvas.drawBitmap(bitmap, null, dest, paint)
                 }
 
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */

@@ -399,8 +399,9 @@ internal class TileCanvasState(
      * After a [Tile] is no longer visible, recycle its Bitmap and Paint if possible, for later use.
      */
     private fun Tile.recycle() {
-        if (bitmap.isMutable) {
-            bitmapPool.put(bitmap)
+        val b = bitmap ?: return
+        if (b.isMutable) {
+            bitmapPool.put(b)
         }
         alpha = 0f
     }
