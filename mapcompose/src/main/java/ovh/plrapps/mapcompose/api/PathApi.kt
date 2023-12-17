@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.Dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
+import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -28,6 +29,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * is true.
  * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
  * When paths have the same zIndex, the more recently added path is drawn on top of the others.
+ * @param pattern The dash pattern. By default, no dash effect is applied.
  */
 fun MapState.addPath(
     id: String,
@@ -40,8 +42,9 @@ fun MapState.addPath(
     simplify: Float? = null,
     clickable: Boolean = false,
     zIndex: Float = 0f,
+    pattern: List<PatternItem>? = null
 ) {
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
 }
 
 /**
@@ -62,6 +65,7 @@ fun MapState.addPath(
  * is true.
  * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
  * When paths have the same zIndex, the more recently added path is drawn on top of the others.
+ * @param pattern The dash pattern. By default, no dash effect is applied.
  * @param builder The builder block from with to add individual points or list of points.
  *
  * @return The [PathData] which can be used for adding other paths.
@@ -76,10 +80,11 @@ fun MapState.addPath(
     simplify: Float? = null,
     clickable: Boolean = false,
     zIndex: Float = 0f,
+    pattern: List<PatternItem>? = null,
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex)
+    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
     return pathData
 }
 
@@ -100,6 +105,7 @@ fun MapState.addPath(
  * @param zIndex A path with larger zIndex will be drawn on top of paths with smaller zIndex.
  * When paths have the same zIndex, the more recently added path is drawn on top of the others.
  * @param clickable Controls whether the path is clickable.
+ * @param pattern The dash pattern. By default, no dash effect is applied.
  */
 fun MapState.updatePath(
     id: String,
@@ -113,8 +119,9 @@ fun MapState.updatePath(
     simplify: Float? = null,
     clickable: Boolean? = null,
     zIndex: Float? = null,
+    pattern: List<PatternItem>? = null
 ) {
-    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable, zIndex)
+    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
 }
 
 /**
@@ -213,6 +220,15 @@ fun MapState.allPaths(block: MapState.(properties: PathProperties) -> Unit) {
  */
 fun MapState.isPathWithinRange(id: String, rangePx: Int, x: Double, y: Double): Boolean {
     return pathState.isPathWithinRange(id, rangePx, x, y)
+}
+
+/**
+ * Removes the dash effect of a path.
+ */
+fun MapState.removePathPattern(id: String) {
+    pathState.pathState[id]?.apply {
+        pattern = null
+    }
 }
 
 data class PathProperties(

@@ -1,5 +1,6 @@
 package ovh.plrapps.mapcompose.ui.paths
 
+import android.graphics.DashPathEffect
 import android.graphics.Path
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -8,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
 import ovh.plrapps.mapcompose.ui.state.PathState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
@@ -69,6 +72,12 @@ internal fun PathCanvas(
         drawablePathState.width.toPx()
     }
 
+    val dashPathEffect = remember(drawablePathState.pattern, widthPx, zoomPRState.scale) {
+        drawablePathState.pattern?.let {
+            makePathEffect(it, strokeWidthPx = widthPx, scale = zoomPRState.scale)
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -89,6 +98,7 @@ internal fun PathCanvas(
             with(drawablePathState) {
                 val paint = paint.apply {
                     strokeWidth = widthPx / zoomPRState.scale
+                    pathEffect = dashPathEffect
                 }
                 if (visible) {
                     drawIntoCanvas {
@@ -195,3 +205,85 @@ internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify:
     return p
 }
 
+internal fun makePathEffect(pattern: List<PatternItem>, strokeWidthPx: Float, scale: Float): DashPathEffect? {
+    val data = makeIntervals(pattern, strokeWidthPx, scale) ?: return null
+    return DashPathEffect(data.intervals, data.phase)
+}
+
+internal fun concatGap(pattern: List<PatternItem>): List<PatternItem> {
+    return buildList {
+        var gap = 0f
+        for (item in pattern) {
+            if (item is PatternItem.Gap) {
+                gap += item.lengthPx
+            } else {
+                if (gap > 0f) {
+                    add(PatternItem.Gap(gap))
+                }
+                gap = 0f
+                add(item)
+            }
+        }
+        if (gap > 0f) {
+            add(PatternItem.Gap(gap))
+        }
+    }
+}
+
+internal fun makeIntervals(pattern: List<PatternItem>, strokeWidthPx: Float, scale: Float): DashPathEffectData? {
+    if (pattern.isEmpty()) return null
+
+    // First, concat gaps
+    val concat = concatGap(pattern)
+
+    var phase = 0f
+    val firstItem = concat.firstOrNull() ?: return null
+    val trimmed = if (firstItem is PatternItem.Gap) {
+        phase = firstItem.lengthPx
+        /* If first item is a gap, remember it as phase and move it to then end of the pattern and
+         * re-concat since the original last item may also be a gap. */
+        concatGap(concat.subList(1, concat.size) + firstItem)
+    } else {
+        concat
+    }
+
+    // If the pattern only contained a gap, ignore the pattern
+    if (trimmed.isEmpty()) return null
+
+    fun MutableList<Float>.addOffInterval(prev: PatternItem) {
+        if (prev is PatternItem.Gap) {
+            add((strokeWidthPx + prev.lengthPx) / scale)
+        } else {
+            add(strokeWidthPx / scale)
+        }
+    }
+
+    val intervals: FloatArray = buildList {
+        var previousItem: PatternItem? = null
+        // At this stage, trimmed starts either with a Dot or a Dash
+        for (item in trimmed) {
+            val toAdd = when (item) {
+                is PatternItem.Dash -> item.lengthPx / scale
+                PatternItem.Dot -> 1f
+                is PatternItem.Gap -> null
+            }
+
+            if (toAdd != null) {
+                /* If previous item isn't null, then we're adding a value at an odd index */
+                previousItem?.also { prev ->
+                    addOffInterval(prev)
+                }
+                add(toAdd)
+            }
+            previousItem = item
+        }
+
+        previousItem?.also { prev ->
+            addOffInterval(prev)
+        }
+    }.toFloatArray()
+
+    return DashPathEffectData(intervals, phase)
+}
+
+internal class DashPathEffectData(val intervals: FloatArray, val phase: Float)

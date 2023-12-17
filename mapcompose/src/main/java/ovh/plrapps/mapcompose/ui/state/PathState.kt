@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
+import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.utils.Point
 import ovh.plrapps.mapcompose.utils.dpToPx
 import ovh.plrapps.mapcompose.utils.getDistance
@@ -49,10 +50,11 @@ internal class PathState(
         cap: Cap,
         simplify: Float?,
         clickable: Boolean,
-        zIndex: Float
+        zIndex: Float,
+        pattern: List<PatternItem>?
     ) {
         if (hasPath(id)) return
-        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable, zIndex)
+        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
     }
 
     fun removePath(id: String): Boolean {
@@ -74,7 +76,8 @@ internal class PathState(
         cap: Cap? = null,
         simplify: Float? = null,
         clickable: Boolean? = null,
-        zIndex: Float? = null
+        zIndex: Float? = null,
+        pattern: List<PatternItem>? = null
     ) {
         pathState[id]?.apply {
             val path = this
@@ -89,6 +92,7 @@ internal class PathState(
             }
             clickable?.also { path.isClickable = it }
             zIndex?.also { path.zIndex = it }
+            pattern?.also { path.pattern = it }
         }
     }
 
@@ -204,7 +208,8 @@ internal class DrawablePathState(
     cap: Cap,
     simplify: Float?,
     clickable: Boolean,
-    zIndex: Float
+    zIndex: Float,
+    pattern: List<PatternItem>?
 ) {
     var lastRenderedPath: Path = Path()
     var pathData by mutableStateOf(pathData)
@@ -214,6 +219,7 @@ internal class DrawablePathState(
     var cap: Cap by mutableStateOf(cap)
     var isClickable: Boolean by mutableStateOf(clickable)
     var zIndex: Float by mutableFloatStateOf(zIndex)
+    var pattern: List<PatternItem>? by mutableStateOf(pattern)
 
     /**
      * The "count" is the number of values in [pathData] to process, after skipping "offset" of them.

@@ -13,7 +13,10 @@ import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.widgets.Callout
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
+import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
+import ovh.plrapps.mapcompose.ui.paths.model.PatternItem.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.dpToPx
 
 /**
  * In this sample, we add "tracks" to the map. The tracks are rendered as paths using MapCompose.
@@ -52,7 +55,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         /* Add tracks */
         addTrack("track1", Color(0xFF448AFF))
         addTrack("track2", Color(0xFFFFFF00))
-        addTrack("track3") // 0xFF448AFF is the default color
+        addTrack("track3", pattern = listOf(Dash(dpToPx(8f)), Gap(dpToPx(4f))))
     }
 
     /**
@@ -61,14 +64,16 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
      * points or a list of points.
      * Here, since we're getting points from a sequence, we add them on the fly using [PathDataBuilder.addPoint].
      */
-    private fun addTrack(trackName: String, color: Color? = null) {
+    private fun addTrack(trackName: String, color: Color? = null, pattern: List<PatternItem>? = null) {
         with(state) {
             val lines = getApplication<Application>().applicationContext.assets?.open(
                 "tracks/$trackName.txt"
             )?.bufferedReader()?.lineSequence()
                 ?: return@with
 
-            addPath(trackName, color = color, clickable = true) {
+            addPath(
+                id = trackName, color = color, clickable = true, pattern = pattern
+            ) {
                 for (line in lines) {
                     val values = line.split(',').map(String::toDouble)
                     addPoint(values[0], values[1])
