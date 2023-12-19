@@ -3,9 +3,9 @@
 [![](https://img.shields.io/badge/ComposeBOM-2023.10.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- New path dash pattern api: ability to define a sequence made of dash, dot, and gap.
 - Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
 - New gestures added (zoom fling, double tap to zoom, two fingers tap)
-- Marker clustering and lazy-loading. New examples added to the demo app
 
 # MapCompose
 
@@ -73,7 +73,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.9.8'
+implementation 'ovh.plrapps:mapcompose:2.10.0'
 ```
 
 Starting with v.2.4.1, the library is using the 
