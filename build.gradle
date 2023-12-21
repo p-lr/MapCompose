@@ -1,9 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        kotlin_version = "1.9.10"
+        kotlin_version = "1.9.21"
         coroutine_version = '1.7.3'
-        compose_compiler_version = '1.5.3'
+        compose_compiler_version = '1.5.7'
     }
     repositories {
         google()
