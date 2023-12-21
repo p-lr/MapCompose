@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /**
- * A [Tile] is defined by its coordinates in the "pyramid". But a [Tile] is sub-sampled when the
+ * A [Tile] is defined by its coordinates in the "pyramid". A [Tile] is sub-sampled when the
  * scale becomes lower than the scale of the lowest level. To reflect that, there is [subSample]
- * property which is a positive integer (can be 0). If [subSample] is equal to 0, it means that the
- * [bitmap] of the tile is full scale. If [subSample] is 1, the [bitmap] is sub-sampled and its size
- * is half the original bitmap (the one at the lowest level), and so on.
+ * property which is a positive integer (can be 0). When [subSample] equals 0, the [bitmap] of the
+ * tile is full scale. When [subSample] equals 1, the [bitmap] is sub-sampled and its size is half
+ * the original bitmap (the one at the lowest level), and so on.
  */
 internal data class Tile(
     val zoom: Int,
