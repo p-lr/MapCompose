@@ -14,6 +14,7 @@ import ovh.plrapps.mapcompose.core.GestureConfiguration
 import ovh.plrapps.mapcompose.core.Viewport
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
 import ovh.plrapps.mapcompose.core.throttle
+import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.MinimumScaleMode
 import ovh.plrapps.mapcompose.ui.state.markers.MarkerRenderState
@@ -133,9 +134,18 @@ class MapState(
     override fun detectsLongPress(): Boolean = longPressCb != null
 
     override fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean {
-        val markerHandled = markerState.onHit(xPx, yPx)
+        val markerHandled = markerState.onHit(xPx, yPx, hitType = HitType.Click)
         val pathHandled = if (!markerHandled) {
-            pathState.onHit(x, y, zoomPanRotateState.scale)
+            pathState.onHit(x, y, zoomPanRotateState.scale, hitType = HitType.Click)
+        } else false
+
+        return markerHandled || pathHandled
+    }
+
+    override fun interceptsLongPress(x: Double, y: Double, xPx: Int, yPx: Int): Boolean {
+        val markerHandled = markerState.onHit(xPx, yPx, hitType = HitType.LongPress)
+        val pathHandled = if (!markerHandled) {
+            pathState.onHit(x, y, zoomPanRotateState.scale, hitType = HitType.LongPress)
         } else false
 
         return markerHandled || pathHandled

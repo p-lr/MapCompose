@@ -51,7 +51,6 @@ fun Callout(
         Modifier
             .alpha(animVal)
             .padding(10.dp)
-            .size(150.dp, 70.dp)
             .graphicsLayer {
                 scaleX = animVal
                 scaleY = animVal

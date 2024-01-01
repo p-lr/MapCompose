@@ -31,7 +31,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             enableRotation()
 
             /**
-             * To demonstrate path click, add a callout.
+             * Demonstrates path click.
              */
             onPathClick { id, x, y ->
                 var shouldAnimate by mutableStateOf(true)
@@ -39,7 +39,22 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                     id, x, y,
                     absoluteOffset = Offset(0f, -20f),
                 ) {
-                    Callout(x, y, title = id, shouldAnimate) {
+                    Callout(x, y, title = "Click on $id", shouldAnimate) {
+                        shouldAnimate = false
+                    }
+                }
+            }
+
+            /**
+             * Demonstrates path long-press.
+             */
+            onPathLongPress { id, x, y ->
+                var shouldAnimate by mutableStateOf(true)
+                addCallout(
+                    id, x, y,
+                    absoluteOffset = Offset(0f, -20f),
+                ) {
+                    Callout(x, y, title = "Long-press on $id", shouldAnimate) {
                         shouldAnimate = false
                     }
                 }
@@ -64,7 +79,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
      * points or a list of points.
      * Here, since we're getting points from a sequence, we add them on the fly using [PathDataBuilder.addPoint].
      */
-    private fun addTrack(trackName: String, color: Color? = null, pattern: List<PatternItem>? = null) {
+    private fun addTrack(trackName: String, color: Color? = null, pattern: List<PatternItem>? = null, clickable: Boolean = true) {
         with(state) {
             val lines = getApplication<Application>().applicationContext.assets?.open(
                 "tracks/$trackName.txt"

@@ -520,6 +520,14 @@ internal class ZoomPanRotateState(
         }
     }
 
+    override fun shouldConsumeLongPress(focalPt: Offset): Boolean {
+        return offsetToRelative(focalPt) { x, y ->
+            relativeToMarkerLayoutCoords(x, y) { xPx, yPx ->
+                stateChangeListener.interceptsLongPress(x, y, xPx, yPx)
+            }
+        }
+    }
+
     override fun onSizeChanged(composableScope: CoroutineScope, size: IntSize) {
         scope = composableScope
 
@@ -631,4 +639,5 @@ interface ZoomPanRotateStateListener {
     fun detectsTap(): Boolean
     fun detectsLongPress(): Boolean
     fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean
+    fun interceptsLongPress(x: Double, y: Double, xPx: Int, yPx: Int): Boolean
 }

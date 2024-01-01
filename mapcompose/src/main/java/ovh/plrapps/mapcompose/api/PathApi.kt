@@ -8,6 +8,7 @@ import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
+import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -169,9 +170,19 @@ fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 }
 
 /**
+ * Register a callback which will be invoked when a path is long-clicked.
+ * Beware that the provided callback will only be invoked if at least one path is clickable, and when
+ * the gesture isn't already consumed by some other composable (like a button), or a marker.
+ * When several paths hover each other, the [cb] is invoked for the path with the highest z-index.
+ */
+fun MapState.onPathLongPress(cb: (id: String, x: Double, y: Double) -> Unit) {
+    pathState.pathLongPressCb = cb
+}
+
+/**
  * Register a callback which will be invoked when one or more paths are tapped.
- * /!\ This api takes precedence over the [onPathClick] api. When set, the callback registered with
- * [onPathClick] isn't invoked.
+ * /!\ This api takes precedence over the [onPathClick] and [onPathLongPress] apis. For example,
+ * when [onPathHitTraversal] is set, the callback registered with [onPathClick] isn't invoked.
  * Beware that this click listener will only be invoked if at least one path is clickable, and when
  * the click gesture isn't already consumed by some other composable (like a button), or a marker.
  * When several paths hover each other, the [cb] is invoked for all paths, regardless of their
@@ -179,8 +190,8 @@ fun MapState.onPathClick(cb: (id: String, x: Double, y: Double) -> Unit) {
  *
  * To unregister the callback, set it to null.
  */
-fun MapState.onPathClickTraversal(cb: ((ids: List<String>, x: Double, y: Double) -> Unit)?) {
-    pathState.pathClickTraversalCb = cb
+fun MapState.onPathHitTraversal(cb: ((ids: List<String>, x: Double, y: Double, hitType: HitType) -> Unit)?) {
+    pathState.pathHitTraversalCb = cb
 }
 
 /**

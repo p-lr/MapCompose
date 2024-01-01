@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.markers.Clusterer
 import ovh.plrapps.mapcompose.ui.markers.LazyLoader
+import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
@@ -19,7 +20,8 @@ internal class MarkerState(
     private val markerRenderState: MarkerRenderState
 ) {
     private val markers = MutableStateFlow<List<MarkerData>>(emptyList())
-    internal var markerClickCb: MarkerClickCb? = null
+    internal var markerClickCb: MarkerHitCb? = null
+    internal var markerLongPressCb: MarkerHitCb? = null
     internal var markerMoveCb: MarkerMoveCb? = null
 
     private val clusterersById = mutableMapOf<String, Clusterer>()
@@ -179,15 +181,18 @@ internal class MarkerState(
         }
     }
 
-    fun onHit(x: Int, y: Int): Boolean {
+    fun onHit(x: Int, y: Int, hitType: HitType): Boolean {
         return markerRenderState.getMarkerForHit(x, y)?.also { markerData ->
             /* If it's a cluster, run the corresponding click behavior. */
-            if (markerData.type is MarkerType.Cluster) {
+            if (markerData.type is MarkerType.Cluster && hitType == HitType.Click) {
                 val clusterer = clusterersById[markerData.type.clustererId]
                 clusterer?.onPlaceableClick(markerData)
             } else {
                 /* It's not a cluster. Invoke user callback, if any. */
-                markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
+                when (hitType) {
+                    HitType.Click -> markerClickCb?.invoke(markerData.id, markerData.x, markerData.y)
+                    HitType.LongPress -> markerLongPressCb?.invoke(markerData.id, markerData.x, markerData.y)
+                }
             }
         } != null
     }

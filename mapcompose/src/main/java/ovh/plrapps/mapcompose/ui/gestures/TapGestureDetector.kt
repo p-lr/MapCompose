@@ -29,8 +29,12 @@ private val NoPressGesture: suspend PressGestureScope.(Offset) -> Unit = { }
 /**
  * A modified version of [detectTapGestures] from the framework, with the following differences:
  * - can take [shouldConsumeTap] callback which is invoked to check whether a tap should be consumed.
+ * - can take [shouldConsumeLongPress] callback which is invoked to check whether a long-press should
+ * be consumed.
  * When [shouldConsumeTap] returns true, [onTap] isn't invoked and the gesture ends there without
  * waiting for [ViewConfiguration.doubleTapMinTimeMillis].
+ * When a long-press gesture is detected, [shouldConsumeLongPress] is invoked, and [onLongPress] is
+ * invoked only when the long-press isn't consumed.
  * - takes a [onDoubleTapZoom] callback for one finger zooming by double tapping but not releasing
  * on the second tap, and then sliding the finger up to zoom out, or down to zoom in.
  * Consequently, this gesture detector doesn't try to detect a long-press after the
@@ -43,7 +47,8 @@ internal suspend fun PointerInputScope.detectTapGestures(
     onLongPress: ((Offset) -> Unit)? = null,
     onPress: suspend PressGestureScope.(Offset) -> Unit = NoPressGesture,
     onTap: ((Offset) -> Unit)? = null,
-    shouldConsumeTap: ((Offset) -> Boolean)? = null
+    shouldConsumeTap: ((Offset) -> Boolean)? = null,
+    shouldConsumeLongPress: ((Offset) -> Boolean) ? = null
 ) = coroutineScope {
     // special signal to indicate to the sending side that it shouldn't intercept and consume
     // cancel/up events as we're only require down events
@@ -81,7 +86,10 @@ internal suspend fun PointerInputScope.detectTapGestures(
                 }
             }
         } catch (_: PointerEventTimeoutCancellationException) {
-            onLongPress?.invoke(down.position)
+            val longPressConsumed = shouldConsumeLongPress?.invoke(down.position) ?: false
+            if (!longPressConsumed) {
+                onLongPress?.invoke(down.position)
+            }
             consumeUntilUp()
             pressScope.release()
         }

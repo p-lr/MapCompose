@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
@@ -32,7 +33,8 @@ internal class PathState(
     val pathState = mutableStateMapOf<String, DrawablePathState>()
 
     var pathClickCb: PathClickCb? = null
-    var pathClickTraversalCb: PathClickTraversalCb? = null
+    var pathHitTraversalCb: PathHitTraversalCb? = null
+    var pathLongPressCb: PathClickCb? = null
 
     private val hasClickable = derivedStateOf {
         pathState.values.any {
@@ -103,7 +105,7 @@ internal class PathState(
     /**
      * [x], [y] are the relative coordinates of the tap.
      */
-    fun onHit(x: Double, y: Double, scale: Float): Boolean {
+    fun onHit(x: Double, y: Double, scale: Float, hitType: HitType): Boolean {
         if (!hasClickable.value) return false
 
         /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
@@ -115,7 +117,11 @@ internal class PathState(
 
         val traversalClickIds = mutableListOf<String>()
         var traversalClickPosition: Point? = null
-        for ((id, pathState) in pathState.entries.sortedByDescending { it.value.zIndex }) {
+        val candidates = pathState.entries
+            .filter { it.value.isClickable }
+            .sortedByDescending { it.value.zIndex }
+
+        for ((id, pathState) in candidates) {
 
             val bb = pathState.pathData.boundingBox ?: continue
             val (topLeft, bottomRight) = bb
@@ -149,8 +155,11 @@ internal class PathState(
                 val xOnPath = (nearest.x / fullWidth).toDouble()
                 val yOnPath = (nearest.y / fullHeight).toDouble()
 
-                if (pathClickTraversalCb == null) {
-                    pathClickCb?.invoke(id, xOnPath, yOnPath)
+                if (pathHitTraversalCb == null) {
+                    when (hitType) {
+                        HitType.Click -> pathClickCb?.invoke(id, xOnPath, yOnPath)
+                        HitType.LongPress -> pathLongPressCb?.invoke(id, xOnPath, yOnPath)
+                    }
                     return true
                 } else {
                     traversalClickIds.add(id)
@@ -161,13 +170,13 @@ internal class PathState(
             }
         }
 
-        return if (pathClickTraversalCb == null) {
+        return if (pathHitTraversalCb == null) {
             false
         } else {
             if (traversalClickIds.isNotEmpty()) {
                 val pos = traversalClickPosition
                 if (pos != null) {  // should always be true
-                    pathClickTraversalCb?.invoke(traversalClickIds, pos.x, pos.y)
+                    pathHitTraversalCb?.invoke(traversalClickIds, pos.x, pos.y, hitType)
                 }
                 true
             } else false
@@ -285,4 +294,4 @@ internal class DrawablePathState(
 }
 
 internal typealias PathClickCb = (id: String, x: Double, y: Double) -> Unit
-internal typealias PathClickTraversalCb = (ids: List<String>, x: Double, y: Double) -> Unit
+internal typealias PathHitTraversalCb = (ids: List<String>, x: Double, y: Double, hitType: HitType) -> Unit

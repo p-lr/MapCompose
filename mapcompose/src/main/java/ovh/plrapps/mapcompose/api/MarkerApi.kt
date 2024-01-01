@@ -339,6 +339,15 @@ fun MapState.onMarkerClick(cb: (id: String, x: Double, y: Double) -> Unit) {
 }
 
 /**
+ * Register a callback which will be invoked when a marker is long-pressed.
+ * Beware that the provided callback will only be invoked if the marker is clickable, and when the
+ * gesture isn't already consumed by some other composable (like a button).
+ */
+fun MapState.onMarkerLongPress(cb: (id: String, x: Double, y: Double) -> Unit) {
+    markerState.markerLongPressCb = cb
+}
+
+/**
  * Sometimes, some components need to react to marker position change. However, the [MapState] owns
  * the [State] of each marker position. To avoid duplicating state and have the [MapState] as single
  * source of truth, this API creates an "observer" [State] of marker positions.

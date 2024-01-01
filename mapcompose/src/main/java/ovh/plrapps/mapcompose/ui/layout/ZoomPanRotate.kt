@@ -56,7 +56,8 @@ internal fun ZoomPanRotate(
                     },
                     onPress = { gestureListener.onPress() },
                     onLongPress = { offset -> gestureListener.onLongPress(offset) },
-                    shouldConsumeTap = { offset -> gestureListener.shouldConsumeTapGesture(offset) }
+                    shouldConsumeTap = { offset -> gestureListener.shouldConsumeTapGesture(offset) },
+                    shouldConsumeLongPress = { offset -> gestureListener.shouldConsumeLongPress(offset) }
                 )
             }
             .onSizeChanged {
@@ -93,6 +94,7 @@ internal interface GestureListener {
     fun onLongPress(focalPt: Offset)
     fun isListeningForGestures(): Boolean
     fun shouldConsumeTapGesture(focalPt: Offset): Boolean
+    fun shouldConsumeLongPress(focalPt: Offset): Boolean
 }
 
 internal interface LayoutSizeChangeListener {

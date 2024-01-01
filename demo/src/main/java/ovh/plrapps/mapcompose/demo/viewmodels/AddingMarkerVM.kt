@@ -18,7 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    var markerCount = 0
+    private var markerCount = 0
 
     val state: MapState by mutableStateOf(
         MapState(4, 4096, 4096) {
@@ -30,6 +30,9 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
             }
             onMarkerClick { id, x, y ->
                 println("marker click $id $x $y")
+            }
+            onMarkerLongPress { id, x, y ->
+                println("on marker long press $id $x $y")
             }
             onTap { x, y ->
                 println("on tap $x $y")

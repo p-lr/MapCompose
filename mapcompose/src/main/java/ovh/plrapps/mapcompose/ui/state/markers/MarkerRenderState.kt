@@ -27,7 +27,7 @@ internal class MarkerRenderState {
     private val clustererManagedMarkers = mutableStateListOf<MarkerData>()
 
     internal val callouts = mutableStateMapOf<String, CalloutData>()
-    internal var calloutClickCb: MarkerClickCb? = null
+    internal var calloutClickCb: MarkerHitCb? = null
 
     fun getRegularMarkers(): List<MarkerData> {
         return regularMarkers
@@ -154,7 +154,7 @@ internal class MarkerRenderState {
 internal data class CalloutData(val markerData: MarkerData, val autoDismiss: Boolean)
 
 internal typealias MarkerMoveCb = (id: String, x: Double, y: Double, dx: Double, dy: Double) -> Unit
-internal typealias MarkerClickCb = (id: String, x: Double, y: Double) -> Unit
+internal typealias MarkerHitCb = (id: String, x: Double, y: Double) -> Unit
 
 fun interface DragInterceptor {
     /**
