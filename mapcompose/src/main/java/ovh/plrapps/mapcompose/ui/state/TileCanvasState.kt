@@ -127,6 +127,15 @@ internal class TileCanvasState(
         }
     }
 
+    /**
+     * Forgets visible state and previously collected tiles.
+     * To clear the canvas, call [forgetTiles], then [renderThrottled].
+     */
+    fun forgetTiles() = scope.launch {
+        visibleStateFlow.value = null
+        tilesCollected.clear()
+    }
+
     fun shutdown() {
         singleThreadDispatcher.close()
         tileCollector.shutdownNow()
