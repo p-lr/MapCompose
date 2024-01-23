@@ -12,8 +12,10 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * Reloads all tiles.
  */
 fun MapState.reloadTiles() {
-    tileCanvasState.forgetTiles()
-    renderVisibleTilesThrottled()
+    scope.launch {
+        tileCanvasState.forgetTiles()
+        renderVisibleTilesThrottled()
+    }
 }
 
 /**
