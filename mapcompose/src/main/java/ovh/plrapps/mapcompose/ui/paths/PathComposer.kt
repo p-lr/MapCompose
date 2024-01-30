@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.ui.paths
 
 import android.graphics.DashPathEffect
+import android.graphics.Paint
 import android.graphics.Path
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,9 +18,11 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
 import ovh.plrapps.mapcompose.ui.state.PathState
@@ -78,6 +81,27 @@ internal fun PathCanvas(
         }
     }
 
+    val paint = remember(
+        dashPathEffect,
+        drawablePathState.color,
+        drawablePathState.cap,
+        widthPx,
+        zoomPRState.scale
+    ) {
+        Paint().apply {
+            style = Paint.Style.STROKE
+            strokeJoin = Paint.Join.ROUND
+            this.color = drawablePathState.color.toArgb()
+            strokeCap = when (drawablePathState.cap) {
+                Cap.Butt -> Paint.Cap.BUTT
+                Cap.Round -> Paint.Cap.ROUND
+                Cap.Square -> Paint.Cap.SQUARE
+            }
+            pathEffect = dashPathEffect
+            strokeWidth = widthPx / zoomPRState.scale
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -96,10 +120,6 @@ internal fun PathCanvas(
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
             with(drawablePathState) {
-                val paint = paint.apply {
-                    strokeWidth = widthPx / zoomPRState.scale
-                    pathEffect = dashPathEffect
-                }
                 if (visible) {
                     drawIntoCanvas {
                         it.nativeCanvas.drawPath(path, paint)
