@@ -2,13 +2,15 @@ package ovh.plrapps.mapcompose.testapp.features.layerswitch
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.replaceLayer
+import ovh.plrapps.mapcompose.api.scrollTo
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -21,16 +23,14 @@ class LayerSwitchViewModel(application: Application) : AndroidViewModel(applicat
     private val tileStreamProvider = makeTileStreamProvider(appContext, type)
     private var currentLayerId: String? = null
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096, workerCount = 64).apply {
-            shouldLoopScale = true
-            enableRotation()
-            viewModelScope.launch {
-                scrollTo(0.5, 0.5, 1f)
-            }
-            currentLayerId = addLayer(tileStreamProvider)
+    val state: MapState = MapState(4, 4096, 4096, workerCount = 64).apply {
+        shouldLoopScale = true
+        enableRotation()
+        viewModelScope.launch {
+            scrollTo(0.5, 0.5, 1f)
         }
-    )
+        currentLayerId = addLayer(tileStreamProvider)
+    }
 
     init {
         viewModelScope.launch {

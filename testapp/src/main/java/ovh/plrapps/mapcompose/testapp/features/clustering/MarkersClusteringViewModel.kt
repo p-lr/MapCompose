@@ -8,15 +8,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
+import ovh.plrapps.mapcompose.api.addClusterer
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.onMarkerClick
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.testapp.R
 import ovh.plrapps.mapcompose.testapp.utils.randomDouble
@@ -41,19 +45,17 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096) {
-            scale(0.81f)
-            maxScale(8f)
-        }.apply {
-            addLayer(tileStreamProvider)
-            enableRotation()
-            shouldLoopScale = true
-            onMarkerClick { id, x, y ->
-                println("on marker click $id $x $y")
-            }
+    val state: MapState = MapState(4, 4096, 4096) {
+        scale(0.81f)
+        maxScale(8f)
+    }.apply {
+        addLayer(tileStreamProvider)
+        enableRotation()
+        shouldLoopScale = true
+        onMarkerClick { id, x, y ->
+            println("on marker click $id $x $y")
         }
-    )
+    }
 
     init {
         state.addClusterer("default") { n ->
