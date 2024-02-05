@@ -2,12 +2,14 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.scrollTo
+import ovh.plrapps.mapcompose.api.setLayerOpacity
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -22,19 +24,17 @@ class LayersVM(application: Application) : AndroidViewModel(application) {
     private var satelliteId: String? = null
     private var ignV2Id: String? = null
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            shouldLoopScale = true
-            enableRotation()
-            viewModelScope.launch {
-                scrollTo(0.5, 0.5, 1f)
-            }
-
-            addLayer(tileStreamProvider)
-            satelliteId = addLayer(satelliteProvider)
-            ignV2Id = addLayer(ignV2Provider, 0.5f)
+    val state: MapState = MapState(4, 4096, 4096).apply {
+        shouldLoopScale = true
+        enableRotation()
+        viewModelScope.launch {
+            scrollTo(0.5, 0.5, 1f)
         }
-    )
+
+        addLayer(tileStreamProvider)
+        satelliteId = addLayer(satelliteProvider)
+        ignV2Id = addLayer(ignV2Provider, 0.5f)
+    }
 
     private fun makeTileStreamProvider(appContext: Context, folder: String) =
         TileStreamProvider { row, col, zoomLvl ->

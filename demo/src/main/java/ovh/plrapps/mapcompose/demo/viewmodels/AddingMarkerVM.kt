@@ -20,30 +20,29 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
 
     private var markerCount = 0
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096) {
-            scale(0f) // zoom-out to minimum scale
-        }.apply {
-            addLayer(tileStreamProvider)
-            onMarkerMove { id, x, y, _, _ ->
-                println("move $id $x $y")
-            }
-            onMarkerClick { id, x, y ->
-                println("marker click $id $x $y")
-            }
-            onMarkerLongPress { id, x, y ->
-                println("on marker long press $id $x $y")
-            }
-            onTap { x, y ->
-                println("on tap $x $y")
-            }
-            onLongPress { x, y ->
-                println("on long press $x $y")
-            }
-            enableRotation()
-            setScrollOffsetRatio(0.5f, 0.5f)
+    val state: MapState = MapState(4, 4096, 4096) {
+        scale(0f) // zoom-out to minimum scale
+    }.apply {
+        addLayer(tileStreamProvider)
+        onMarkerMove { id, x, y, _, _ ->
+            println("move $id $x $y")
         }
-    )
+        onMarkerClick { id, x, y ->
+            println("marker click $id $x $y")
+        }
+        onMarkerLongPress { id, x, y ->
+            println("on marker long press $id $x $y")
+        }
+        onTap { x, y ->
+            println("on tap $x $y")
+        }
+        onLongPress { x, y ->
+            println("on long press $x $y")
+        }
+        enableRotation()
+        setScrollOffsetRatio(0.5f, 0.5f)
+    }
+
 
     fun addMarker() {
         state.addMarker("marker$markerCount", 0.5, 0.5) {

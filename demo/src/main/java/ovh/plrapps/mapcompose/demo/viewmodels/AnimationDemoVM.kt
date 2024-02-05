@@ -4,14 +4,18 @@ import android.app.Application
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.SnapSpec
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.onTouchDown
+import ovh.plrapps.mapcompose.api.rotateTo
+import ovh.plrapps.mapcompose.api.scrollTo
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.widgets.Marker
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -25,23 +29,21 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
     private var job: Job? = null
     private val spec = TweenSpec<Float>(2000, easing = FastOutSlowInEasing)
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            addLayer(tileStreamProvider)
-            shouldLoopScale = true
-            enableRotation()
-            addMarker("m0", 0.5, 0.5) { Marker() }
-            addMarker("m1", 0.78, 0.78) { Marker() }
-            addMarker("m2", 0.79, 0.79) { Marker() }
-            addMarker("m3", 0.785, 0.72) { Marker() }
-            onTouchDown {
-                job?.cancel()
-            }
-            viewModelScope.launch {
-                scrollTo(0.5, 0.5, 2f, SnapSpec())
-            }
+    val state: MapState = MapState(4, 4096, 4096).apply {
+        addLayer(tileStreamProvider)
+        shouldLoopScale = true
+        enableRotation()
+        addMarker("m0", 0.5, 0.5) { Marker() }
+        addMarker("m1", 0.78, 0.78) { Marker() }
+        addMarker("m2", 0.79, 0.79) { Marker() }
+        addMarker("m3", 0.785, 0.72) { Marker() }
+        onTouchDown {
+            job?.cancel()
         }
-    )
+        viewModelScope.launch {
+            scrollTo(0.5, 0.5, 2f, SnapSpec())
+        }
+    }
 
     fun startAnimation() {
         /* Cancel ongoing animation */

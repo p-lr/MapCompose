@@ -3,14 +3,17 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 import android.app.Application
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addLazyLoader
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.onMarkerClick
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -25,17 +28,15 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
     private val tileStreamProvider =
         ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096) {
-            minimumScaleMode(Forced(1f))
-            scale(1f)
-            maxScale(4f)
-            scroll(0.5, 0.5)
-        }.apply {
-            addLayer(tileStreamProvider)
-            shouldLoopScale = true
-        }
-    )
+    val state: MapState = MapState(4, 4096, 4096) {
+        minimumScaleMode(Forced(1f))
+        scale(1f)
+        maxScale(4f)
+        scroll(0.5, 0.5)
+    }.apply {
+        addLayer(tileStreamProvider)
+        shouldLoopScale = true
+    }
 
     init {
         /* Add a marker lazy loader. In this example, we use "default" for the id */

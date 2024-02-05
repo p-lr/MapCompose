@@ -16,7 +16,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.enableMarkerDrag
+import ovh.plrapps.mapcompose.api.enableRotation
+import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.api.scrollTo
+import ovh.plrapps.mapcompose.api.setStateChangeListener
+import ovh.plrapps.mapcompose.api.shouldLoopScale
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.demo.ui.screens.ScaleIndicatorController
 import ovh.plrapps.mapcompose.ui.MapUI
@@ -35,16 +43,14 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
     var p2x by mutableStateOf(0.4)
     var p2y by mutableStateOf(0.4)
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096).apply {
-            addLayer(tileStreamProvider)
-            shouldLoopScale = true
-            enableRotation()
-            viewModelScope.launch {
-                scrollTo(0.5, 0.5, 1.1f)
-            }
+    val state: MapState = MapState(4, 4096, 4096).apply {
+        addLayer(tileStreamProvider)
+        shouldLoopScale = true
+        enableRotation()
+        viewModelScope.launch {
+            scrollTo(0.5, 0.5, 1.1f)
         }
-    )
+    }
 
     val scaleIndicatorController = ScaleIndicatorController(450, state.scale)
 

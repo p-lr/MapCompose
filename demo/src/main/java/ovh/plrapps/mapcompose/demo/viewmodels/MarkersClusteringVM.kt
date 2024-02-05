@@ -8,15 +8,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
+import ovh.plrapps.mapcompose.api.addClusterer
+import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.demo.R
 import ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -30,15 +31,13 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 class MarkersClusteringVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState by mutableStateOf(
-        MapState(4, 4096, 4096) {
-            scale(0.2f)
-            maxScale(8f)
-            scroll(0.5, 0.5)
-        }.apply {
-            addLayer(tileStreamProvider)
-        }
-    )
+    val state: MapState = MapState(4, 4096, 4096) {
+        scale(0.2f)
+        maxScale(8f)
+        scroll(0.5, 0.5)
+    }.apply {
+        addLayer(tileStreamProvider)
+    }
 
     init {
         /* Add a marker clusterer to manage markers. In this example, we use "default" for the id */

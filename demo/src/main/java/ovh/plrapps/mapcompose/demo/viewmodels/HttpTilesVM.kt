@@ -1,7 +1,5 @@
 package ovh.plrapps.mapcompose.demo.viewmodels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.scale
@@ -18,14 +16,16 @@ import java.net.URL
 class HttpTilesVM : ViewModel() {
     private val tileStreamProvider = makeTileStreamProvider()
 
-    val state: MapState by mutableStateOf(
-        /* Notice how we increase the worker count when performing HTTP requests */
-        MapState(4, 4096, 4096, workerCount = 16).apply {
-            addLayer(tileStreamProvider)
-            scale = 0f
-            shouldLoopScale = true
-        }
-    )
+    val state: MapState = MapState(
+        levelCount = 4,
+        fullWidth = 4096,
+        fullHeight = 4096,
+        workerCount = 16  // Notice how we increase the worker count when performing HTTP requests
+    ).apply {
+        addLayer(tileStreamProvider)
+        scale = 0f
+        shouldLoopScale = true
+    }
 }
 
 /**
@@ -34,7 +34,8 @@ class HttpTilesVM : ViewModel() {
 private fun makeTileStreamProvider() =
     TileStreamProvider { row, col, zoomLvl ->
         try {
-            val url = URL("https://raw.githubusercontent.com/p-lr/MapCompose/master/demo/src/main/assets/tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
+            val url =
+                URL("https://raw.githubusercontent.com/p-lr/MapCompose/master/demo/src/main/assets/tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
