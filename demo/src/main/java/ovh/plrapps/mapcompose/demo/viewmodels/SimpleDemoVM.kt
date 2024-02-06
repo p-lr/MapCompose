@@ -11,7 +11,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState = MapState(4, 4096, 4096) {
+    val state = MapState(4, 4096, 4096) {
         scale(1.2f)
     }.apply {
         addLayer(tileStreamProvider)

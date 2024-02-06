@@ -46,6 +46,9 @@ fun MapComposeDemoApp() {
             composable(MainDestinations.ANIMATION_DEMO.name) {
                 AnimationDemo()
             }
+            composable(MainDestinations.OSM_DEMO.name) {
+                OsmDemo()
+            }
             composable(MainDestinations.HTTP_TILES_DEMO.name) {
                 HttpTilesDemo()
             }

@@ -31,7 +31,7 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 class MarkersClusteringVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState = MapState(4, 4096, 4096) {
+    val state = MapState(4, 4096, 4096) {
         scale(0.2f)
         maxScale(8f)
         scroll(0.5, 0.5)

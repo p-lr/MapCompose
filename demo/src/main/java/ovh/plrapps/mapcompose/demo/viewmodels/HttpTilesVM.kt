@@ -16,7 +16,7 @@ import java.net.URL
 class HttpTilesVM : ViewModel() {
     private val tileStreamProvider = makeTileStreamProvider()
 
-    val state: MapState = MapState(
+    val state = MapState(
         levelCount = 4,
         fullWidth = 4096,
         fullHeight = 4096,

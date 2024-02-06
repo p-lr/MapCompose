@@ -21,7 +21,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class CenteringOnMarkerVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState = MapState(4, 4096, 4096) {
+    val state = MapState(4, 4096, 4096) {
         rotation(45f)
     }.apply {
         addLayer(tileStreamProvider)

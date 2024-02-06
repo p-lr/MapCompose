@@ -28,7 +28,7 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
     private val tileStreamProvider =
         ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider(application.applicationContext)
 
-    val state: MapState = MapState(4, 4096, 4096) {
+    val state = MapState(4, 4096, 4096) {
         minimumScaleMode(Forced(1f))
         scale(1f)
         maxScale(4f)

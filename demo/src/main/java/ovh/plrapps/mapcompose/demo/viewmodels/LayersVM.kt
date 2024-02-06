@@ -24,7 +24,7 @@ class LayersVM(application: Application) : AndroidViewModel(application) {
     private var satelliteId: String? = null
     private var ignV2Id: String? = null
 
-    val state: MapState = MapState(4, 4096, 4096).apply {
+    val state = MapState(4, 4096, 4096).apply {
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {
