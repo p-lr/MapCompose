@@ -65,7 +65,8 @@ internal fun PathCanvas(
                 offset = offsetAndCount.x,
                 count = offsetAndCount.y,
                 simplify = drawablePathState.simplify,
-                scale = zoomPRState.scale
+                scale = zoomPRState.scale,
+                shouldClosePath = drawablePathState.fillColor != null
             )
         }
         drawablePathState.lastRenderedPath = value
@@ -107,7 +108,7 @@ internal fun PathCanvas(
     ) {
         Paint().apply {
             style = Paint.Style.FILL
-            this.color = drawablePathState.fillColor.toArgb()
+            this.color = drawablePathState.fillColor?.toArgb() ?: drawablePathState.color.toArgb()
         }
     }
 
@@ -131,7 +132,7 @@ internal fun PathCanvas(
             with(drawablePathState) {
                 if (visible) {
                     drawIntoCanvas {
-                        if (pathData.isClosedPath) {
+                        if (drawablePathState.fillColor != null) {
                             it.nativeCanvas.drawPath(path, fillPaint)
                         }
                         it.nativeCanvas.drawPath(path, paint)
@@ -147,8 +148,7 @@ internal fun PathCanvas(
  * subList to work (see [List.subList] doc). */
 class PathData internal constructor(
     internal val data: List<Offset>,
-    internal val boundingBox: Pair<Offset, Offset>?,     // topLeft, bottomRight
-    internal val isClosedPath: Boolean = false
+    internal val boundingBox: Pair<Offset, Offset>?     // topLeft, bottomRight
 ) {
     val size: Int
         get() = data.size
@@ -164,8 +164,6 @@ class PathDataBuilder internal constructor(
     private var xMax: Float? = null
     private var yMin: Float? = null
     private var yMax: Float? = null
-
-    var isClosePath: Boolean = false
 
     /**
      * Add a point to the path. Values are relative coordinates (in range [0f..1f]).
@@ -213,11 +211,11 @@ class PathDataBuilder internal constructor(
         /**
          * Make a defensive copy (see PathData doc). We don't want structural modifications to
          * [points] to be visible from the [PathData] instance. */
-        return PathData(points.toList(), bb, isClosePath)
+        return PathData(points.toList(), bb)
     }
 }
 
-internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float): Path {
+internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float, shouldClosePath: Boolean): Path {
     val p = Path()
     val epsilon = simplify / scale
     val subList = pathData.data.subList(offset, offset + count)
@@ -237,7 +235,7 @@ internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify:
             p.lineTo(point.x, point.y)
         }
     }
-    if (pathData.isClosedPath) {
+    if (shouldClosePath) {
         p.close()
     }
     return p

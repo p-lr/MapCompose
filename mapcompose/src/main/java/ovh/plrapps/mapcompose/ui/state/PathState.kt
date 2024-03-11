@@ -74,7 +74,7 @@ internal class PathState(
         visible: Boolean? = null,
         width: Dp? = null,
         color: Color? = null,
-        fillColor: Color? = color,
+        fillColor: Color? = null,
         offset: Int? = null,
         count: Int? = null,
         cap: Cap? = null,
@@ -229,7 +229,7 @@ internal class DrawablePathState(
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
-    var fillColor: Color by mutableStateOf(fillColor ?: Color(0xFF448AFF))
+    var fillColor: Color? by mutableStateOf(fillColor)
     var cap: Cap by mutableStateOf(cap)
     var isClickable: Boolean by mutableStateOf(clickable)
     var zIndex: Float by mutableFloatStateOf(zIndex)

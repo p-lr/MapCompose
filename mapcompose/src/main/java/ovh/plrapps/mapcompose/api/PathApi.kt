@@ -18,7 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * @param pathData Obtained from [PathDataBuilder.build]
  * @param width The width of the path, in [Dp]. Defaults to 4.dp
  * @param color The color of the path. Defaults to Color(0xFF448AFF)
- * @param fillColor If the path is [PathData.isClosedPath] the path will be filled with this color.
+ * @param fillColor If set - the path will be closed and the area drawn in this color.
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points added
  * to built [pathData].
@@ -38,7 +38,7 @@ fun MapState.addPath(
     pathData: PathData,
     width: Dp? = null,
     color: Color? = null,
-    fillColor: Color? = color,
+    fillColor: Color? = null,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap = Cap.Round,
@@ -77,7 +77,7 @@ fun MapState.addPath(
     id: String,
     width: Dp? = null,
     color: Color? = null,
-    fillColor: Color? = color,
+    fillColor: Color? = null,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap = Cap.Round,
@@ -117,7 +117,7 @@ fun MapState.updatePath(
     visible: Boolean? = null,
     width: Dp? = null,
     color: Color? = null,
-    fillColor: Color? = color,
+    fillColor: Color? = null,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap? = null,

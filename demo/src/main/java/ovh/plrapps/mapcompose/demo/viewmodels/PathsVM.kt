@@ -90,7 +90,6 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 addPoint(0.14, 0.15)
                 addPoint(0.14, 0.18)
                 addPoint(0.28, 0.10)
-                isClosePath = true
             }
         }
     }
