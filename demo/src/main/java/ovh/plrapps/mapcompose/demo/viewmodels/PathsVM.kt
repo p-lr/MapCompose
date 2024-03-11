@@ -78,6 +78,21 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         addTrack("track1", Color(0xFF448AFF))
         addTrack("track2", Color(0xFFFFFF00))
         addTrack("track3", pattern = listOf(Dash(dpToPx(8f)), Gap(dpToPx(4f))))
+
+        // filled polygon
+        with(state) {
+            addPath(
+                id = "filled polygon",
+                color = Color.Green,
+                fillColor = Color.Green.copy(alpha = .6f),
+                clickable = true,
+            ) {
+                addPoint(0.14, 0.15)
+                addPoint(0.14, 0.18)
+                addPoint(0.28, 0.10)
+                isClosePath = true
+            }
+        }
     }
 
     /**

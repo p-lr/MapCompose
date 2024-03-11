@@ -4,11 +4,11 @@ package ovh.plrapps.mapcompose.api
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.PathDataBuilder
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
-import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -18,6 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
  * @param pathData Obtained from [PathDataBuilder.build]
  * @param width The width of the path, in [Dp]. Defaults to 4.dp
  * @param color The color of the path. Defaults to Color(0xFF448AFF)
+ * @param fillColor If the path is [PathData.isClosedPath] the path will be filled with this color.
  * @param offset The number of points to skip from the beginning of the path. Defaults to 0.
  * @param count The number of points to draw after [offset]. Defaults to the number of points added
  * to built [pathData].
@@ -37,6 +38,7 @@ fun MapState.addPath(
     pathData: PathData,
     width: Dp? = null,
     color: Color? = null,
+    fillColor: Color? = color,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap = Cap.Round,
@@ -45,7 +47,7 @@ fun MapState.addPath(
     zIndex: Float = 0f,
     pattern: List<PatternItem>? = null
 ) {
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
+    pathState.addPath(id, pathData, width, color, fillColor, offset, count, cap, simplify, clickable, zIndex, pattern)
 }
 
 /**
@@ -75,6 +77,7 @@ fun MapState.addPath(
     id: String,
     width: Dp? = null,
     color: Color? = null,
+    fillColor: Color? = color,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap = Cap.Round,
@@ -85,7 +88,7 @@ fun MapState.addPath(
     builder: (PathDataBuilder).() -> Unit
 ): PathData? {
     val pathData = makePathDataBuilder().apply { builder() }.build() ?: return null
-    pathState.addPath(id, pathData, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
+    pathState.addPath(id, pathData, width, color, fillColor, offset, count, cap, simplify, clickable, zIndex, pattern)
     return pathData
 }
 
@@ -114,6 +117,7 @@ fun MapState.updatePath(
     visible: Boolean? = null,
     width: Dp? = null,
     color: Color? = null,
+    fillColor: Color? = color,
     offset: Int? = null,
     count: Int? = null,
     cap: Cap? = null,
@@ -122,7 +126,7 @@ fun MapState.updatePath(
     zIndex: Float? = null,
     pattern: List<PatternItem>? = null
 ) {
-    pathState.updatePath(id, pathData, visible, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
+    pathState.updatePath(id, pathData, visible, width, color, fillColor, offset, count, cap, simplify, clickable, zIndex, pattern)
 }
 
 /**

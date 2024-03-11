@@ -102,6 +102,15 @@ internal fun PathCanvas(
         }
     }
 
+    val fillPaint = remember(
+        drawablePathState.fillColor,
+    ) {
+        Paint().apply {
+            style = Paint.Style.FILL
+            this.color = drawablePathState.fillColor.toArgb()
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -122,6 +131,9 @@ internal fun PathCanvas(
             with(drawablePathState) {
                 if (visible) {
                     drawIntoCanvas {
+                        if (pathData.isClosedPath) {
+                            it.nativeCanvas.drawPath(path, fillPaint)
+                        }
                         it.nativeCanvas.drawPath(path, paint)
                     }
                 }
@@ -135,7 +147,8 @@ internal fun PathCanvas(
  * subList to work (see [List.subList] doc). */
 class PathData internal constructor(
     internal val data: List<Offset>,
-    internal val boundingBox: Pair<Offset, Offset>?     // topLeft, bottomRight
+    internal val boundingBox: Pair<Offset, Offset>?,     // topLeft, bottomRight
+    internal val isClosedPath: Boolean = false
 ) {
     val size: Int
         get() = data.size
@@ -151,6 +164,8 @@ class PathDataBuilder internal constructor(
     private var xMax: Float? = null
     private var yMin: Float? = null
     private var yMax: Float? = null
+
+    var isClosePath: Boolean = false
 
     /**
      * Add a point to the path. Values are relative coordinates (in range [0f..1f]).
@@ -198,7 +213,7 @@ class PathDataBuilder internal constructor(
         /**
          * Make a defensive copy (see PathData doc). We don't want structural modifications to
          * [points] to be visible from the [PathData] instance. */
-        return PathData(points.toList(), bb)
+        return PathData(points.toList(), bb, isClosePath)
     }
 }
 
@@ -221,6 +236,9 @@ internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify:
         } else {
             p.lineTo(point.x, point.y)
         }
+    }
+    if (pathData.isClosedPath) {
+        p.close()
     }
     return p
 }

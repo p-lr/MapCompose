@@ -47,6 +47,7 @@ internal class PathState(
         path: PathData,
         width: Dp?,
         color: Color?,
+        fillColor: Color?,
         offset: Int?,
         count: Int?,
         cap: Cap,
@@ -56,7 +57,7 @@ internal class PathState(
         pattern: List<PatternItem>?
     ) {
         if (hasPath(id)) return
-        pathState[id] = DrawablePathState(id, path, width, color, offset, count, cap, simplify, clickable, zIndex, pattern)
+        pathState[id] = DrawablePathState(id, path, width, color,fillColor, offset, count, cap, simplify, clickable, zIndex, pattern)
     }
 
     fun removePath(id: String): Boolean {
@@ -73,6 +74,7 @@ internal class PathState(
         visible: Boolean? = null,
         width: Dp? = null,
         color: Color? = null,
+        fillColor: Color? = color,
         offset: Int? = null,
         count: Int? = null,
         cap: Cap? = null,
@@ -87,6 +89,7 @@ internal class PathState(
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
+            fillColor?.also { path.fillColor = it }
             cap?.also { path.cap = it }
             simplify?.also { path.simplify = it.coerceAtLeast(0f) }
             if (offset != null || count != null || pathData != null) {
@@ -212,6 +215,7 @@ internal class DrawablePathState(
     pathData: PathData,
     width: Dp?,
     color: Color?,
+    fillColor: Color?,
     offset: Int?,
     count: Int?,
     cap: Cap,
@@ -225,6 +229,7 @@ internal class DrawablePathState(
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
     var color: Color by mutableStateOf(color ?: Color(0xFF448AFF))
+    var fillColor: Color by mutableStateOf(fillColor ?: Color(0xFF448AFF))
     var cap: Cap by mutableStateOf(cap)
     var isClickable: Boolean by mutableStateOf(clickable)
     var zIndex: Float by mutableFloatStateOf(zIndex)
