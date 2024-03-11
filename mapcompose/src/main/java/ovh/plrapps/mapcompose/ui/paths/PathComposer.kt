@@ -66,7 +66,6 @@ internal fun PathCanvas(
                 count = offsetAndCount.y,
                 simplify = drawablePathState.simplify,
                 scale = zoomPRState.scale,
-                shouldClosePath = drawablePathState.fillColor != null
             )
         }
         drawablePathState.lastRenderedPath = value
@@ -215,7 +214,7 @@ class PathDataBuilder internal constructor(
     }
 }
 
-internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float, shouldClosePath: Boolean): Path {
+internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float): Path {
     val p = Path()
     val epsilon = simplify / scale
     val subList = pathData.data.subList(offset, offset + count)
@@ -234,9 +233,6 @@ internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify:
         } else {
             p.lineTo(point.x, point.y)
         }
-    }
-    if (shouldClosePath) {
-        p.close()
     }
     return p
 }
