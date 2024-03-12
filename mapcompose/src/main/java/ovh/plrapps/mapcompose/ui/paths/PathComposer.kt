@@ -65,7 +65,7 @@ internal fun PathCanvas(
                 offset = offsetAndCount.x,
                 count = offsetAndCount.y,
                 simplify = drawablePathState.simplify,
-                scale = zoomPRState.scale
+                scale = zoomPRState.scale,
             )
         }
         drawablePathState.lastRenderedPath = value
@@ -102,6 +102,15 @@ internal fun PathCanvas(
         }
     }
 
+    val fillPaint = remember(
+        drawablePathState.fillColor,
+    ) {
+        Paint().apply {
+            style = Paint.Style.FILL
+            this.color = drawablePathState.fillColor?.toArgb() ?: Color.Transparent.toArgb()
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -122,6 +131,9 @@ internal fun PathCanvas(
             with(drawablePathState) {
                 if (visible) {
                     drawIntoCanvas {
+                        if (drawablePathState.fillColor != null) {
+                            it.nativeCanvas.drawPath(path, fillPaint)
+                        }
                         it.nativeCanvas.drawPath(path, paint)
                     }
                 }
