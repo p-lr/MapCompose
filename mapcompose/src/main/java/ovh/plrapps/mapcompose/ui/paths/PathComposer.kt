@@ -107,7 +107,7 @@ internal fun PathCanvas(
     ) {
         Paint().apply {
             style = Paint.Style.FILL
-            this.color = drawablePathState.fillColor?.toArgb() ?: drawablePathState.color.toArgb()
+            this.color = drawablePathState.fillColor?.toArgb() ?: Color.Transparent.toArgb()
         }
     }
 
