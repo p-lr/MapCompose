@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
  */
 fun <T> CoroutineScope.debounce(
     timeoutMillis: Long,
-    block: (T) -> Unit
+    block: suspend (T) -> Unit
 ): SendChannel<T> {
     val channel = Channel<T>(capacity = Channel.CONFLATED)
     val flow = channel.receiveAsFlow().debounce(timeoutMillis)

@@ -290,7 +290,7 @@ internal class TileCanvasState(
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
-    private fun evictTiles(
+    private suspend fun evictTiles(
         visibleTiles: VisibleTiles,
         layerIds: List<String>,
         opacities: List<Float>,
@@ -314,7 +314,7 @@ internal class TileCanvasState(
      * * tiles that aren't visible at current level, and tiles from current level which aren't made
      * of current layers
      */
-    private fun partialEviction(
+    private suspend fun partialEviction(
         visibleTiles: VisibleTiles,
         layerIds: List<String>,
         opacities: List<Float>
@@ -361,7 +361,7 @@ internal class TileCanvasState(
      * currently visible tiles).
      * Only triggered after the [idleDebounced] fires.
      */
-    private fun aggressiveEviction(
+    private suspend fun aggressiveEviction(
         currentLevel: Int,
         currentSubSample: Int,
         layerIds: List<String>
@@ -409,7 +409,7 @@ internal class TileCanvasState(
     /**
      * After a [Tile] is no longer visible, recycle its Bitmap and Paint if possible, for later use.
      */
-    private fun Tile.recycle() {
+    private suspend fun Tile.recycle() {
         val b = bitmap ?: return
         if (b.isMutable) {
             bitmapPool.put(b)
