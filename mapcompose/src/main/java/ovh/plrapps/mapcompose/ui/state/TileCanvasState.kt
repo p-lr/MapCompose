@@ -40,7 +40,8 @@ internal class TileCanvasState(
     private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
     internal val layerFlow = _layerFlow.asStateFlow()
 
-    private val bitmapPool = BitmapPool()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val bitmapPool = BitmapPool(Dispatchers.Default.limitedParallelism(1))
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
     private val visibleStateFlow = MutableStateFlow<VisibleState?>(null)
@@ -290,7 +291,7 @@ internal class TileCanvasState(
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
      */
-    private suspend fun evictTiles(
+    private fun evictTiles(
         visibleTiles: VisibleTiles,
         layerIds: List<String>,
         opacities: List<Float>,
@@ -314,7 +315,7 @@ internal class TileCanvasState(
      * * tiles that aren't visible at current level, and tiles from current level which aren't made
      * of current layers
      */
-    private suspend fun partialEviction(
+    private fun partialEviction(
         visibleTiles: VisibleTiles,
         layerIds: List<String>,
         opacities: List<Float>
@@ -361,7 +362,7 @@ internal class TileCanvasState(
      * currently visible tiles).
      * Only triggered after the [idleDebounced] fires.
      */
-    private suspend fun aggressiveEviction(
+    private fun aggressiveEviction(
         currentLevel: Int,
         currentSubSample: Int,
         layerIds: List<String>
@@ -409,7 +410,7 @@ internal class TileCanvasState(
     /**
      * After a [Tile] is no longer visible, recycle its Bitmap and Paint if possible, for later use.
      */
-    private suspend fun Tile.recycle() {
+    private fun Tile.recycle() {
         val b = bitmap ?: return
         if (b.isMutable) {
             bitmapPool.put(b)
