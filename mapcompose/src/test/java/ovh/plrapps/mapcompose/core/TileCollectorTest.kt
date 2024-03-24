@@ -42,6 +42,7 @@ class TileCollectorTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun fullTest() = runTest {
         assertNotNull(assetsDir)
@@ -52,7 +53,7 @@ class TileCollectorTest {
         val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
 
-        val pool = BitmapPool()
+        val pool = BitmapPool(Dispatchers.Default.limitedParallelism(1))
 
         val tileStreamProvider = TileStreamProvider { _, _, _ -> FileInputStream(imageFile) }
 
