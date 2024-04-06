@@ -3,9 +3,11 @@
 [![](https://img.shields.io/badge/ComposeBOM-2024.02.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- MapCompose Multiplatform is officially released: https://github.com/p-lr/MapComposeMP \
+  Works on iOS, MacOS, Windows, Linux, and Android.
 - New path dash pattern api: ability to define a sequence made of dash, dot, and gap.
 - Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
-- New gestures added (zoom fling, double tap to zoom, two fingers tap)
+
 
 # MapCompose
 
