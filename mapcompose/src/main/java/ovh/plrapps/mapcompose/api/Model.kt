@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior as ClusterClickBehaviorInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.Custom as CustomInternal
+import ovh.plrapps.mapcompose.ui.state.markers.model.Callback as CallbackInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default as DefaultInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.None as NoneInternal
 
@@ -14,7 +15,12 @@ sealed interface ClusterClickBehavior
 data object Default : ClusterClickBehavior
 
 /**
- * When a cluster a clicked, the provided [onClick] callback is invoked.
+ * When a cluster is clicked, the provided [onClick] callback is invoked and the [Default] behaviour is executed too
+ */
+data class Callback(val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
+
+/**
+ * When a cluster is clicked, the provided [onClick] callback is invoked.
  */
 data class Custom(val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
 
@@ -48,6 +54,22 @@ internal fun ClusterClickBehavior.toInternal(): ClusterClickBehaviorInternal {
                 )
             }
         )
+
+        is Callback ->
+            CallbackInternal(
+                onClick = {
+                    this.onClick(
+                        ClusterData(
+                            it.x,
+                            it.y,
+                            it.markers.map { markerData ->
+                                MarkerDataSnapshot(markerData.id, markerData.x, markerData.y)
+                            }
+                        )
+                    )
+                }
+            )
+
         Default -> DefaultInternal
         None -> NoneInternal
     }
