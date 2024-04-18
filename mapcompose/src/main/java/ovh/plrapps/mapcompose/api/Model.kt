@@ -2,7 +2,6 @@ package ovh.plrapps.mapcompose.api
 
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior as ClusterClickBehaviorInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.Custom as CustomInternal
-import ovh.plrapps.mapcompose.ui.state.markers.model.Callback as CallbackInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default as DefaultInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.None as NoneInternal
 
@@ -15,14 +14,10 @@ sealed interface ClusterClickBehavior
 data object Default : ClusterClickBehavior
 
 /**
- * When a cluster is clicked, the provided [onClick] callback is invoked and the [Default] behaviour is executed too
- */
-data class Callback(val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
-
-/**
  * When a cluster is clicked, the provided [onClick] callback is invoked.
+ * the optional parameter [withDefaultBehavior] signifies if the [Default] callback behavior should be applied too
  */
-data class Custom(val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
+data class Custom(val withDefaultBehavior: Boolean = false, val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
 
 /**
  * Cluster related data.
@@ -52,24 +47,10 @@ internal fun ClusterClickBehavior.toInternal(): ClusterClickBehaviorInternal {
                         }
                     )
                 )
-            }
+            },
+            withDefaultBehavior = this.withDefaultBehavior
+
         )
-
-        is Callback ->
-            CallbackInternal(
-                onClick = {
-                    this.onClick(
-                        ClusterData(
-                            it.x,
-                            it.y,
-                            it.markers.map { markerData ->
-                                MarkerDataSnapshot(markerData.id, markerData.x, markerData.y)
-                            }
-                        )
-                    )
-                }
-            )
-
         Default -> DefaultInternal
         None -> NoneInternal
     }

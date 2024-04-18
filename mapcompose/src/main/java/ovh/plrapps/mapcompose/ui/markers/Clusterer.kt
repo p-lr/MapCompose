@@ -15,7 +15,6 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.*
 import ovh.plrapps.mapcompose.ui.state.markers.model.ClusterClickBehavior
 import ovh.plrapps.mapcompose.ui.state.markers.model.Custom
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default
-import ovh.plrapps.mapcompose.ui.state.markers.model.Callback
 import ovh.plrapps.mapcompose.ui.state.markers.model.None
 import ovh.plrapps.mapcompose.utils.contains
 import ovh.plrapps.mapcompose.utils.dpToPx
@@ -81,12 +80,9 @@ internal class Clusterer(
                 clusterClickBehavior.onClick(
                     ClusterInfo(clusterData.x, clusterData.y, markersData)
                 )
-            }
-            is Callback -> {
-                clusterClickBehavior.onClick(
-                    ClusterInfo(clusterData.x, clusterData.y, markersData)
-                )
-                defaultClusterClickListener(markersData)
+                if (clusterClickBehavior.withDefaultBehavior) {
+                    defaultClusterClickListener(markersData)
+                }
             }
             Default -> {
                 defaultClusterClickListener(markersData)
