@@ -14,9 +14,10 @@ sealed interface ClusterClickBehavior
 data object Default : ClusterClickBehavior
 
 /**
- * When a cluster a clicked, the provided [onClick] callback is invoked.
+ * When a cluster is clicked, the provided [onClick] callback is invoked.
+ * the optional parameter [withDefaultBehavior] signifies if the [Default] callback behavior should be applied too
  */
-data class Custom(val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
+data class Custom(val withDefaultBehavior: Boolean = false, val onClick: (ClusterData) -> Unit) : ClusterClickBehavior
 
 /**
  * Cluster related data.
@@ -46,7 +47,9 @@ internal fun ClusterClickBehavior.toInternal(): ClusterClickBehaviorInternal {
                         }
                     )
                 )
-            }
+            },
+            withDefaultBehavior = this.withDefaultBehavior
+
         )
         Default -> DefaultInternal
         None -> NoneInternal

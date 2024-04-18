@@ -80,6 +80,9 @@ internal class Clusterer(
                 clusterClickBehavior.onClick(
                     ClusterInfo(clusterData.x, clusterData.y, markersData)
                 )
+                if (clusterClickBehavior.withDefaultBehavior) {
+                    defaultClusterClickListener(markersData)
+                }
             }
             Default -> {
                 defaultClusterClickListener(markersData)
