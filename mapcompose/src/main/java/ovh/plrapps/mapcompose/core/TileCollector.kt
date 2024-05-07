@@ -105,7 +105,7 @@ internal class TileCollector(
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
         suspend fun getBitmapFromPoolOrCreate(subSamplingRatio: Int): Bitmap {
-            val subSampledSize = tileSize / subSamplingRatio
+            val subSampledSize = (tileSize / subSamplingRatio).coerceAtLeast(1)
             val allocationByteCount = subSampledSize * subSampledSize * bitmapConfiguration.bytesPerPixel
             return bitmapPool.get(allocationByteCount) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfiguration.bitmapConfig)
         }
