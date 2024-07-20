@@ -114,7 +114,7 @@ render consistently - even after a device rotation.
 
 All public APIs are located under the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) 
 package. The following sections provide details on the `MapState` class, and give examples of how to
-add markers, callouts, and paths.
+add markers, callouts, and paths. All apis should be called from the main thread.
 
 ### MapState
 

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdk 34
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,7 +62,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
     testImplementation 'org.robolectric:robolectric:4.7.3'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
 }
 
