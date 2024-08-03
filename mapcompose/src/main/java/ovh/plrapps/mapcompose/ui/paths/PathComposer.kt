@@ -50,8 +50,8 @@ internal fun PathCanvas(
     val offsetAndCount = drawablePathState.offsetAndCount
     val pathData = drawablePathState.pathData
 
-    val path by produceState(
-        initialValue = drawablePathState.lastRenderedPath,
+    val pathDecimated by produceState<Path?>(
+        initialValue = null,
         keys = arrayOf(
             pathData,
             offsetAndCount,
@@ -66,10 +66,12 @@ internal fun PathCanvas(
                 count = offsetAndCount.y,
                 simplify = drawablePathState.simplify,
                 scale = zoomPRState.scale,
+                onNewDecimatedPath = { drawablePathState.currentDecimatedPath = it }
             )
         }
-        drawablePathState.lastRenderedPath = value
     }
+
+    val path = pathDecimated ?: return
 
     val widthPx = with(LocalDensity.current) {
         drawablePathState.width.toPx()
@@ -214,7 +216,14 @@ class PathDataBuilder internal constructor(
     }
 }
 
-internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify: Float, scale: Float): Path {
+internal fun generatePath(
+    pathData: PathData,
+    offset: Int,
+    count: Int,
+    simplify: Float,
+    scale: Float,
+    onNewDecimatedPath: (decimatedPath: List<Offset>) -> Unit
+): Path {
     val p = Path()
     val epsilon = simplify / scale
     val subList = pathData.data.subList(offset, offset + count)
@@ -222,6 +231,7 @@ internal fun generatePath(pathData: PathData, offset: Int, count: Int, simplify:
         runCatching {
             val out = mutableListOf<Offset>()
             ramerDouglasPeucker(subList, epsilon, out)
+            onNewDecimatedPath(out)
             out
         }.getOrElse {
             subList

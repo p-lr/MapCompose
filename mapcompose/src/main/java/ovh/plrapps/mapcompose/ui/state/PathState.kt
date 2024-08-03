@@ -1,17 +1,13 @@
 package ovh.plrapps.mapcompose.ui.state
 
-import android.graphics.Paint
-import android.graphics.Path
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -140,10 +136,12 @@ internal class PathState(
             var d = Float.MAX_VALUE
             var nearestP1: Offset? = null
             var nearestP2: Offset? = null
-            for (i in 0 until pathState.pathData.data.size) {
-                if (i + 1 == pathState.pathData.data.size) break
-                val p1 = pathState.pathData.data[i]
-                val p2 = pathState.pathData.data[i + 1]
+
+            val points = pathState.currentDecimatedPath ?: pathState.pathData.data
+            for (i in points.indices) {
+                if (i + 1 == points.size) break
+                val p1 = points[i]
+                val p2 = points[i + 1]
                 val dist = getDistance(xPx, yPx, p1.x, p1.y, p2.x, p2.y)
                 if (dist < threshold && dist < d) {
                     d = dist
@@ -224,7 +222,7 @@ internal class DrawablePathState(
     zIndex: Float,
     pattern: List<PatternItem>?
 ) {
-    var lastRenderedPath: Path = Path()
+    var currentDecimatedPath: List<Offset>? = null  // read and write on main thread exclusively
     var pathData by mutableStateOf(pathData)
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
