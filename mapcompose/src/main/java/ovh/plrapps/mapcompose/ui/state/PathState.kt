@@ -126,7 +126,7 @@ internal class PathState(
 
         for ((id, pathState) in candidates) {
 
-            val bb = pathState.pathData.boundingBox ?: continue
+            val bb = pathState.pathData.boundingBox
             val (topLeft, bottomRight) = bb
             val (xMin, yMin) = topLeft
             val (xMax, yMax) = bottomRight

@@ -147,7 +147,7 @@ internal fun PathCanvas(
  * subList to work (see [List.subList] doc). */
 class PathData internal constructor(
     internal val data: List<Offset>,
-    internal val boundingBox: Pair<Offset, Offset>?     // topLeft, bottomRight
+    internal val boundingBox: Pair<Offset, Offset>     // topLeft, bottomRight
 ) {
     val size: Int
         get() = data.size
@@ -205,7 +205,7 @@ class PathDataBuilder internal constructor(
 
         val bb = if (_xMin != null && _xMax != null && _yMin != null && _yMax != null) {
             Pair(Offset(_xMin, _yMin), Offset(_xMax, _yMax))
-        } else null
+        } else return null
 
         /**
          * Make a defensive copy (see PathData doc). We don't want structural modifications to
