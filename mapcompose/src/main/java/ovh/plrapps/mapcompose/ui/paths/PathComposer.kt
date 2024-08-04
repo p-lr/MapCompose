@@ -51,6 +51,8 @@ internal fun PathCanvas(
     val pathData = drawablePathState.pathData
 
     val pathDecimated by produceState<Path?>(
+        /* Only affects the very first value.
+         * During the computation of a new value, the state holds the last computed value. */
         initialValue = null,
         keys = arrayOf(
             pathData,
@@ -66,7 +68,7 @@ internal fun PathCanvas(
                 count = offsetAndCount.y,
                 simplify = drawablePathState.simplify,
                 scale = zoomPRState.scale,
-                onNewDecimatedPath = { drawablePathState.currentDecimatedPath = it }
+                onNewDecimatedPath = { drawablePathState.currentDecimatedPath.value = it }
             )
         }
     }

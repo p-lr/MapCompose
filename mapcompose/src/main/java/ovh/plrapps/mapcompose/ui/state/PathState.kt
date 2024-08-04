@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.MutableStateFlow
 import ovh.plrapps.mapcompose.ui.gestures.model.HitType
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
@@ -137,7 +138,7 @@ internal class PathState(
             var nearestP1: Offset? = null
             var nearestP2: Offset? = null
 
-            val points = pathState.currentDecimatedPath ?: pathState.pathData.data
+            val points = pathState.currentDecimatedPath.value ?: pathState.pathData.data
             for (i in points.indices) {
                 if (i + 1 == points.size) break
                 val p1 = points[i]
@@ -222,7 +223,9 @@ internal class DrawablePathState(
     zIndex: Float,
     pattern: List<PatternItem>?
 ) {
-    var currentDecimatedPath: List<Offset>? = null  // read and write on main thread exclusively
+    /* Using a StateFlow mainly for its thread-safety (value is written off ui thread, and we do
+     * not want/need to switch to the main thread while updating this value) */
+    val currentDecimatedPath = MutableStateFlow<List<Offset>?>(null)
     var pathData by mutableStateOf(pathData)
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
