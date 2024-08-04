@@ -244,9 +244,9 @@ internal class DrawablePathState(
 
     private fun initializeOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
         val ofst = offset?.coerceIn(0, pathData.data.size) ?: 0
-        val count = cnt?.coerceIn(
+        val count = (cnt ?: pathData.data.size).coerceIn(
             0, (pathData.data.size - ofst)
-        ) ?: pathData.data.size
+        )
         return IntOffset(ofst, count)
     }
 
