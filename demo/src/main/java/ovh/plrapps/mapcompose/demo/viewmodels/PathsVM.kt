@@ -85,11 +85,13 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 id = "filled polygon",
                 color = Color.Green,
                 fillColor = Color.Green.copy(alpha = .6f),
-                clickable = true,
             ) {
-                addPoint(0.14, 0.15)
-                addPoint(0.14, 0.18)
-                addPoint(0.28, 0.10)
+                // Pentagon
+                addPoint(0.2009, 0.17878)
+                addPoint(0.08909, 0.2151)
+                addPoint(0.01999, 0.12)
+                addPoint(0.08909, 0.02489)
+                addPoint(0.2009, 0.06122)
             }
         }
     }
@@ -113,7 +115,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
                 ?: return@with
 
             addPath(
-                id = trackName, color = color, clickable = true, pattern = pattern
+                id = trackName, color = color, clickable = clickable, pattern = pattern, offset = 1
             ) {
                 for (line in lines) {
                     val values = line.split(',').map(String::toDouble)
