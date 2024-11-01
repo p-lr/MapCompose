@@ -378,14 +378,13 @@ private fun ZoomPanRotateState.calculateScrollTo(
     val rotatedNormalizedArea =
         normalizedArea.rotate(Point(centerX / xAxisScale, centerY), -rotation.toRad())
     val rotatedArea = rotatedNormalizedArea.scaleAxis(xAxisScale)
-    val visibleAreaMargin = visibleAreaPadding.getRotatedMargin(rotation)
 
     val areaWidth = fullWidth * (rotatedArea.xRight - rotatedArea.xLeft)
-    val availableViewportWidth = (layoutSize.width - visibleAreaMargin.x) * (1 - padding.x)
+    val availableViewportWidth = (layoutSize.width - visibleAreaPadding.left - visibleAreaPadding.right) * (1 - padding.x)
     val horizontalScale = availableViewportWidth / areaWidth
 
     val areaHeight = fullHeight * (rotatedArea.yBottom - rotatedArea.yTop)
-    val availableViewportHeight = (layoutSize.height - visibleAreaMargin.y) * (1 - padding.y)
+    val availableViewportHeight = (layoutSize.height - visibleAreaPadding.top - visibleAreaPadding.bottom) * (1 - padding.y)
     val verticalScale = availableViewportHeight / areaHeight
 
     val targetScale = min(horizontalScale, verticalScale).toFloat()

@@ -17,14 +17,3 @@ internal fun VisibleAreaPadding.getOffsetForScroll(rotation: AngleDegree): IntOf
     val offsetY = rotateY((left - right) / 2.0, (top - bottom) / 2.0, angle)
     return IntOffset(offsetX.toInt(), offsetY.toInt())
 }
-
-/**
- * Get the sum of margins when rotated. This is useful when we need to calculate the remaining space
- * available on screen after applying the visible area padding.
- */
-internal fun VisibleAreaPadding.getRotatedMargin(rotation: AngleDegree): IntOffset {
-    val angle = -rotation.toRad()
-    val paddingX = rotateX((left + right).toDouble(), (top + bottom).toDouble(), angle)
-    val paddingY = rotateY((left + right).toDouble(), (top + bottom).toDouble(), angle)
-    return IntOffset(paddingX.toInt(), paddingY.toInt())
-}
