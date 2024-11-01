@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package ovh.plrapps.mapcompose.demo.ui.screens
 
 import androidx.compose.foundation.Canvas
@@ -7,7 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -20,23 +25,40 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
 import ovh.plrapps.mapcompose.api.scale
+import ovh.plrapps.mapcompose.demo.ui.MainDestinations
 import ovh.plrapps.mapcompose.demo.utils.pxToDp
 import ovh.plrapps.mapcompose.demo.viewmodels.CustomDrawVM
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log10
 import kotlin.math.pow
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 /**
  * This demo shows how to embed custom drawings inside [MapUI].
  */
 @Composable
-fun CustomDraw(
-    modifier: Modifier = Modifier, viewModel: CustomDrawVM = viewModel()
+fun CustomDrawDemo(viewModel: CustomDrawVM = viewModel()) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(MainDestinations.CUSTOM_DRAW.title) },
+            )
+        }
+    ) { padding ->
+        CustomDraw(Modifier.padding(padding), viewModel)
+    }
+}
+
+/**
+ * This demo shows how to embed custom drawings inside [MapUI].
+ */
+@Composable
+private fun CustomDraw(
+    modifier: Modifier = Modifier, viewModel: CustomDrawVM
 ) {
     Box {
         MapUI(modifier, state = viewModel.state) {

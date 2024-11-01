@@ -1,40 +1,54 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package ovh.plrapps.mapcompose.demo.ui.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.enableMarkerDrag
-import ovh.plrapps.mapcompose.demo.R
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ovh.plrapps.mapcompose.demo.ui.MainDestinations
 import ovh.plrapps.mapcompose.demo.viewmodels.AddingMarkerVM
 import ovh.plrapps.mapcompose.ui.MapUI
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AddingMarkerDemo(
     modifier: Modifier = Modifier,
     viewModel: AddingMarkerVM = viewModel(),
 ) {
-    Column(modifier.fillMaxSize()) {
-        MapUI(
-            modifier.weight(2f),
-            state = viewModel.state
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = {
-                viewModel.addMarker()
-            }, Modifier.padding(8.dp)) {
-                Text(text = "Add marker")
-            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(MainDestinations.ADDING_MARKERS.title) },
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier
+                .padding(padding)
+                .fillMaxSize()) {
+            MapUI(
+                modifier.weight(2f),
+                state = viewModel.state
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = {
+                    viewModel.addMarker()
+                }, Modifier.padding(8.dp)) {
+                    Text(text = "Add marker")
+                }
 
-            Text("Drag markers with finger")
+                Text("Drag markers with finger")
+            }
         }
     }
 }

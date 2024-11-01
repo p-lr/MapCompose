@@ -5,7 +5,21 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import ovh.plrapps.mapcompose.demo.ui.screens.*
+import ovh.plrapps.mapcompose.demo.ui.screens.AddingMarkerDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.AnimationDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.CalloutDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.CenteringOnMarkerDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.CustomDrawDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.Home
+import ovh.plrapps.mapcompose.demo.ui.screens.HttpTilesDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.LayersDemoSimple
+import ovh.plrapps.mapcompose.demo.ui.screens.MapDemoSimple
+import ovh.plrapps.mapcompose.demo.ui.screens.MarkersClusteringDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.MarkersLazyLoadingDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.OsmDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.PathsDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.RotationDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.VisibleAreaPaddingDemo
 import ovh.plrapps.mapcompose.demo.ui.theme.MapComposeTheme
 
 @Composable
@@ -38,7 +52,7 @@ fun MapComposeDemoApp() {
                 PathsDemo()
             }
             composable(MainDestinations.CUSTOM_DRAW.name) {
-                CustomDraw()
+                CustomDrawDemo()
             }
             composable(MainDestinations.CALLOUT_DEMO.name) {
                 CalloutDemo()
