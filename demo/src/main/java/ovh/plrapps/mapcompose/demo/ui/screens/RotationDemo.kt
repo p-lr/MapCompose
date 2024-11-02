@@ -50,7 +50,7 @@ private fun RotationScreen(
 
     Column(modifier.fillMaxSize()) {
         MapUI(
-            modifier.weight(2f),
+            Modifier.weight(1f),
             state = mapState
         )
         Row {

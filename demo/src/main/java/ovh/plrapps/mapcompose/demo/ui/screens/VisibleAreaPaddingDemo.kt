@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ovh.plrapps.mapcompose.api.centerOnMarker
@@ -71,43 +73,74 @@ private fun VisibleAreaPaddingScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            modifier = Modifier.padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    topObstructionEnabled = !topObstructionEnabled
+                },
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
+        ) {
+            Switch(topObstructionEnabled, onCheckedChange = null)
+            Text(
+                "Top   ", // Same width as "Bottom"
+                modifier = Modifier.padding(start = 4.dp),
+                fontFamily = FontFamily.Monospace
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    topObstructionEnabled = !topObstructionEnabled
+                },
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
             Row(
                 modifier = Modifier.clickable {
                     leftObstructionEnabled = !leftObstructionEnabled
                 },
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Switch(leftObstructionEnabled, onCheckedChange = null)
-                Text("Left", modifier = Modifier.padding(start = 4.dp))
+                Text(
+                    "Left",
+                    modifier = Modifier.padding(start = 4.dp),
+                    fontFamily = FontFamily.Monospace
+                )
             }
             Row(
                 modifier = Modifier.clickable {
                     rightObstructionEnabled = !rightObstructionEnabled
                 },
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Switch(rightObstructionEnabled, onCheckedChange = null)
-                Text("Right", modifier = Modifier.padding(start = 4.dp))
-            }
-            Row(
-                modifier = Modifier.clickable {
-                    topObstructionEnabled = !topObstructionEnabled
-                },
-            ) {
-                Switch(topObstructionEnabled, onCheckedChange = null)
-                Text("Top", modifier = Modifier.padding(start = 4.dp))
-            }
-            Row(
-                modifier = Modifier.clickable {
-                    bottomObstructionEnabled = !bottomObstructionEnabled
-                },
-            ) {
-                Switch(bottomObstructionEnabled, onCheckedChange = null)
-                Text("Bottom", modifier = Modifier.padding(start = 4.dp))
+                Text(
+                    "Right",
+                    modifier = Modifier.padding(start = 4.dp),
+                    fontFamily = FontFamily.Monospace
+                )
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    bottomObstructionEnabled = !bottomObstructionEnabled
+                },
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Switch(bottomObstructionEnabled, onCheckedChange = null)
+            Text(
+                "Bottom",
+                modifier = Modifier.padding(start = 4.dp),
+                fontFamily = FontFamily.Monospace
+            )
+        }
+        Spacer(Modifier.height(8.dp))
         Box {
             MapUI(
                 modifier,
