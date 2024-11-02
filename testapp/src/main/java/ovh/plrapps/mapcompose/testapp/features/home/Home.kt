@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package ovh.plrapps.mapcompose.testapp.features.home
 
 import androidx.compose.foundation.clickable
@@ -5,7 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,7 +26,6 @@ fun Home(demoListState: LazyListState, onDemoSelected: (dest: NavDestinations) -
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
-                backgroundColor = MaterialTheme.colors.primarySurface,
             )
         }
     ) { padding ->
@@ -38,7 +43,7 @@ fun Home(demoListState: LazyListState, onDemoSelected: (dest: NavDestinations) -
                             .padding(16.dp),
                         textAlign = TextAlign.Center
                     )
-                    Divider(thickness = 1.dp)
+                    HorizontalDivider(thickness = 1.dp)
                 }
             }
         }
