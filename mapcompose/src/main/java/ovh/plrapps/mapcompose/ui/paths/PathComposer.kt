@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
@@ -34,8 +35,10 @@ internal fun PathComposer(
     zoomPRState: ZoomPanRotateState,
     pathState: PathState
 ) {
+    var drawOrder = 0
     for (path in pathState.pathState.values.sortedBy { it.zIndex }) {
         key(path.id) {
+            path.drawOrder.update { drawOrder++ }
             PathCanvas(modifier, zoomPRState, path)
         }
     }
