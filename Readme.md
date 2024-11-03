@@ -73,7 +73,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.12.9'
+implementation 'ovh.plrapps:mapcompose:2.12.11'
 ```
 
 Starting with v.2.4.1, the library is using the 
