@@ -65,7 +65,7 @@ internal class ZoomPanRotateState(
     internal var centroidX: Double by mutableDoubleStateOf(0.0)
     internal var centroidY: Double by mutableDoubleStateOf(0.0)
 
-    internal var layoutSize by mutableStateOf(IntSize(0, 0))
+    internal var layoutSize by mutableStateOf(IntSize.Zero)
 
     internal var visibleAreaPadding = VisibleAreaPadding(0, 0, 0, 0)
 
@@ -534,16 +534,18 @@ internal class ZoomPanRotateState(
         /* When the size changes, typically on device rotation, the scroll needs to be adapted so
          * that we keep the same location at the center of the screen. Don't do that when layout
          * hasn't been done yet. */
+        var newScrollX: Float? = null
+        var newScrollY: Float? = null
         if (layoutSize != IntSize.Zero) {
-            setScroll(
-                scrollX = scrollX + (layoutSize.width - size.width) / 2,
-                scrollY = scrollY + (layoutSize.height - size.height) / 2
-            )
+            newScrollX = scrollX + (layoutSize.width - size.width) / 2
+            newScrollY = scrollY + (layoutSize.height - size.height) / 2
         }
 
         layoutSize = size
+        if (newScrollX != null && newScrollY != null) {
+            setScroll(newScrollX, newScrollY)
+        }
         recalculateMinScale()
-        setScale(scale)
 
         /* Layout was done at least once, resume continuations */
         for (ct in onLayoutContinuations) {
