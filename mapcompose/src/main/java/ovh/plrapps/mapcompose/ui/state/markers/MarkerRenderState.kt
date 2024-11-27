@@ -178,3 +178,21 @@ fun interface DragInterceptor {
         py: Double
     )
 }
+
+fun interface DragStartListener {
+    /**
+     * @param id: The id of the marker
+     * @param x, y: The normalized coordinates of the marker, before the drag starts.
+     *
+     * This api may evolve to also include the pointer position when the drag starts.
+     */
+    fun onDragStart(id: String, x: Double, y: Double)
+}
+
+fun interface DragEndListener {
+    /**
+     * @param id: The id of the marker
+     * @param x, y: The normalized coordinates of the marker when the drag ends.
+     */
+    fun onDragEnd(id: String, x: Double, y: Double)
+}

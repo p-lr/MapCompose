@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.ui.state.markers.DragEndListener
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
+import ovh.plrapps.mapcompose.ui.state.markers.DragStartListener
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.*
 import ovh.plrapps.mapcompose.utils.withRetry
@@ -299,15 +301,29 @@ fun MapState.moveMarker(id: String, x: Double, y: Double) {
  * Enable drag gestures on a marker.
  *
  * @param id The id of the marker
+ * @param onDragStart (Optional) To get notified when a drag gesture starts.
+ * @param onDragEnd (Optional) To get notified when a drag gesture ends.
  * @param dragInterceptor (Optional) Useful to constrain drag movements along a path. When this
  * parameter is set, you're responsible for invoking [moveMarker] with appropriate values (using
  * your own custom logic).
  * See [DragInterceptor].
  */
-fun MapState.enableMarkerDrag(id: String, dragInterceptor: DragInterceptor? = null) {
+fun MapState.enableMarkerDrag(
+    id: String,
+    onDragStart: DragStartListener? = null,
+    onDragEnd: DragEndListener? = null,
+    dragInterceptor: DragInterceptor? = null
+) {
     markerState.setDraggable(id, true)
+    val markerData = markerState.getMarker(id)
+    if (onDragStart != null) {
+        markerData?.dragStartListener = onDragStart
+    }
+    if (onDragEnd != null) {
+        markerData?.dragEndListener = onDragEnd
+    }
     if (dragInterceptor != null) {
-        markerState.getMarker(id)?.dragInterceptor = dragInterceptor
+        markerData?.dragInterceptor = dragInterceptor
     }
 }
 

@@ -38,7 +38,14 @@ internal fun MarkerComposer(
                         .then(
                             if (data.isDraggable) {
                                 Modifier.pointerInput(Unit) {
-                                    detectDragGestures { change, dragAmount ->
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            data.dragStartListener?.onDragStart(data.id, data.x, data.y)
+                                        },
+                                        onDragEnd = {
+                                            data.dragEndListener?.onDragEnd(data.id, data.x, data.y)
+                                        }
+                                    ) { change, dragAmount ->
                                         change.consume()
                                         val interceptor = data.dragInterceptor
                                         if (interceptor != null) {
