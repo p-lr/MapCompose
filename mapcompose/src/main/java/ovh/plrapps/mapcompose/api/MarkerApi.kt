@@ -131,6 +131,8 @@ fun MapState.addMarker(
  * cluster is formed. Defaults to 50 dp. There's one exception: when the scale reaches max scale,
  * in which case clustering is disabled.
  * @param clusterClickBehavior Defines the behavior when a cluster is clicked.
+ * @param scaleThreshold Defines the scale above which the clusterer is disabled. Defaults to
+ * [ClusterScaleThreshold.MaxScale] which corresponds to [MapState.maxScale].
  * @param clusterFactory Compose code for a cluster. Receives the list of marker ids which are fused
  * to form the cluster.
  */
@@ -139,6 +141,7 @@ fun MapState.addClusterer(
     id: String,
     clusteringThreshold: Dp = 50.dp,
     clusterClickBehavior: ClusterClickBehavior = Default,
+    scaleThreshold: ClusterScaleThreshold = ClusterScaleThreshold.MaxScale,
     clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
 ) {
     markerState.addClusterer(
@@ -146,6 +149,7 @@ fun MapState.addClusterer(
         id = id,
         clusteringThreshold = clusteringThreshold,
         clusterClickBehavior = clusterClickBehavior.toInternal(),
+        scaleThreshold = scaleThreshold,
         clusterFactory = clusterFactory
     )
 }

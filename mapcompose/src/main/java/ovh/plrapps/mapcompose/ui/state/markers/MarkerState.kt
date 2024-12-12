@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.ClusterScaleThreshold
 import ovh.plrapps.mapcompose.ui.markers.Clusterer
 import ovh.plrapps.mapcompose.ui.markers.LazyLoader
 import ovh.plrapps.mapcompose.ui.gestures.model.HitType
@@ -129,6 +130,7 @@ internal class MarkerState(
         id: String,
         clusteringThreshold: Dp,
         clusterClickBehavior: ClusterClickBehavior,
+        scaleThreshold: ClusterScaleThreshold,
         clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
     ) {
         val clusterer = Clusterer(
@@ -138,6 +140,7 @@ internal class MarkerState(
             markerRenderState = markerRenderState,
             markersDataFlow = markers,
             clusterClickBehavior = clusterClickBehavior,
+            scaleThreshold = scaleThreshold,
             clusterFactory = clusterFactory
         )
         clusterersById[id] = clusterer

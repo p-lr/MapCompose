@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.BoundingBox
+import ovh.plrapps.mapcompose.api.ClusterScaleThreshold
 import ovh.plrapps.mapcompose.api.MarkerDataSnapshot
 import ovh.plrapps.mapcompose.api.VisibleArea
 import ovh.plrapps.mapcompose.api.fullSize
@@ -52,6 +53,7 @@ internal class Clusterer(
     private val markerRenderState: MarkerRenderState,
     markersDataFlow: MutableStateFlow<List<MarkerData>>,
     private val clusterClickBehavior: ClusterClickBehavior,
+    private val scaleThreshold: ClusterScaleThreshold,
     private val clusterFactory: (ids: List<String>) -> (@Composable () -> Unit)
 ) {
     private val scope = CoroutineScope(
@@ -165,8 +167,12 @@ internal class Clusterer(
             marker.id in exemptionSet
         }
 
-        /* Disable clustering if scale is max scale */
-        val result = if (scale < mapState.maxScale) {
+        /* Disable clustering if scale is greater than the threshold */
+        val maxScale = when (scaleThreshold) {
+            is ClusterScaleThreshold.FixedScale -> scaleThreshold.scale
+            ClusterScaleThreshold.MaxScale -> mapState.maxScale
+        }
+        val result = if (scale < maxScale) {
             val densitySearchPass = processMarkers(markers, visibleMarkers, scale, epsilon)
             mergeClosest(densitySearchPass, epsilon, scale)
         } else {

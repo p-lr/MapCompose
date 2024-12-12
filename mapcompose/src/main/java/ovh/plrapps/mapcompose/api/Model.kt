@@ -55,3 +55,8 @@ internal fun ClusterClickBehavior.toInternal(): ClusterClickBehaviorInternal {
         None -> NoneInternal
     }
 }
+
+sealed interface ClusterScaleThreshold {
+    data object MaxScale : ClusterScaleThreshold
+    data class FixedScale(val scale: Float) : ClusterScaleThreshold
+}
