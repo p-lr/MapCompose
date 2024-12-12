@@ -151,6 +151,23 @@ fun MapState.addClusterer(
 }
 
 /**
+ * Set a list of marker id to not clusterize by the clusterer which has the given [id].
+ * This is useful to call this api right at the beginning of a marker drag. Otherwise, the cluster
+ * might clusterize the marker during the drag gesture which would cause the gesture to be interrupted
+ * and the `onDragEnd` callback (if set) wouldn't be invoked.
+ * When this api is invoked, the relevant clusterer re-processes its managed markers.
+ *
+ * @param id The id of the clusterer
+ * @param markersToExempt The set of marker ids to not clusterize.
+ */
+fun MapState.setClustererExemptList(
+    id: String,
+    markersToExempt: Set<String>
+) {
+    markerState.setClusteredExemptList(id, markersToExempt)
+}
+
+/**
  * Add a lazy loader for markers. The lazy loader removes markers as they go out of the visible area
  * (and adds markers which are visible).
  *

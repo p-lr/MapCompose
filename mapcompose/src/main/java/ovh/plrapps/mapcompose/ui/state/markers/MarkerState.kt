@@ -143,6 +143,12 @@ internal class MarkerState(
         clusterersById[id] = clusterer
     }
 
+    fun setClusteredExemptList(id: String, markersToExempt: Set<String>) {
+        clusterersById[id]?.apply {
+            exemptionSet.value = markersToExempt
+        }
+    }
+
     fun addLazyLoader(
         mapState: MapState,
         id: String,
