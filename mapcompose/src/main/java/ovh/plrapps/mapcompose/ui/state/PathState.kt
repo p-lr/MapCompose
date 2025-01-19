@@ -82,14 +82,17 @@ internal class PathState(
     ) {
         pathState[id]?.apply {
             val path = this
-            pathData?.also { path.pathData = it }
+            pathData?.also {
+                path.pathData = it
+                resetOffsetAndCount()
+            }
             visible?.also { path.visible = it }
             width?.also { path.width = it }
             color?.also { path.color = it }
             fillColor?.also { path.fillColor = it }
             cap?.also { path.cap = it }
             simplify?.also { path.simplify = it.coerceAtLeast(0f) }
-            if (offset != null || count != null || pathData != null) {
+            if (offset != null || count != null) {
                 offsetAndCount = coerceOffsetAndCount(offset, count)
             }
             clickable?.also { path.isClickable = it }
@@ -246,6 +249,10 @@ internal class DrawablePathState(
     var simplify: Float by mutableFloatStateOf(simplify?.coerceAtLeast(0f) ?: 1f)
 
     val drawOrder = MutableStateFlow(0)
+
+    fun resetOffsetAndCount() {
+        offsetAndCount = IntOffset(0, pathData.data.size)
+    }
 
     private fun initializeOffsetAndCount(offset: Int?, cnt: Int?): IntOffset {
         val ofst = offset?.coerceIn(0, pathData.data.size) ?: 0
