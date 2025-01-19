@@ -537,6 +537,29 @@ suspend fun MapState.visibleArea(padding: IntOffset = IntOffset.Zero): VisibleAr
     }
 }
 
+/**
+ * Returns the visible area expressed in normalized coordinates. This *does* account for rotation.
+ */
+suspend fun MapState.visibleAreaFlow(
+    padding: IntOffset = IntOffset.Zero,
+    throttleMillis: Long = 500
+): Flow<VisibleArea> {
+    return snapshotFlow {
+        centroidX.hashCode() + centroidY.hashCode() + scale.hashCode()
+    }.throttle(throttleMillis).map {
+        visibleArea(padding)
+    }
+}
+
+/**
+ *    p1         p2
+ *      ---------
+ *      |       |
+ *      |       |
+ *      |       |
+ *      ---------
+ *    p4         p3
+ */
 data class VisibleArea(
     internal var _p1x: Double,
     internal var _p1y: Double,
