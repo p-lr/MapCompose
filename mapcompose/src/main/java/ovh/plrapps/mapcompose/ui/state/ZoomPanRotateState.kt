@@ -542,10 +542,10 @@ internal class ZoomPanRotateState(
         }
 
         layoutSize = size
+        recalculateMinScale()
         if (newScrollX != null && newScrollY != null) {
             setScroll(newScrollX, newScrollY)
         }
-        recalculateMinScale()
 
         /* Layout was done at least once, resume continuations */
         for (ct in onLayoutContinuations) {
