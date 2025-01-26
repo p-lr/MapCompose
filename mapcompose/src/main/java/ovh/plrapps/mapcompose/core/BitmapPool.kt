@@ -3,8 +3,10 @@ package ovh.plrapps.mapcompose.core
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -52,5 +54,27 @@ internal class BitmapPool(coroutineContext: CoroutineContext) {
      */
     fun put(b: Bitmap) {
         receiveChannel.trySend(b)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun clear() = scope.launch {
+        mutex.withLock {
+            coroutineScope {
+                pool.forEach { (k, v) ->
+                    val channel= pool[k]
+                    if (channel != null) {
+                        launch {
+                            for (b in channel) {
+                                b.recycle()
+                                if (channel.isEmpty) {
+                                    cancel()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            scope.cancel()
+        }
     }
 }

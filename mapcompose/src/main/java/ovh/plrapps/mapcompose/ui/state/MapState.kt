@@ -104,6 +104,8 @@ class MapState(
     fun shutdown() {
         scope.cancel()
         tileCanvasState.shutdown()
+        pathState.removeAllPaths()
+        markerState.removeAllMarkers()
     }
 
     override fun onStateChanged() {

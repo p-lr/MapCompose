@@ -142,6 +142,7 @@ internal class TileCanvasState(
     fun shutdown() {
         singleThreadDispatcher.close()
         tileCollector.shutdownNow()
+        bitmapPool.clear()
     }
 
     suspend fun setViewport(viewport: Viewport) {
