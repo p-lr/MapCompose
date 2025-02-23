@@ -291,9 +291,10 @@ internal class ZoomPanRotateState(
     }
 
     /**
-     * Invoke [block] and return whether the operation completed without being cancelled.
+     * Invokes [block] in the scope of the composition and return whether the operation completed
+     * without being cancelled.
      */
-    private suspend fun invokeAndCheckSuccess(block: suspend () -> Unit): Boolean {
+    internal suspend fun invokeAndCheckSuccess(block: suspend () -> Unit): Boolean {
         var success = true
         scope?.launch {
             block()

@@ -2,6 +2,7 @@
 
 package ovh.plrapps.mapcompose.api
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -10,6 +11,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.lerp as lerpOffset
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -253,6 +255,56 @@ fun MapState.updateMarkerClickable(
     clickable: Boolean
 ) {
     markerState.getMarker(id)?.isClickable = clickable
+}
+
+/**
+ * Updates the offsets of a marker.
+ * @param relativeOffset The x-axis and y-axis positions of the marker will be respectively offset by
+ * the width of the marker multiplied by the x value of the offset, and the height of the marker
+ * multiplied by the y value of the offset. If null, does not updates the current value.
+ * @param absoluteOffset The x-axis and y-axis positions of a marker will be respectively offset by
+ * the x and y values of the offset. If null, does not updates the current value.
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness. When null,
+ * no animation is used.
+ */
+suspend fun MapState.updateMarkerOffset(
+    id: String,
+    relativeOffset: Offset? = null,
+    absoluteOffset: Offset? = null,
+    animationSpec: AnimationSpec<Float>? = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    markerState.getMarker(id)?.also {
+        if (animationSpec != null) {
+            with(zoomPanRotateState) {
+                awaitLayout()
+                invokeAndCheckSuccess {
+                    Animatable(0f).animateTo(1f, animationSpec) {
+                        if (relativeOffset != null) {
+                            it.relativeOffset = lerpOffset(
+                                it.relativeOffset,
+                                relativeOffset,
+                                value
+                            )
+                        }
+                        if (absoluteOffset != null) {
+                            it.absoluteOffset = lerpOffset(
+                                it.absoluteOffset,
+                                absoluteOffset,
+                                value
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            if (relativeOffset != null) {
+                it.relativeOffset = relativeOffset
+            }
+            if (absoluteOffset != null) {
+                it.absoluteOffset = absoluteOffset
+            }
+        }
+    }
 }
 
 /**

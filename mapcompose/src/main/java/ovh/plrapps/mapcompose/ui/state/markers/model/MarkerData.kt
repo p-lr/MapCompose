@@ -15,8 +15,8 @@ import java.util.*
 internal class MarkerData(
     val id: String,
     x: Double, y: Double,
-    val relativeOffset: Offset,
-    val absoluteOffset: Offset,
+    relativeOffset: Offset,
+    absoluteOffset: Offset,
     zIndex: Float,
     clickable: Boolean,
     isConstrainedInBounds: Boolean,
@@ -28,6 +28,8 @@ internal class MarkerData(
 ) {
     var x: Double by mutableDoubleStateOf(x)
     var y: Double by mutableDoubleStateOf(y)
+    var relativeOffset by mutableStateOf(relativeOffset)
+    var absoluteOffset by mutableStateOf(absoluteOffset)
     var isDraggable by mutableStateOf(false)
     var dragStartListener: DragStartListener? by mutableStateOf(null)
     var dragEndListener: DragEndListener? by mutableStateOf(null)
