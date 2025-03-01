@@ -5,6 +5,7 @@ import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.os.Build
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -110,18 +111,27 @@ internal class TileCollector(
             return bitmapPool.get(allocationByteCount) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfiguration.bitmapConfig)
         }
 
-        fun getBitmap(
+        suspend fun getBitmap(
             subSamplingRatio: Int,
             layer: Layer,
             inputStream: InputStream,
-            inBitmapForced: Bitmap? = null
+            isPrimaryLayer: Boolean,
         ): BitmapForLayer {
             val bitmapLoadingOptions =
                 bitmapLoadingOptionsForLayer[layer.id] ?: return BitmapForLayer(null, layer)
 
-            bitmapLoadingOptions.inMutable = true
-            bitmapLoadingOptions.inBitmap = inBitmapForced ?: bitmapForLayer[layer.id]
             bitmapLoadingOptions.inSampleSize = subSamplingRatio
+            if (shouldUseHardwareBitmaps(layers)) {
+                bitmapLoadingOptions.inPreferredConfig = Config.HARDWARE
+            } else {
+                bitmapLoadingOptions.inMutable = true
+                /* Attempt to reuse an existing bitmap for the first layer */
+                bitmapLoadingOptions.inBitmap = if (isPrimaryLayer) {
+                    getBitmapFromPoolOrCreate(
+                        subSamplingRatio
+                    )
+                } else bitmapForLayer[layer.id]
+            }
 
             return inputStream.use {
                 val bitmap = runCatching {
@@ -146,10 +156,7 @@ internal class TileCollector(
                             subSamplingRatio = subSamplingRatio,
                             layer = layer,
                             inputStream = i,
-                            /* Attempt to reuse an existing bitmap for the first layer */
-                            inBitmapForced = if (index == 0) getBitmapFromPoolOrCreate(
-                                subSamplingRatio
-                            ) else null
+                            isPrimaryLayer = index == 0
                         )
                     } else BitmapForLayer(null, layer)
                 }
@@ -174,12 +181,14 @@ internal class TileCollector(
                 null
             } ?: continue // If the decoding of the first layer failed, skip the rest
 
-            canvas.setBitmap(resultBitmap)
+            if (layers.size > 1) {
+                canvas.setBitmap(resultBitmap)
 
-            for (result in bitmapForLayers.drop(1)) {
-                paint.alpha = (255f * result.layer.alpha).toInt()
-                if (result.bitmap == null) continue
-                canvas.drawBitmap(result.bitmap, 0f, 0f, paint)
+                for (result in bitmapForLayers.drop(1)) {
+                    paint.alpha = (255f * result.layer.alpha).toInt()
+                    if (result.bitmap == null) continue
+                    canvas.drawBitmap(result.bitmap, 0f, 0f, paint)
+                }
             }
 
             val tile = Tile(
@@ -230,6 +239,25 @@ internal class TileCollector(
      */
     fun shutdownNow() {
         executor.shutdownNow()
+    }
+
+    /**
+     * On Android O+, ART has a more efficient GC and HARDWARE Bitmaps are supported, making
+     * Bitmap re-use much less important.
+     * However:
+     * - a framework issue pre Q requires to wait until GL context is initialized. Otherwise,
+     * allocating a hardware Bitmap can cause a native crash.
+     * - Allocating a hardware Bitmap involves the creation of a file descriptor. Android O, as well
+     * as some P devices, have a maximum of 1024 file descriptors. Android Q+ devices have a much
+     * higher limit of fd.
+     *
+     * To avoid all those issues entirely, we enable HARDWARE Bitmaps on Android Q and above.
+     * We don't monitor the file descriptor count because in practice, MapCompose creates a few
+     * hundreds of them and they seem to be efficiently recycled.
+     * When we have more than one layer, we still need a mutable Bitmap (software rendering).
+     */
+    private fun shouldUseHardwareBitmaps(layers: List<Layer>): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && layers.size == 1
     }
 
     /**
