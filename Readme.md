@@ -3,6 +3,8 @@
 [![](https://img.shields.io/badge/ComposeBOM-2025.02.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- Memory footprint has been dramatically reduced on Android 10 and above, by leveraging [Hardware Bitmaps](https://bumptech.github.io/glide/doc/hardwarebitmaps.html).
+  Software rendering is however still required when there's more than one layer.
 - MapCompose Multiplatform is officially released: https://github.com/p-lr/MapComposeMP \
   Works on iOS, MacOS, Windows, Linux, and Android.
 - New path dash pattern api: ability to define a sequence made of dash, dot, and gap.
@@ -73,7 +75,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.15.0'
+implementation 'ovh.plrapps:mapcompose:2.16.0'
 ```
 
 Starting with v.2.4.1, the library is using the 

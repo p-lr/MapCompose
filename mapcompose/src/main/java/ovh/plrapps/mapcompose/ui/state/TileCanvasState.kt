@@ -60,6 +60,8 @@ internal class TileCanvasState(
     private val lastVisible: VisibleTiles?
         get() = visibleStateFlow.value?.visibleTiles
 
+    private val recycleChannel = Channel<Tile>(Channel.UNLIMITED)
+
     /**
      * So long as this debounced channel is offered a message, the lambda isn't called.
      */
@@ -116,6 +118,14 @@ internal class TileCanvasState(
         /* Launch a coroutine to consume the produced tiles */
         scope.launch {
             consumeTiles(tilesOutput)
+        }
+
+        scope.launch(Dispatchers.Main) {
+            for (t in recycleChannel) {
+                val b = t.bitmap
+                t.bitmap = null
+                b?.recycle()
+            }
         }
     }
 
@@ -409,12 +419,20 @@ internal class TileCanvasState(
     }
 
     /**
-     * After a [Tile] is no longer visible, recycle its Bitmap and Paint if possible, for later use.
+     * After a [Tile] is no longer visible, depending on the bitmap mutability:
+     * - If the Bitmap is mutable, put it into the pool for later use.
+     * - If the bitmap isn't mutable, we don't use bitmap pooling. That means the associated graphic
+     * memory can be reclaimed asap.
+     * The Compose framework draws tiles on the main thread and checks whether or not [Tile.bitmap]
+     * is null. So, prior to calling recycle() we set [Tile.bitmap] to null on the main thread. This
+     * is done inside the coroutine which consumes [recycleChannel].
      */
     private fun Tile.recycle() {
         val b = bitmap ?: return
         if (b.isMutable) {
             bitmapPool.put(b)
+        } else {
+            recycleChannel.trySend(this)
         }
         alpha = 0f
     }
