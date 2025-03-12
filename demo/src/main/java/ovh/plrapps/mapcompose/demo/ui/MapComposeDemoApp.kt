@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ovh.plrapps.mapcompose.demo.ui.screens.AddingMarkerDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.AnimationDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.AnimationJitterDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.CalloutDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.CenteringOnMarkerDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.CustomDrawDemo
@@ -74,6 +75,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.MARKERS_LAZY_LOADING.name) {
                 MarkersLazyLoadingDemo()
+            }
+            composable(MainDestinations.ANIMATION_JITTER_DEMO.name) {
+                AnimationJitterDemo()
             }
         }
     }

@@ -3,6 +3,7 @@ package ovh.plrapps.mapcompose.demo.ui
 const val HOME = "home"
 
 enum class MainDestinations(val title: String) {
+    ANIMATION_JITTER_DEMO("Animation jitter demo"),
     MAP_ALONE("Simple map"),
     LAYERS_DEMO("Layers demo"),
     MAP_WITH_ROTATION_CONTROLS("Map with rotation controls"),
