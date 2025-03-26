@@ -2,14 +2,22 @@ package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
+import android.graphics.Bitmap.createBitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Build
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import java.io.InputStream
 import java.util.concurrent.LinkedBlockingQueue
@@ -48,7 +56,7 @@ import kotlin.math.pow
  */
 internal class TileCollector(
     private val workerCount: Int,
-    private val bitmapConfiguration: BitmapConfiguration,
+    private val optimizeForLowEndDevices: Boolean,
     private val tileSize: Int
 ) {
     @Volatile
@@ -68,18 +76,16 @@ internal class TileCollector(
         tileSpecs: ReceiveChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapPool: BitmapPool
     ) = coroutineScope {
         val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
         val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = 1)
 
         repeat(workerCount) {
             worker(
-                tilesToDownload,
-                tilesDownloadedFromWorker,
-                tilesOutput,
-                layers,
-                bitmapPool
+                tilesToDownload = tilesToDownload,
+                tilesDownloaded = tilesDownloadedFromWorker,
+                tilesOutput = tilesOutput,
+                layers = layers
             )
         }
         tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
@@ -90,47 +96,53 @@ internal class TileCollector(
         tilesDownloaded: SendChannel<TileSpec>,
         tilesOutput: SendChannel<Tile>,
         layers: List<Layer>,
-        bitmapPool: BitmapPool
     ) = launch(dispatcher) {
 
         val layerIds = layers.map { it.id }
+        val canUseHardwareBitmaps = canUseHardwareBitmaps()
+
+        /** If hardware bitmaps are available, use [Config.ARGB_8888] when there's more than one
+         * layer in the software canvas before copying the result to a hardware bitmap.
+         * Otherwise, use [Config.RGB_565] when not optimizing for low-end devices. */
+        val config = if (canUseHardwareBitmaps || !optimizeForLowEndDevices) {
+            Config.ARGB_8888
+        } else {
+            Config.RGB_565
+        }
+
         val bitmapLoadingOptionsForLayer = layerIds.associateWith {
             BitmapFactory.Options().apply {
-                inPreferredConfig = bitmapConfiguration.bitmapConfig
+                inPreferredConfig = config
             }
         }
-        val bitmapForLayer = layerIds.associateWith {
-            Bitmap.createBitmap(tileSize, tileSize, bitmapConfiguration.bitmapConfig)
-        }
+
+        /* If we can't use hardware bitmaps or we have two or more layers, we need to work with
+         * a software canvas */
+        val shouldUseSoftwareCanvas = layers.size > 1 || !canUseHardwareBitmaps
+
+        val bitmapForLayer = if (shouldUseSoftwareCanvas) {
+            layerIds.associateWith {
+                createBitmap(tileSize, tileSize, config)
+            }
+        } else emptyMap()
+
         val canvas = Canvas()
         val paint = Paint(Paint.FILTER_BITMAP_FLAG)
 
-        suspend fun getBitmapFromPoolOrCreate(subSamplingRatio: Int): Bitmap {
-            val subSampledSize = (tileSize / subSamplingRatio).coerceAtLeast(1)
-            val allocationByteCount = subSampledSize * subSampledSize * bitmapConfiguration.bytesPerPixel
-            return bitmapPool.get(allocationByteCount) ?: Bitmap.createBitmap(subSampledSize, subSampledSize, bitmapConfiguration.bitmapConfig)
-        }
-
-        suspend fun getBitmap(
+        fun getBitmap(
             subSamplingRatio: Int,
             layer: Layer,
             inputStream: InputStream,
-            isPrimaryLayer: Boolean,
         ): BitmapForLayer {
             val bitmapLoadingOptions =
                 bitmapLoadingOptionsForLayer[layer.id] ?: return BitmapForLayer(null, layer)
 
             bitmapLoadingOptions.inSampleSize = subSamplingRatio
-            if (shouldUseHardwareBitmaps(layers)) {
-                bitmapLoadingOptions.inPreferredConfig = Config.HARDWARE
-            } else {
+            if (shouldUseSoftwareCanvas) {
                 bitmapLoadingOptions.inMutable = true
-                /* Attempt to reuse an existing bitmap for the first layer */
-                bitmapLoadingOptions.inBitmap = if (isPrimaryLayer) {
-                    getBitmapFromPoolOrCreate(
-                        subSamplingRatio
-                    )
-                } else bitmapForLayer[layer.id]
+                bitmapLoadingOptions.inBitmap = bitmapForLayer[layer.id]
+            } else {
+                bitmapLoadingOptions.inPreferredConfig = Config.HARDWARE
             }
 
             return inputStream.use {
@@ -155,14 +167,13 @@ internal class TileCollector(
                         getBitmap(
                             subSamplingRatio = subSamplingRatio,
                             layer = layer,
-                            inputStream = i,
-                            isPrimaryLayer = index == 0
+                            inputStream = i
                         )
                     } else BitmapForLayer(null, layer)
                 }
             }.awaitAll()
 
-            val resultBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: run {
+            val primaryLayerBitmap = bitmapForLayers.firstOrNull()?.bitmap ?: run {
                 tilesDownloaded.send(spec)
                 /* When the decoding failed or if there's nothing to decode, then send back the Tile
                  * just as in normal processing, so that the actor which submits tiles specs to the
@@ -182,13 +193,21 @@ internal class TileCollector(
             } ?: continue // If the decoding of the first layer failed, skip the rest
 
             if (layers.size > 1) {
-                canvas.setBitmap(resultBitmap)
+                canvas.setBitmap(primaryLayerBitmap)
 
                 for (result in bitmapForLayers.drop(1)) {
                     paint.alpha = (255f * result.layer.alpha).toInt()
                     if (result.bitmap == null) continue
                     canvas.drawBitmap(result.bitmap, 0f, 0f, paint)
                 }
+            }
+
+            val resultBitmap = if (canUseHardwareBitmaps) {
+                if (layers.size > 1) {
+                    primaryLayerBitmap.copy(Config.HARDWARE, false)
+                } else primaryLayerBitmap
+            } else {
+                primaryLayerBitmap.copy(config, false)
             }
 
             val tile = Tile(
@@ -254,10 +273,9 @@ internal class TileCollector(
      * To avoid all those issues entirely, we enable HARDWARE Bitmaps on Android Q and above.
      * We don't monitor the file descriptor count because in practice, MapCompose creates a few
      * hundreds of them and they seem to be efficiently recycled.
-     * When we have more than one layer, we still need a mutable Bitmap (software rendering).
      */
-    private fun shouldUseHardwareBitmaps(layers: List<Layer>): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && layers.size == 1
+    private fun canUseHardwareBitmaps(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     }
 
     /**
@@ -275,7 +293,5 @@ internal class TileCollector(
     }
     private val dispatcher = executor.asCoroutineDispatcher()
 }
-
-internal data class BitmapConfiguration(val bitmapConfig: Config, val bytesPerPixel: Int)
 
 private data class BitmapForLayer(val bitmap: Bitmap?, val layer: Layer)

@@ -1,6 +1,5 @@
 package ovh.plrapps.mapcompose.ui.state
 
-import android.graphics.Bitmap
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,8 +39,6 @@ internal class TileCanvasState(
     private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
     internal val layerFlow = _layerFlow.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val bitmapPool = BitmapPool(Dispatchers.Default.limitedParallelism(1))
     private val visibleTileLocationsChannel = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
     private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
     private val visibleStateFlow = MutableStateFlow<VisibleState?>(null)
@@ -50,12 +47,6 @@ internal class TileCanvasState(
             field = value.coerceIn(0.01f, 1f)
         }
     internal var colorFilterProvider: ColorFilterProvider? by mutableStateOf(null)
-
-    private val bitmapConfig = if (highFidelityColors) {
-        BitmapConfiguration(Bitmap.Config.ARGB_8888, 4)
-    } else {
-        BitmapConfiguration(Bitmap.Config.RGB_565, 2)
-    }
 
     private val lastVisible: VisibleTiles?
         get() = visibleStateFlow.value?.visibleTiles
@@ -103,14 +94,17 @@ internal class TileCanvasState(
         }
 
         /* Launch the TileCollector */
-        tileCollector = TileCollector(workerCount.coerceAtLeast(1), bitmapConfig, tileSize)
+        tileCollector = TileCollector(
+            workerCount = workerCount.coerceAtLeast(1),
+            optimizeForLowEndDevices = !highFidelityColors,
+            tileSize = tileSize
+        )
         scope.launch {
             _layerFlow.collectLatest { layers ->
                 tileCollector.collectTiles(
                     tileSpecs = visibleTileLocationsChannel,
                     tilesOutput = tilesOutput,
-                    layers = layers,
-                    bitmapPool = bitmapPool
+                    layers = layers
                 )
             }
         }
@@ -152,7 +146,6 @@ internal class TileCanvasState(
     fun shutdown() {
         singleThreadDispatcher.close()
         tileCollector.shutdownNow()
-        bitmapPool.clear()
     }
 
     suspend fun setViewport(viewport: Viewport) {
@@ -429,9 +422,7 @@ internal class TileCanvasState(
      */
     private fun Tile.recycle() {
         val b = bitmap ?: return
-        if (b.isMutable) {
-            bitmapPool.put(b)
-        } else {
+        if (!b.isMutable) {
             recycleChannel.trySend(this)
         }
         alpha = 0f

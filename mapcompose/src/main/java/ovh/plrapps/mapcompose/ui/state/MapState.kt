@@ -273,7 +273,9 @@ class InitialValues internal constructor() {
     }
 
     /**
-     * By default, bitmaps are loaded using ARGB_8888, which is best suited for most usages.
+     * On API level 29 and above, HARDWARE bitmaps are used and this api is irrelevant.
+     * On API 28 and below, by default bitmaps are loaded using ARGB_8888, which is best suited for
+     * most usages.
      * However, if you're only loading images without alpha channel and high fidelity color isn't
      * a requirement, RGB_565 can be used instead for less memory usage (by setting this to false).
      * Beware, however, that some types of images can't be loaded using RGB_565 (such as PNGs with
