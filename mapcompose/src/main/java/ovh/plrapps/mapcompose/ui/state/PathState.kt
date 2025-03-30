@@ -65,6 +65,13 @@ internal class PathState(
         pathState.clear()
     }
 
+    fun removePaths(predicate: (String) -> Boolean) {
+        val iter = pathState.iterator()
+        for ((id, _) in iter) {
+            if (predicate(id)) iter.remove()
+        }
+    }
+
     fun updatePath(
         id: String,
         pathData: PathData? = null,

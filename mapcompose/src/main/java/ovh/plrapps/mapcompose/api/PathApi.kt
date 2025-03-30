@@ -146,6 +146,13 @@ fun MapState.removeAllPaths() {
 }
 
 /**
+ * Remove paths given a predicate which operates on path id.
+ */
+fun MapState.removePaths(predicate: (id: String) -> Boolean) {
+    pathState.removePaths(predicate)
+}
+
+/**
  * Check whether a path was already added or not.
  *
  * @param id The id of the path
