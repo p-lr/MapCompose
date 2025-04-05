@@ -37,8 +37,8 @@ fun LayersDemoSimple(viewModel: LayersVM = viewModel()) {
         LayersDemoScreen(
             Modifier.padding(padding),
             viewModel.state,
-            onSatelliteOpacity = viewModel::setSatelliteOpacity,
-            onIgnV2Opacity = viewModel::setIgnV2Opacity
+            onSlopesOpacity = viewModel::setSlopesOpacity,
+            onRoadOpacity = viewModel::setRoadOpacity
         )
     }
 }
@@ -47,33 +47,33 @@ fun LayersDemoSimple(viewModel: LayersVM = viewModel()) {
 fun LayersDemoScreen(
     modifier: Modifier = Modifier,
     mapState: MapState,
-    onSatelliteOpacity: (Float) -> Unit,
-    onIgnV2Opacity: (Float) -> Unit
+    onSlopesOpacity: (Float) -> Unit,
+    onRoadOpacity: (Float) -> Unit
 ) {
-    var satelliteSliderValue by remember {
-        mutableFloatStateOf(1f)
+    var slopesSliderValue by remember {
+        mutableFloatStateOf(0.6f)
     }
 
-    var ignV2SliderValue by remember {
-        mutableFloatStateOf(0.5f)
+    var roadSliderValue by remember {
+        mutableFloatStateOf(1f)
     }
 
     Column(modifier) {
         MapUI(Modifier.weight(1f), state = mapState)
         LayerSlider(
-            name = "Satellite",
-            value = satelliteSliderValue,
+            name = "Slopes",
+            value = slopesSliderValue,
             onValueChange = {
-                satelliteSliderValue = it
-                onSatelliteOpacity(it)
+                slopesSliderValue = it
+                onSlopesOpacity(it)
             }
         )
         LayerSlider(
-            name = "IGN v2",
-            value = ignV2SliderValue,
+            name = "Roads",
+            value = roadSliderValue,
             onValueChange = {
-                ignV2SliderValue = it
-                onIgnV2Opacity(it)
+                roadSliderValue = it
+                onRoadOpacity(it)
             }
         )
     }

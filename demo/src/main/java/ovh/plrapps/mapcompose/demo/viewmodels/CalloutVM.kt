@@ -35,7 +35,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
         MarkerInfo(TAP_TO_DISMISS_ID, 0.4, 0.3)
     )
 
-    val state = MapState(4, 4096, 4096).apply {
+    val state = MapState(4, 8448, 8448).apply {
         addLayer(tileStreamProvider)
 
         /* Add all markers */

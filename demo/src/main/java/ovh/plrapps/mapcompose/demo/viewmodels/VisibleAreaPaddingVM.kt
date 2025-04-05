@@ -12,7 +12,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class VisibleAreaPaddingVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state = MapState(4, 4096, 4096) {
+    val state = MapState(4, 8448, 8448) {
         scale(1.2f)
     }.apply {
         enableRotation()

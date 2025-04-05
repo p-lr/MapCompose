@@ -15,45 +15,45 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LayersVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider =
-        makeTileStreamProvider(application.applicationContext, "mont_blanc")
-    private val satelliteProvider =
-        makeTileStreamProvider(application.applicationContext, "mont_blanc_satellite")
-    private val ignV2Provider =
-        makeTileStreamProvider(application.applicationContext, "mont_blanc_ignv2")
+        makeTileStreamProvider(application.applicationContext, imageExt = ".jpg")
+    private val slopesLayerProvider =
+        makeTileStreamProvider(application.applicationContext, "ign-slopes-", imageExt = ".png")
+    private val roadLayerProvider =
+        makeTileStreamProvider(application.applicationContext, "ign-road-", imageExt = ".png")
 
-    private var satelliteId: String? = null
-    private var ignV2Id: String? = null
+    private var slopesId: String? = null
+    private var roadId: String? = null
 
-    val state = MapState(4, 4096, 4096).apply {
+    val state = MapState(4, 8448, 8448).apply {
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {
-            scrollTo(0.5, 0.5, 1f)
+            scrollTo(0.4, 0.4, 1f)
         }
 
         addLayer(tileStreamProvider)
-        satelliteId = addLayer(satelliteProvider)
-        ignV2Id = addLayer(ignV2Provider, 0.5f)
+        slopesId = addLayer(slopesLayerProvider, initialOpacity = 0.6f)
+        roadId = addLayer(roadLayerProvider, initialOpacity = 1f)
     }
 
-    private fun makeTileStreamProvider(appContext: Context, folder: String) =
+    private fun makeTileStreamProvider(appContext: Context, layer: String = "", imageExt: String) =
         TileStreamProvider { row, col, zoomLvl ->
             try {
-                appContext.assets?.open("tiles/$folder/$zoomLvl/$row/$col.jpg")
+                appContext.assets?.open("tiles/mont_blanc_layered/$zoomLvl/$row/$layer$col$imageExt")
             } catch (e: Exception) {
                 null
             }
         }
 
-    fun setSatelliteOpacity(opacity: Float) {
-        satelliteId?.also { id ->
+    fun setSlopesOpacity(opacity: Float) {
+        slopesId?.also { id ->
             state.setLayerOpacity(id, opacity)
         }
 
     }
 
-    fun setIgnV2Opacity(opacity: Float) {
-        ignV2Id?.also { id ->
+    fun setRoadOpacity(opacity: Float) {
+        roadId?.also { id ->
             state.setLayerOpacity(id, opacity)
         }
     }

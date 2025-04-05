@@ -143,7 +143,6 @@ private fun VisibleAreaPaddingScreen(
         Spacer(Modifier.height(8.dp))
         Box {
             MapUI(
-                modifier,
                 state = mapState
             )
             androidx.compose.animation.AnimatedVisibility(

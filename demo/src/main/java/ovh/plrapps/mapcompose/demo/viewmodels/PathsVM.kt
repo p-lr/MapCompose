@@ -32,7 +32,7 @@ import ovh.plrapps.mapcompose.utils.dpToPx
 class PathsVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state = MapState(4, 4096, 4096).apply {
+    val state = MapState(4, 8448, 8448).apply {
         addLayer(tileStreamProvider)
         shouldLoopScale = true
         enableRotation()

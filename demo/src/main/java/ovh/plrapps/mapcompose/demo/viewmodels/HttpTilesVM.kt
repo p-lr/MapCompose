@@ -18,8 +18,8 @@ class HttpTilesVM : ViewModel() {
 
     val state = MapState(
         levelCount = 4,
-        fullWidth = 4096,
-        fullHeight = 4096,
+        fullWidth = 8448,
+        fullHeight = 8448,
         workerCount = 16  // Notice how we increase the worker count when performing HTTP requests
     ).apply {
         addLayer(tileStreamProvider)
@@ -35,7 +35,7 @@ private fun makeTileStreamProvider() =
     TileStreamProvider { row, col, zoomLvl ->
         try {
             val url =
-                URL("https://raw.githubusercontent.com/p-lr/MapCompose/master/demo/src/main/assets/tiles/mont_blanc/$zoomLvl/$row/$col.jpg")
+                URL("https://raw.githubusercontent.com/p-lr/MapCompose/master/demo/src/main/assets/tiles/mont_blanc_layered/$zoomLvl/$row/$col.jpg")
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
