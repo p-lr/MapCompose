@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://central.sonatype.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/ComposeBOM-2025.02.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
+[![](https://img.shields.io/badge/ComposeBOM-2025.03.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
 - Memory footprint has been dramatically reduced on Android 10 and above, by leveraging [Hardware Bitmaps](https://bumptech.github.io/glide/doc/hardwarebitmaps.html).
