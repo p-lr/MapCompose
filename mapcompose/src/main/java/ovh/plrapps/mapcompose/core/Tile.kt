@@ -2,7 +2,7 @@ package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 
 /**
@@ -20,20 +20,24 @@ internal data class Tile(
     val layerIds: List<String>,
     val opacities: List<Float>
 ) {
-    var bitmap: Bitmap? = null
-    var alpha: Float by mutableStateOf(0f)
+    @Volatile
+    var bitmap: Bitmap? = null   // write on main-thread only
+
+    var alpha: Float by mutableFloatStateOf(0f)
+
+    @Volatile
+    var overlaps: Tile? = null
+
+    @Volatile
+    var markedForSweep = false   // write on main-thread only
 }
 
 internal data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
-internal fun Tile.sameSpecAs(
-    zoom: Int,
-    row: Int,
-    col: Int,
-    subSample: Int,
-    layerIds: List<String>,
-    opacities: List<Float>
-): Boolean {
-    return this.zoom == zoom && this.row == row && this.col == col && this.subSample == subSample
-            && this.layerIds == layerIds && this.opacities == opacities
+internal fun Tile.spaceHash(): Int {
+    return row + p1 * col + p1 * p2 * subSample + p1 * p2 * p3 * zoom
 }
+
+private const val p1 = 31
+private const val p2 = 73
+private const val p3 = 107

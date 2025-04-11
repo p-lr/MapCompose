@@ -53,6 +53,7 @@ internal fun TileCanvas(
             paint.isFilterBitmap = isFilteringBitmap()
 
             for (tile in tilesToRender) {
+                if (tile.markedForSweep) continue
                 val bitmap = tile.bitmap ?: continue
                 val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                     ?: continue
@@ -75,6 +76,9 @@ internal fun TileCanvas(
                 /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
                 if (tile.alpha < 1f) {
                     tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
+                } else {
+                    tile.overlaps?.markedForSweep = true
+                    tile.overlaps = null
                 }
             }
         }

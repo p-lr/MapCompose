@@ -35,6 +35,7 @@ internal class TileCanvasState(
         parentScope.coroutineContext + singleThreadDispatcher
     )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
+    private var tilesCollectedBySpace: Map<Int, Tile> = mapOf()
 
     private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
     internal val layerFlow = _layerFlow.asStateFlow()
@@ -47,10 +48,6 @@ internal class TileCanvasState(
             field = value.coerceIn(0.01f, 1f)
         }
     internal var colorFilterProvider: ColorFilterProvider? by mutableStateOf(null)
-
-    private val lastVisible: VisibleTiles?
-        get() = visibleStateFlow.value?.visibleTiles
-
     private val recycleChannel = Channel<Tile>(Channel.UNLIMITED)
 
     /**
@@ -59,7 +56,7 @@ internal class TileCanvasState(
     private val idleDebounced = scope.debounce<Unit>(400) {
         visibleStateFlow.value?.also { (visibleTiles, layerIds, opacities) ->
             evictTiles(visibleTiles, layerIds, opacities, aggressiveAttempt = true)
-            renderTiles(visibleTiles, layerIds)
+            renderTiles(visibleTiles, layerIds, opacities)
         }
     }
 
@@ -67,23 +64,21 @@ internal class TileCanvasState(
         /* Evict, then render */
         val (lastVisible, ids, opacities) = visibleStateFlow.value ?: return@throttle
         evictTiles(lastVisible, ids, opacities)
-
-        renderTiles(lastVisible, ids)
+        renderTiles(lastVisible, ids, opacities)
     }
 
-    private fun renderTiles(visibleTiles: VisibleTiles, layerIds: List<String>) {
+    private fun renderTiles(visibleTiles: VisibleTiles, layerIds: List<String>, opacities: List<Float>) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others. */
         val tilesToRenderCopy = tilesCollected.sortedBy {
-            val priority =
-                if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
-            priority + if (layerIds == it.layerIds) 1 else 0
+            val priority = if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
+            priority + if (layerIds == it.layerIds && opacities == it.opacities) 1 else 0
         }
 
         tilesToRender = tilesToRenderCopy
     }
 
-    private val tilesCollected = mutableListOf<Tile>()
+    private val tilesCollected = mutableSetOf<Tile>()
 
     private val tileCollector: TileCollector
 
@@ -114,6 +109,11 @@ internal class TileCanvasState(
             consumeTiles(tilesOutput)
         }
 
+        /* This is very important to null a tile's bitmap on the main thread because this ensures
+         * that on the next composition the bitmap won't be accessed.
+         * In the future, if the Compose framework does multi-threaded rendering, another technique
+         * will have to be used. Or, consider not using Bitmap.recycle() at all since it seems
+         * not necessary for hardware bitmaps. */
         scope.launch(Dispatchers.Main) {
             for (t in recycleChannel) {
                 val b = t.bitmap
@@ -190,16 +190,15 @@ internal class TileCanvasState(
                     val row = e.key
                     val colRange = e.value
                     for (col in colRange) {
-                        val alreadyProcessed = tilesCollected.any { tile ->
-                            tile.sameSpecAs(
-                                visibleTiles.level,
-                                row,
-                                col,
-                                visibleTiles.subSample,
-                                visibleState.layerIds,
-                                visibleState.opacities
-                            )
-                        }
+                        val tile = Tile(
+                            zoom = visibleTiles.level,
+                            row = row,
+                            col = col,
+                            subSample = visibleTiles.subSample,
+                            layerIds = visibleState.layerIds,
+                            opacities = visibleState.opacities
+                        )
+                        val alreadyProcessed = tilesCollected.contains(tile)
 
                         /* Only emit specs which haven't already been processed by the collector
                          * Doing this now results in less object allocations than filtering the flow
@@ -226,13 +225,22 @@ internal class TileCanvasState(
      */
     private suspend fun consumeTiles(tileChannel: ReceiveChannel<Tile>) {
         for (tile in tileChannel) {
-            val lastVisible = lastVisible
+            val (lastVisible, layerIds, opacities) = visibleStateFlow.value ?: continue
+
             if (
-                (lastVisible == null || lastVisible.contains(tile))
+                lastVisible.contains(tile)
                 && !tilesCollected.contains(tile)
-                && tile.layerIds == visibleStateFlow.value?.layerIds
+                && tile.layerIds == layerIds
+                && tile.opacities == opacities
             ) {
-                tile.prepare()
+                val tileWithSameSpace = tilesCollectedBySpace[tile.spaceHash()]
+                if (tileWithSameSpace != null && (tileWithSameSpace.layerIds != tile.layerIds || tileWithSameSpace.opacities != tile.opacities)) {
+                    tile.overlaps = tileWithSameSpace
+                    /* A tile already occupies the same space, so we don't need any fade-in */
+                    tile.alpha = 1f
+                } else {
+                    tile.prepare()
+                }
                 tilesCollected.add(tile)
                 renderThrottled()
             } else {
@@ -291,6 +299,12 @@ internal class TileCanvasState(
         }
     }
 
+    private fun updateTileCollectedBySpace() {
+        tilesCollectedBySpace = tilesCollected.associateBy {
+            it.spaceHash()
+        }
+    }
+
     /**
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesCollected] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
@@ -309,8 +323,11 @@ internal class TileCanvasState(
 
         /* Only perform aggressive eviction when tile collector is idle */
         if (aggressiveAttempt && tileCollector.isIdle) {
-            aggressiveEviction(currentLevel, currentSubSample, layerIds)
+            aggressiveEviction(currentLevel, currentSubSample, layerIds, opacities)
         }
+
+        /* Now that tileCollected is cleaned up, update an internal data structure */
+        updateTileCollectedBySpace()
     }
 
     /**
@@ -326,12 +343,18 @@ internal class TileCanvasState(
     ) {
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
+        val addedSet = mutableSetOf<Int>()
 
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
 
-            if (tile.zoom != currentLevel && !visibleTiles.intersects(tile)) {
+            if (layerIds == tile.layerIds && opacities == tile.opacities) {
+                val spaceHash = tile.spaceHash()
+                addedSet.add(spaceHash)
+            }
+
+            if (layerIds.isEmpty() || tile.zoom != currentLevel && !visibleTiles.intersects(tile)) {
                 iterator.remove()
                 tile.recycle()
                 continue
@@ -340,24 +363,26 @@ internal class TileCanvasState(
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
-                && (!visibleTiles.contains(tile) || !shouldKeepTile(tile, layerIds, opacities))
+                && (!visibleTiles.contains(tile) || tile.markedForSweep)
             ) {
                 iterator.remove()
                 tile.recycle()
             }
         }
-    }
 
-    private fun shouldKeepTile(
-        tile: Tile,
-        layerIds: List<String>,
-        opacities: List<Float>
-    ): Boolean {
-        if (layerIds.isEmpty()) return false
-        return if (tile.layerIds != layerIds) {
-            layerIds.containsAll(tile.layerIds) || tile.layerIds.containsAll(layerIds)
-        } else {
-            tile.opacities == opacities
+        /* Now that we know all tiles with the latest layerIds and opacities, forget the other
+         * tiles which occupy the same space. Don't recycle the associated bitmaps because some of
+         * the latest tiles haven't been drawn yet. So we rely on garbage collection for these
+         * bitmaps. */
+        val secondPass = tilesCollected.iterator()
+        while (secondPass.hasNext()) {
+            val tile = secondPass.next()
+            if (layerIds != tile.layerIds || opacities != tile.opacities) {
+                val spaceHash = tile.spaceHash()
+                if (addedSet.contains(spaceHash)) {
+                    secondPass.remove()
+                }
+            }
         }
     }
 
@@ -369,7 +394,8 @@ internal class TileCanvasState(
     private fun aggressiveEviction(
         currentLevel: Int,
         currentSubSample: Int,
-        layerIds: List<String>
+        layerIds: List<String>,
+        opacities: List<Float>
     ) {
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
@@ -379,7 +405,7 @@ internal class TileCanvasState(
             if (
                 tile.zoom == currentLevel
                 && tile.subSample == currentSubSample
-                && tile.layerIds != layerIds
+                && (tile.layerIds != layerIds || tile.opacities != opacities)
             ) {
                 iterator.remove()
                 tile.recycle()
