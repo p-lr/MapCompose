@@ -167,6 +167,23 @@ fun MapState.setLayerOpacity(layerId: String, opacity: Float) {
 }
 
 /**
+ * Define the list of layers using a builder.
+ *
+ * @return The list of layer ids, in the order of addition.
+ */
+fun MapState.buildLayers(builder: LayersBuilder.() -> Unit): List<String> {
+    val builderInternal = LayersBuilderInternal()
+    builderInternal.apply(builder)
+    setLayers(builderInternal.layers)
+
+    return builderInternal.layers.map { it.id }
+}
+
+interface LayersBuilder {
+    fun addLayer(tileStreamProvider: TileStreamProvider, initialOpacity: Float = 1f)
+}
+
+/**
  * Utility function to automatically refresh tiles after a change of layers.
  */
 private fun MapState.setLayers(layers: List<Layer>) {
