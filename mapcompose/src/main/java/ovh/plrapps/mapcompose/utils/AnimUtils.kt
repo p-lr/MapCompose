@@ -6,3 +6,7 @@ package ovh.plrapps.mapcompose.utils
 fun lerp(a: Float, b: Float, t: Float): Float {
     return a + (b - a) * t
 }
+
+fun lerp(a: Double, b: Double, t: Double): Double {
+    return a + (b - a) * t
+}

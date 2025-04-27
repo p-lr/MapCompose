@@ -2,7 +2,7 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
+import androidx.compose.material3.Icon
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -29,9 +29,9 @@ class MarkersLazyLoadingVM(application: Application) : AndroidViewModel(applicat
         ovh.plrapps.mapcompose.demo.providers.makeTileStreamProvider(application.applicationContext)
 
     val state = MapState(4, 8448, 8448) {
-        minimumScaleMode(Forced(1f))
-        scale(1f)
-        maxScale(4f)
+        minimumScaleMode(Forced(1.0))
+        scale(1.0)
+        maxScale(4.0)
         scroll(0.5, 0.5)
     }.apply {
         addLayer(tileStreamProvider)

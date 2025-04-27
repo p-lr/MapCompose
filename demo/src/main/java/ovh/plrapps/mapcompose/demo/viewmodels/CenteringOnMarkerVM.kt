@@ -38,7 +38,7 @@ class CenteringOnMarkerVM(application: Application) : AndroidViewModel(applicati
 
     fun onCenter() {
         viewModelScope.launch {
-            state.centerOnMarker("parking", destScale = 1f, destAngle = 0f)
+            state.centerOnMarker("parking", destScale = 1.0, destAngle = 0f)
         }
     }
 }

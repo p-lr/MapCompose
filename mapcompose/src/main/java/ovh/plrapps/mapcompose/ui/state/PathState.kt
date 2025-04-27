@@ -115,7 +115,7 @@ internal class PathState(
     /**
      * [x], [y] are the relative coordinates of the tap.
      */
-    fun onHit(x: Double, y: Double, scale: Float, hitType: HitType): Boolean {
+    fun onHit(x: Double, y: Double, scale: Double, hitType: HitType): Boolean {
         if (!hasClickable.value) return false
 
         /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */

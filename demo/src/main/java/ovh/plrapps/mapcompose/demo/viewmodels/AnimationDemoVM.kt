@@ -41,7 +41,7 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
             job?.cancel()
         }
         viewModelScope.launch {
-            scrollTo(0.5, 0.5, 2f, SnapSpec())
+            scrollTo(0.5, 0.5, 2.0, SnapSpec())
         }
     }
 
@@ -52,11 +52,11 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
         /* Start a new one */
         with(state) {
             job = viewModelScope.launch {
-                scrollTo(0.0, 0.0, 2f, spec, screenOffset = Offset.Zero)
-                scrollTo(0.8, 0.8, 2f, spec)
+                scrollTo(0.0, 0.0, 2.0, spec, screenOffset = Offset.Zero)
+                scrollTo(0.8, 0.8, 2.0, spec)
                 rotateTo(180f, spec)
-                scrollTo(0.5, 0.5, 0.5f, spec)
-                scrollTo(0.5, 0.5, 2f, TweenSpec(800, easing = FastOutSlowInEasing))
+                scrollTo(0.5, 0.5, 0.5, spec)
+                scrollTo(0.5, 0.5, 2.0, TweenSpec(800, easing = FastOutSlowInEasing))
                 rotateTo(0f, TweenSpec(1000, easing = FastOutSlowInEasing))
             }
         }

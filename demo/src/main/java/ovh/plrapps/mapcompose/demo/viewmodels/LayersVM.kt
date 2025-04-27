@@ -28,7 +28,7 @@ class LayersVM(application: Application) : AndroidViewModel(application) {
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {
-            scrollTo(0.4, 0.4, 1f)
+            scrollTo(0.4, 0.4, 1.0)
         }
 
         addLayer(tileStreamProvider)

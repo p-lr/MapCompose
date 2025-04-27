@@ -33,9 +33,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * The scale of the map. By convention, the scale at full dimension is 1f.
+ * The scale of the map. By convention, the scale at full dimension is 1.0.
  */
-var MapState.scale: Float
+var MapState.scale: Double
     get() = zoomPanRotateState.scale
     set(value) {
         zoomPanRotateState.setScale(value)
@@ -55,8 +55,9 @@ var MapState.rotation: AngleDegree
  * Get the current [scroll] - the position of the top-left corner of the visible viewport.
  * This is a low-level concept (returned value is in scaled pixels).
  */
-val MapState.scroll: Offset
-    get() = Offset(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
+val MapState.scroll: Scroll
+    get() = Scroll(zoomPanRotateState.scrollX, zoomPanRotateState.scrollY)
+
 
 /**
  * Set the [scroll] - the position of the top-left corner of the visible viewport. This is a
@@ -65,11 +66,11 @@ val MapState.scroll: Offset
  * This is a low-level concept (input value is expected to be in scaled pixels). To scroll to a
  * known position, prefer the [snapScrollTo] API.
  */
-suspend fun MapState.setScroll(offset: Offset) {
+suspend fun MapState.setScroll(scrollX: Double, scrollY: Double) {
     with(zoomPanRotateState) {
         awaitLayout()
 
-        setScroll(offset.x, offset.y)
+        setScroll(scrollX, scrollY)
     }
 }
 
@@ -77,7 +78,7 @@ fun MapState.referentialSnapshotFlow(): Flow<ReferentialSnapshot> = snapshotFlow
     ReferentialSnapshot(zoomPanRotateState.scale, scroll, zoomPanRotateState.rotation)
 }
 
-data class ReferentialSnapshot(val scale: Float, val scroll: Offset, val rotation: AngleDegree)
+data class ReferentialSnapshot(val scale: Double, val scroll: Scroll, val rotation: AngleDegree)
 
 /**
  * Get notified whenever the state ([scale] and/or [scroll] and/or [rotation]) changes.
@@ -172,16 +173,16 @@ var MapState.minimumScaleMode: MinimumScaleMode
 
 /**
  * Get the current minimum scale. The minimum scale changes on [minimumScaleMode] change.
- * Do note that the initial value is always 0f. However, the value is updated after the first layout
- * pass. To be reactive on minimum scale changes, use [MapState.minScaleSnapshotFlow] api.
+ * Do note that the initial value is always 0.0. However, the value is updated after the first layout
+ * pass. To observe minimum scale changes, use [MapState.minScaleSnapshotFlow] api.
  */
-val MapState.minScale: Float
+val MapState.minScale: Double
     get() = zoomPanRotateState.minScale
 
 /**
  * Get the minimum scale changes.
  */
-fun MapState.minScaleSnapshotFlow(): Flow<Float> {
+fun MapState.minScaleSnapshotFlow(): Flow<Double> {
     return snapshotFlow {
         zoomPanRotateState.minScale
     }
@@ -192,7 +193,7 @@ fun MapState.minScaleSnapshotFlow(): Flow<Float> {
  * When changed, and if the current scale is greater than the new [maxScale], the current scale is
  * changed to be equal to [maxScale].
  */
-var MapState.maxScale: Float
+var MapState.maxScale: Double
     get() = zoomPanRotateState.maxScale
     set(value) {
         zoomPanRotateState.maxScale = value
@@ -272,8 +273,8 @@ suspend fun MapState.snapScrollTo(
         val offsetY = screenOffset.y * layoutSize.height
 
         val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
-        val destScrollX = (x * fullWidth * scale + offsetX - paddingOffset.x).toFloat()
-        val destScrollY = (y * fullHeight * scale + offsetY - paddingOffset.y).toFloat()
+        val destScrollX = x * fullWidth * scale + offsetX - paddingOffset.x
+        val destScrollY = y * fullHeight * scale + offsetY - paddingOffset.y
 
         setScroll(destScrollX, destScrollY)
     }
@@ -294,7 +295,7 @@ suspend fun MapState.snapScrollTo(
 suspend fun MapState.scrollTo(
     x: Double,
     y: Double,
-    destScale: Float = scale,
+    destScale: Double = scale,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow),
     screenOffset: Offset = Offset(-0.5f, -0.5f)
 ) {
@@ -306,8 +307,8 @@ suspend fun MapState.scrollTo(
         val effectiveDstScale = constrainScale(destScale)
 
         val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
-        val destScrollX = (x * fullWidth * effectiveDstScale + offsetX - paddingOffset.x).toFloat()
-        val destScrollY = (y * fullHeight * effectiveDstScale + offsetY - paddingOffset.y).toFloat()
+        val destScrollX = x * fullWidth * effectiveDstScale + offsetX - paddingOffset.x
+        val destScrollY = y * fullHeight * effectiveDstScale + offsetY - paddingOffset.y
 
         withRetry(maxAnimationsRetries, animationsRetriesInterval) {
             smoothScrollScaleRotate(
@@ -369,7 +370,7 @@ suspend fun MapState.scrollTo(
 private fun ZoomPanRotateState.calculateScrollTo(
     area: BoundingBox,
     padding: Offset
-): Pair<Point, Float> {
+): Pair<Point, Double> {
     val centerX = (area.xLeft + area.xRight) / 2
     val centerY = (area.yTop + area.yBottom) / 2
 
@@ -387,7 +388,7 @@ private fun ZoomPanRotateState.calculateScrollTo(
     val availableViewportHeight = (layoutSize.height - visibleAreaPadding.top - visibleAreaPadding.bottom) * (1 - padding.y)
     val verticalScale = availableViewportHeight / areaHeight
 
-    val targetScale = min(horizontalScale, verticalScale).toFloat()
+    val targetScale = min(horizontalScale, verticalScale)
     val effectiveTargetScale = constrainScale(targetScale)
 
     return Point(centerX, centerY) to effectiveTargetScale

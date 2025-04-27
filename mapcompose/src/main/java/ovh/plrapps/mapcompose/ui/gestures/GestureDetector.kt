@@ -32,7 +32,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
     val flingVelocityMaxRange = -8000f..8000f
 
     val flingZoomThreshold = 1f
-    val flingZoomMaxVelocity = 2500f
+    val flingZoomVelocityFactor = 400  // lower value for faster fling
 
     val twoFingersReleaseTolerance = 150 // in ms
 
@@ -136,7 +136,7 @@ internal suspend fun PointerInputScope.detectTransformGestures(
                 // Tolerate a slight delay between the release of the first and second finger
                 && (lastTime - lastTwoFingersDown) < twoFingersReleaseTolerance
             ) {
-                onFlingZoom(centroidTwoFingers, velocity / flingZoomMaxVelocity)
+                onFlingZoom(centroidTwoFingers, velocity / flingZoomVelocityFactor)
             }
 
             return@awaitEachGesture

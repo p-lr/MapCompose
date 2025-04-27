@@ -22,7 +22,7 @@ class RotationVM(application: Application) : AndroidViewModel(application) {
         addLayer(tileStreamProvider)
         enableRotation()
         setScrollOffsetRatio(0.3f, 0.3f)
-        scale = 0f
+        scale = 0.0
 
         /* Not useful here, just showing how this API works */
         setStateChangeListener {

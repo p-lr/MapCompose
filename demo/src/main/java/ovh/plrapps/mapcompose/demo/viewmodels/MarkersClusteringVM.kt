@@ -5,8 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,8 +32,8 @@ class MarkersClusteringVM(application: Application) : AndroidViewModel(applicati
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     val state = MapState(4, 8448, 8448) {
-        scale(0.2f)
-        maxScale(8f)
+        scale(0.2)
+        maxScale(8.0)
         scroll(0.5, 0.5)
     }.apply {
         addLayer(tileStreamProvider)

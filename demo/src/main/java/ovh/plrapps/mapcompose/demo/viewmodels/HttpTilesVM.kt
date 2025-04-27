@@ -23,7 +23,7 @@ class HttpTilesVM : ViewModel() {
         workerCount = 16  // Notice how we increase the worker count when performing HTTP requests
     ).apply {
         addLayer(tileStreamProvider)
-        scale = 0f
+        scale = 0.0
         shouldLoopScale = true
     }
 }

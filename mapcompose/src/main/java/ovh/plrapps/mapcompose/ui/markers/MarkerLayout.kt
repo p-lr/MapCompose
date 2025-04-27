@@ -24,8 +24,8 @@ internal fun MarkerLayout(
         content = content,
         modifier
             .graphicsLayer {
-                translationX = -zoomPRState.scrollX
-                translationY = -zoomPRState.scrollY
+                translationX = -zoomPRState.scrollX.toFloat()
+                translationY = -zoomPRState.scrollY.toFloat()
             }
             .background(Color.Transparent)
             .fillMaxSize()

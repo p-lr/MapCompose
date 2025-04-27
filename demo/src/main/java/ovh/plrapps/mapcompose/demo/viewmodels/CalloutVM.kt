@@ -50,7 +50,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        scale = 0f
+        scale = 0.0
 
         /**
          * On marker click, add a callout. If the id is [TAP_TO_DISMISS_ID], set auto-dismiss

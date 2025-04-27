@@ -84,7 +84,7 @@ internal fun PathCanvas(
 
     val dashPathEffect = remember(drawablePathState.pattern, widthPx, zoomPRState.scale) {
         drawablePathState.pattern?.let {
-            makePathEffect(it, strokeWidthPx = widthPx, scale = zoomPRState.scale)
+            makePathEffect(it, strokeWidthPx = widthPx, scale = zoomPRState.scale.toFloat())
         }
     }
 
@@ -105,7 +105,7 @@ internal fun PathCanvas(
                 Cap.Square -> Paint.Cap.SQUARE
             }
             pathEffect = dashPathEffect
-            strokeWidth = widthPx / zoomPRState.scale
+            strokeWidth = (widthPx / zoomPRState.scale).toFloat()
         }
     }
 
@@ -123,17 +123,18 @@ internal fun PathCanvas(
             .fillMaxSize()
             .background(Color.Transparent)
     ) {
+        // TODO: fix this
         withTransform({
             /* Geometric transformations seem to be applied in reversed order of declaration */
-            translate(left = -zoomPRState.scrollX, top = -zoomPRState.scrollY)
+            translate(left = -zoomPRState.scrollX.toFloat(), top = -zoomPRState.scrollY.toFloat())
             rotate(
                 degrees = zoomPRState.rotation,
                 pivot = Offset(
-                    x = zoomPRState.centroidX.toFloat() * zoomPRState.fullWidth * zoomPRState.scale,
-                    y = zoomPRState.centroidY.toFloat() * zoomPRState.fullHeight * zoomPRState.scale
+                    x = (zoomPRState.centroidX * zoomPRState.fullWidth * zoomPRState.scale).toFloat(),
+                    y = (zoomPRState.centroidY * zoomPRState.fullHeight * zoomPRState.scale).toFloat()
                 )
             )
-            scale(scale = zoomPRState.scale, Offset.Zero)
+            scale(scale = zoomPRState.scale.toFloat(), Offset.Zero)
         }) {
             with(drawablePathState) {
                 if (visible) {
@@ -226,7 +227,7 @@ internal fun generatePath(
     offset: Int,
     count: Int,
     simplify: Float,
-    scale: Float,
+    scale: Double,
     onNewDecimatedPath: (decimatedPath: List<Offset>) -> Unit
 ): Path {
     val p = Path()

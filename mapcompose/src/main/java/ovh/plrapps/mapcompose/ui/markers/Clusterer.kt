@@ -153,7 +153,7 @@ internal class Clusterer(
     }
 
     private suspend fun clusterize(
-        scale: Float,
+        scale: Double,
         visibleArea: VisibleArea,
         markers: List<Marker>,
         markersOnMap: List<MarkerData>,
@@ -234,7 +234,7 @@ internal class Clusterer(
     }
 
     private fun processMarkers(
-        markers: List<Marker>, visibleMarkers: List<Marker>, scale: Float, epsilon: Float
+        markers: List<Marker>, visibleMarkers: List<Marker>, scale: Double, epsilon: Float
     ): ClusteringResult {
         val snapScale = getSnapScale(scale)
         val mesh = Mesh(epsilon, snapScale, mapState.fullSize)
@@ -248,7 +248,7 @@ internal class Clusterer(
     private fun findNewClustersByDensity(
         markers: List<Marker>,
         mesh: Mesh,
-        scale: Float,
+        scale: Double,
         epsilon: Float,
     ): ClusteringResult {
         /* Compute density for each window */
@@ -303,7 +303,7 @@ internal class Clusterer(
     private tailrec fun mergeClosest(
         result: ClusteringResult,
         epsilon: Float,
-        scale: Float
+        scale: Double
     ): ClusteringResult {
         fun findInVicinity(cluster: Cluster): Placeable? {
             val closeEnoughMarker = result.markers.firstOrNull {
@@ -361,11 +361,11 @@ internal class Clusterer(
         )
     }
 
-    private fun distance(b: Barycenter, marker: Marker, scale: Float): Double {
+    private fun distance(b: Barycenter, marker: Marker, scale: Double): Double {
         return distance(b.x, b.y, marker.x, marker.y, scale)
     }
 
-    private fun distance(x1: Double, y1: Double, x2: Double, y2: Double, scale: Float): Double {
+    private fun distance(x1: Double, y1: Double, x2: Double, y2: Double, scale: Double): Double {
         return sqrt(
             (abs(x1 - x2) * mapState.fullSize.width * scale).pow(2) +
                     (abs(y1 - y2) * mapState.fullSize.height * scale).pow(2),
@@ -425,7 +425,7 @@ internal class Clusterer(
                 markerData.renderingStrategy.clustererId == id
     }
 
-    private fun getSnapScale(scale: Float): Float = 2.0.pow(ceil(ln(scale) / ln(2.0))).toFloat()
+    private fun getSnapScale(scale: Double): Double = 2.0.pow(ceil(ln(scale) / ln(2.0)))
 
     private fun Marker.addToMap() {
         markerRenderState.addClustererManagedMarker(markerData)
@@ -463,13 +463,13 @@ internal class Clusterer(
 
 private class Mesh(
     private val meshSize: Float,
-    private val scale: Float,
+    private val scale: Double,
     private val fullSize: IntSize,
 ) {
     val gridMap = mutableMapOf<Key, MarkerWindow>()
     val markers = mutableListOf<Marker>()
 
-    private fun getKey(marker: Marker, meshSize: Float, scale: Float): Key {
+    private fun getKey(marker: Marker, meshSize: Float, scale: Double): Key {
         val relativeWidth = marker.x * fullSize.width * scale
         val relativeHeight = marker.y * fullSize.height * scale
 
