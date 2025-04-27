@@ -3,16 +3,22 @@ package ovh.plrapps.mapcompose.ui.markers
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.unit.IntOffset
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
+import ovh.plrapps.mapcompose.ui.view.grid
 import ovh.plrapps.mapcompose.utils.rotateCenteredX
 import ovh.plrapps.mapcompose.utils.rotateCenteredY
 import ovh.plrapps.mapcompose.utils.toRad
+import kotlin.math.ceil
 
 @Composable
 internal fun MarkerLayout(
@@ -20,12 +26,26 @@ internal fun MarkerLayout(
     zoomPRState: ZoomPanRotateState,
     content: @Composable () -> Unit
 ) {
+    /* Scroll values may not be represented accurately using floats (a float has 7 significant
+     * decimal digits, so any number above ~10M isn't represented accurately).
+     * Since the translate function of the Canvas works with floats, we perform a change of
+     * referential so that we only need to translate the canvas by an amount which can be
+     * precisely represented as a float. */
+    val origin by remember {
+        derivedStateOf {
+            IntOffset(
+                ((ceil(zoomPRState.scrollX / grid) * grid)).toInt(),
+                ((ceil(zoomPRState.scrollY / grid) * grid)).toInt()
+            )
+        }
+    }
+
     Layout(
         content = content,
         modifier
             .graphicsLayer {
-                translationX = -zoomPRState.scrollX.toFloat()
-                translationY = -zoomPRState.scrollY.toFloat()
+                translationX = (-zoomPRState.scrollX + origin.x).toFloat()
+                translationY = (-zoomPRState.scrollY + origin.y).toFloat()
             }
             .background(Color.Transparent)
             .fillMaxSize()
@@ -45,12 +65,12 @@ internal fun MarkerLayout(
                     placeable.measuredHeight * data.relativeOffset.y + data.absoluteOffset.y
 
                 if (zoomPRState.rotation == 0f) {
-                    val x = (data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset).toInt()
-                    val y = (data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset).toInt()
+                    val x = data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset
+                    val y = data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset
                     data.xPlacement = x
                     data.yPlacement = y
 
-                    placeable.place(x, y, zIndex = data.zIndex)
+                    placeable.place((x - origin.x).toInt(), (y - origin.y).toInt(), zIndex = data.zIndex)
                 } else {
                     with(zoomPRState) {
                         val angleRad = rotation.toRad()
@@ -59,25 +79,29 @@ internal fun MarkerLayout(
                         val centerX = centroidX * fullWidth * scale
                         val centerY = centroidY * fullHeight * scale
 
-                        val x = (rotateCenteredX(
+                        val x = rotateCenteredX(
                             xFullPx,
                             yFullPx,
                             centerX,
                             centerY,
                             angleRad
-                        ) + widthOffset).toInt()
+                        ) + widthOffset
 
-                        val y = (rotateCenteredY(
+                        val y = rotateCenteredY(
                             xFullPx,
                             yFullPx,
                             centerX,
                             centerY,
                             angleRad
-                        ) + heightOffset).toInt()
+                        ) + heightOffset
 
                         data.xPlacement = x
                         data.yPlacement = y
-                        placeable.place(x, y, zIndex = data.zIndex)
+                        placeable.place(
+                            (x - origin.x).toInt(),
+                            (y - origin.y).toInt(),
+                            zIndex = data.zIndex
+                        )
                     }
                 }
             }

@@ -101,4 +101,4 @@ internal fun TileCanvas(
 }
 
 /* We assume no device has a screen wider than this */
-private const val grid = 65536
+const val grid = 65536

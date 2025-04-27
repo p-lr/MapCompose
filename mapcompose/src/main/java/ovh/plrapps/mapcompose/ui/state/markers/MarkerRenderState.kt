@@ -141,8 +141,8 @@ internal class MarkerRenderState {
         }
     }
 
-    private fun squareDistance(markerData: MarkerData, x: Int, y: Int): Float {
-        val (cx, cy) = markerData.getCenter() ?: return Float.MAX_VALUE
+    private fun squareDistance(markerData: MarkerData, x: Int, y: Int): Double {
+        val (cx, cy) = markerData.getCenter() ?: return Double.MAX_VALUE
         return (cx - x).pow(2) + (cy - y).pow(2)
     }
 
