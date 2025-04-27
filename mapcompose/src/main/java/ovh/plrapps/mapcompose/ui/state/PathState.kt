@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -119,8 +118,8 @@ internal class PathState(
         if (!hasClickable.value) return false
 
         /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
-        val xPx = (x * fullWidth).toFloat()
-        val yPx = (y * fullHeight).toFloat()
+        val xPx = x * fullWidth
+        val yPx = y * fullHeight
 
         val radius = dpToPx(12f)
         val threshold = radius / scale
@@ -147,9 +146,9 @@ internal class PathState(
                 continue
             }
 
-            var d = Float.MAX_VALUE
-            var nearestP1: Offset? = null
-            var nearestP2: Offset? = null
+            var d = Double.MAX_VALUE
+            var nearestP1: Point? = null
+            var nearestP2: Point? = null
 
             val points = pathState.currentDecimatedPath.value ?: pathState.pathData.data
             for (i in points.indices) {
@@ -167,8 +166,8 @@ internal class PathState(
             if (nearestP1 != null && nearestP2 != null) {
                 val nearest =
                     getNearestPoint(xPx, yPx, nearestP1.x, nearestP1.y, nearestP2.x, nearestP2.y)
-                val xOnPath = (nearest.x / fullWidth).toDouble()
-                val yOnPath = (nearest.y / fullHeight).toDouble()
+                val xOnPath = nearest.x / fullWidth
+                val yOnPath = nearest.y / fullHeight
 
                 if (pathHitTraversalCb == null) {
                     when (hitType) {
@@ -205,8 +204,8 @@ internal class PathState(
         val drawablePathState = pathState[id] ?: return false
 
         /* Compute pixel coordinates, at scale 1 because path coordinates (see below) are at scale 1 */
-        val xPx = (x * fullWidth).toFloat()
-        val yPx = (y * fullHeight).toFloat()
+        val xPx = x * fullWidth
+        val yPx = y * fullHeight
 
         for (i in 0 until drawablePathState.pathData.data.size) {
             if (i + 1 == drawablePathState.pathData.data.size) break
@@ -238,7 +237,7 @@ internal class DrawablePathState(
 ) {
     /* Using a StateFlow mainly for its thread-safety (value is written off ui thread, and we do
      * not want/need to switch to the main thread while updating this value) */
-    val currentDecimatedPath = MutableStateFlow<List<Offset>?>(null)
+    val currentDecimatedPath = MutableStateFlow<List<Point>?>(null)
     var pathData by mutableStateOf(pathData)
     var visible by mutableStateOf(true)
     var width: Dp by mutableStateOf(width ?: 4.dp)
