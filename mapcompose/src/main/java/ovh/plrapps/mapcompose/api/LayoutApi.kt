@@ -189,7 +189,7 @@ fun MapState.minScaleSnapshotFlow(): Flow<Double> {
 }
 
 /**
- * The default maximum scale is 2f.
+ * The default maximum scale is 2.0.
  * When changed, and if the current scale is greater than the new [maxScale], the current scale is
  * changed to be equal to [maxScale].
  */

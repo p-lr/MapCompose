@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import ovh.plrapps.mapcompose.core.ColorFilterProvider
 import ovh.plrapps.mapcompose.core.Tile
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver
+import ovh.plrapps.mapcompose.ui.layout.grid
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 import kotlin.math.ceil
 
@@ -99,6 +100,3 @@ internal fun TileCanvas(
         }
     }
 }
-
-/* We assume no device has a screen wider than this */
-const val grid = 65536

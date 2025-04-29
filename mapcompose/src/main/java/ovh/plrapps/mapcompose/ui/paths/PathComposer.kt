@@ -25,12 +25,12 @@ import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.ui.layout.grid
 import ovh.plrapps.mapcompose.ui.paths.model.Cap
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.ui.state.DrawablePathState
 import ovh.plrapps.mapcompose.ui.state.PathState
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
-import ovh.plrapps.mapcompose.ui.view.grid
 import ovh.plrapps.mapcompose.utils.Point
 import kotlin.math.abs
 import kotlin.math.ceil
