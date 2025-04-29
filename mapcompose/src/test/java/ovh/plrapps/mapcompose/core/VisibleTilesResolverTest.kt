@@ -6,38 +6,38 @@ import ovh.plrapps.mapcompose.core.VisibleTilesResolver.*
 import kotlin.math.pow
 
 class VisibleTilesResolverTest {
-    var scale = 1f
+    private var scale = 1.0
 
-    internal val scaleProvider = ScaleProvider { scale }
+    private val scaleProvider = ScaleProvider { scale }
 
     @Test
     fun levelTest() {
         val resolver = VisibleTilesResolver(8, 1000, 800, 256, 0, scaleProvider)
 
-        assertEquals(7, resolver.getLevel(1f))
-        assertEquals(7, resolver.getLevel(0.7f))
-        assertEquals(6, resolver.getLevel(0.5f))
-        assertEquals(6, resolver.getLevel(0.26f))
-        assertEquals(5, resolver.getLevel(0.15f))
-        assertEquals(0, resolver.getLevel(0.0078f))
-        assertEquals(1, resolver.getLevel(0.008f))
+        assertEquals(7, resolver.getLevel(1.0))
+        assertEquals(7, resolver.getLevel(0.7))
+        assertEquals(6, resolver.getLevel(0.5))
+        assertEquals(6, resolver.getLevel(0.26))
+        assertEquals(5, resolver.getLevel(0.15))
+        assertEquals(0, resolver.getLevel(0.0078))
+        assertEquals(1, resolver.getLevel(0.008))
 
         /* Outside of bounds test */
-        assertEquals(0, resolver.getLevel(0.0030f))
-        assertEquals(7, resolver.getLevel(1f))
+        assertEquals(0, resolver.getLevel(0.0030))
+        assertEquals(7, resolver.getLevel(1.0))
     }
 
     @Test
     fun subSampleTest() {
         val resolver = VisibleTilesResolver(8, 1000, 800, 256, 0, scaleProvider)
 
-        assertEquals(0, resolver.getSubSample(0.008f))
-        assertEquals(1, resolver.getSubSample(0.0078f)) // 0.0078 is the scale of level 0
+        assertEquals(0, resolver.getSubSample(0.008))
+        assertEquals(1, resolver.getSubSample(0.0078)) // 0.0078 is the scale of level 0
 
         /* Outside of bounds: subsample should be at least 1 */
-        assertEquals(1, resolver.getSubSample((1.0 / 2.0.pow(7.5)).toFloat()))
-        assertEquals(2, resolver.getSubSample((1.0 / 2.0.pow(9)).toFloat()))
-        assertEquals(3, resolver.getSubSample((1.0 / 2.0.pow(10)).toFloat()))
+        assertEquals(1, resolver.getSubSample(1.0 / 2.0.pow(7.5)))
+        assertEquals(2, resolver.getSubSample(1.0 / 2.0.pow(9)))
+        assertEquals(3, resolver.getSubSample(1.0 / 2.0.pow(10)))
     }
 
     @Test
@@ -55,7 +55,7 @@ class VisibleTilesResolverTest {
         }
 
 
-        scale = 0.5f
+        scale = 0.5
         viewport = Viewport(0, 0, 512, 512)
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
@@ -67,7 +67,7 @@ class VisibleTilesResolverTest {
         }
 
 
-        scale = 1f
+        scale = 1.0
         val resolver2 = VisibleTilesResolver(5, 8192, 8192, 256, 0, scaleProvider)
         val viewport2 = Viewport(0, 0, 8192, 8192)
         visibleTiles = resolver2.getVisibleTiles(viewport2)
@@ -84,7 +84,7 @@ class VisibleTilesResolverTest {
     fun viewportTestAdvanced() {
         // 6-level map.
         // 256 * 2⁶ = 16384
-        scale = 1f
+        scale = 1.0
         val resolver = VisibleTilesResolver(6, 16400, 8000, 256, 0, scaleProvider)
         var viewport = Viewport(0, 0, 1080, 1380)
         var visibleTiles = resolver.getVisibleTiles(viewport)
@@ -107,7 +107,7 @@ class VisibleTilesResolverTest {
         }
 
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
-        scale = 0.5f
+        scale = 0.5
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(4, visibleTiles.level)
@@ -118,7 +118,7 @@ class VisibleTilesResolverTest {
         }
 
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
-        scale = 0.71f
+        scale = 0.71
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
@@ -129,7 +129,7 @@ class VisibleTilesResolverTest {
         }
 
         viewport = Viewport(1643, 427, 1643 + 1080, 427 + 1380)
-        scale = 0.43f
+        scale = 0.43
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(4, visibleTiles.level)
@@ -145,7 +145,7 @@ class VisibleTilesResolverTest {
         // 6-level map.
         // 256 * 2⁶ = 16384
         var resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = 1, scaleProvider)
-        scale = 0.37f
+        scale = 0.37
         var viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         var visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
@@ -159,7 +159,7 @@ class VisibleTilesResolverTest {
         // magnify even further, with an abnormally big viewport
         resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = 2, scaleProvider)
         viewport = Viewport(250, 123, 250 + 1080, 123 + 1380)
-        scale = 0.37f
+        scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(2, visibleTiles.level)
@@ -172,7 +172,7 @@ class VisibleTilesResolverTest {
         // (un)magnify
         resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = -1, scaleProvider)
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
-        scale = 0.37f
+        scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
@@ -185,7 +185,7 @@ class VisibleTilesResolverTest {
         // Try to (un)magnify beyond available level: this shouldn't change anything
         resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = -2, scaleProvider)
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
-        scale = 0.37f
+        scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
         with(visibleTiles.tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)

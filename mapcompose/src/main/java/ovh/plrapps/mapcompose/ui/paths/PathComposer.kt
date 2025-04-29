@@ -21,7 +21,9 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
@@ -133,9 +135,10 @@ internal fun PathCanvas(
         drawablePathState.width.toPx()
     }
 
-    val dashPathEffect = remember(drawablePathState.pattern, widthPx, zoomPRState.scale) {
+    val density = LocalDensity.current
+    val dashPathEffect = remember(drawablePathState.pattern, widthPx, zoomPRState.scale, density) {
         drawablePathState.pattern?.let {
-            makePathEffect(it, strokeWidthPx = widthPx, scale = zoomPRState.scale.toFloat())
+            makePathEffect(it, strokeWidthPx = widthPx, scale = zoomPRState.scale.toFloat(), density)
         }
     }
 
@@ -307,32 +310,42 @@ private fun generatePath(
     return PathWithOrigin(p, IntOffset(x0, y0))
 }
 
-internal fun makePathEffect(pattern: List<PatternItem>, strokeWidthPx: Float, scale: Float): DashPathEffect? {
-    val data = makeIntervals(pattern, strokeWidthPx, scale) ?: return null
+internal fun makePathEffect(
+    pattern: List<PatternItem>,
+    strokeWidthPx: Float,
+    scale: Float,
+    density: Density
+): DashPathEffect? {
+    val data = makeIntervals(pattern, strokeWidthPx, scale, density) ?: return null
     return DashPathEffect(data.intervals, data.phase)
 }
 
 internal fun concatGap(pattern: List<PatternItem>): List<PatternItem> {
     return buildList {
-        var gap = 0f
+        var gap = 0.dp
         for (item in pattern) {
             if (item is PatternItem.Gap) {
-                gap += item.lengthPx
+                gap += item.length
             } else {
-                if (gap > 0f) {
+                if (gap.value > 0f) {
                     add(PatternItem.Gap(gap))
                 }
-                gap = 0f
+                gap = 0.dp
                 add(item)
             }
         }
-        if (gap > 0f) {
+        if (gap.value > 0f) {
             add(PatternItem.Gap(gap))
         }
     }
 }
 
-internal fun makeIntervals(pattern: List<PatternItem>, strokeWidthPx: Float, scale: Float): DashPathEffectData? {
+internal fun makeIntervals(
+    pattern: List<PatternItem>,
+    strokeWidthPx: Float,
+    scale: Float,
+    density: Density
+): DashPathEffectData? {
     if (pattern.isEmpty()) return null
 
     // First, concat gaps
@@ -341,7 +354,7 @@ internal fun makeIntervals(pattern: List<PatternItem>, strokeWidthPx: Float, sca
     var phase = 0f
     val firstItem = concat.firstOrNull() ?: return null
     val trimmed = if (firstItem is PatternItem.Gap) {
-        phase = firstItem.lengthPx
+        phase = with(density) { firstItem.length.toPx() }
         /* If first item is a gap, remember it as phase and move it to then end of the pattern and
          * re-concat since the original last item may also be a gap. */
         concatGap(concat.subList(1, concat.size) + firstItem)
@@ -354,7 +367,7 @@ internal fun makeIntervals(pattern: List<PatternItem>, strokeWidthPx: Float, sca
 
     fun MutableList<Float>.addOffInterval(prev: PatternItem) {
         if (prev is PatternItem.Gap) {
-            add((strokeWidthPx + prev.lengthPx) / scale)
+            add((strokeWidthPx + with(density) { prev.length.toPx() }) / scale)
         } else {
             add(strokeWidthPx / scale)
         }
@@ -365,7 +378,7 @@ internal fun makeIntervals(pattern: List<PatternItem>, strokeWidthPx: Float, sca
         // At this stage, trimmed starts either with a Dot or a Dash
         for (item in trimmed) {
             val toAdd = when (item) {
-                is PatternItem.Dash -> item.lengthPx / scale
+                is PatternItem.Dash -> with(density) { item.length.toPx() } / scale
                 PatternItem.Dot -> 1f
                 is PatternItem.Gap -> null
             }

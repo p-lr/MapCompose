@@ -6,8 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,8 +46,8 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
     }
 
     val state: MapState = MapState(4, 4096, 4096) {
-        scale(0.81f)
-        maxScale(8f)
+        scale(0.81)
+        maxScale(8.0)
     }.apply {
         addLayer(tileStreamProvider)
         enableRotation()
