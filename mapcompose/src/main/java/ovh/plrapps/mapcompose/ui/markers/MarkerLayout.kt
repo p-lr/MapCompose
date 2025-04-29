@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import ovh.plrapps.mapcompose.ui.layout.grid
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
@@ -40,6 +41,7 @@ internal fun MarkerLayout(
         }
     }
 
+    val density = LocalDensity.current
     Layout(
         content = content,
         modifier
@@ -60,9 +62,9 @@ internal fun MarkerLayout(
                 data.measuredHeight = placeable.measuredHeight
 
                 val widthOffset =
-                    placeable.measuredWidth * data.relativeOffset.x + data.absoluteOffset.x
+                    placeable.measuredWidth * data.relativeOffset.x + with(density) { data.absoluteOffset.x.toPx() }
                 val heightOffset =
-                    placeable.measuredHeight * data.relativeOffset.y + data.absoluteOffset.y
+                    placeable.measuredHeight * data.relativeOffset.y + with(density) { data.absoluteOffset.y.toPx() }
 
                 if (zoomPRState.rotation == 0f) {
                     val x = data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset

@@ -5,6 +5,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.DpOffset
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerType
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
@@ -80,7 +81,7 @@ internal class MarkerRenderState {
     }
 
     fun addCallout(
-        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: DpOffset,
         zIndex: Float, autoDismiss: Boolean, clickable: Boolean, isConstrainedInBounds: Boolean,
         c: @Composable () -> Unit
     ) {

@@ -2,14 +2,14 @@ package ovh.plrapps.mapcompose.demo.viewmodels
 
 import android.app.Application
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import ovh.plrapps.mapcompose.api.addCallout
@@ -60,7 +60,7 @@ class CalloutVM(application: Application) : AndroidViewModel(application) {
             var shouldAnimate by mutableStateOf(true)
             addCallout(
                 id, x, y,
-                absoluteOffset = Offset(0f, -130f),
+                absoluteOffset = DpOffset(0.dp, (-50).dp),
                 autoDismiss = id != TAP_TO_DISMISS_ID,
                 clickable = id == TAP_TO_DISMISS_ID
             ) {

@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.DpOffset
 import ovh.plrapps.mapcompose.ui.state.markers.DragEndListener
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.DragStartListener
@@ -17,7 +18,7 @@ internal class MarkerData(
     val id: String,
     x: Double, y: Double,
     relativeOffset: Offset,
-    absoluteOffset: Offset,
+    absoluteOffset: DpOffset,
     zIndex: Float,
     clickable: Boolean,
     isConstrainedInBounds: Boolean,
