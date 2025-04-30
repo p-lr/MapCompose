@@ -3,12 +3,11 @@
 [![](https://img.shields.io/badge/ComposeBOM-2025.04.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- Discussion about the upcoming version [3.0.0](/p-lr/MapCompose/discussions/131)
 - Memory footprint has been dramatically reduced on Android 10 and above, by leveraging [Hardware Bitmaps](https://bumptech.github.io/glide/doc/hardwarebitmaps.html).
   Software rendering is however still required when there's more than one layer.
 - MapCompose Multiplatform is officially released: https://github.com/p-lr/MapComposeMP \
   Works on iOS, MacOS, Windows, Linux, and Android.
-- New path dash pattern api: ability to define a sequence made of dash, dot, and gap.
-- Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
 
 
 # MapCompose
