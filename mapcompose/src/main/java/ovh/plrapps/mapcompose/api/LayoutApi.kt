@@ -201,7 +201,7 @@ var MapState.maxScale: Double
 
 /**
  * The scroll offset ratio allows to scroll past the default scroll limits. They are expressed in
- * percentage of the layout dimensions.
+ * percent of the layout dimensions.
  * Setting a scroll offset ratio is useful when rotation is enabled, so that edges of the map are
  * reachable.
  * The recommended value to try it out is 0.5f
@@ -242,7 +242,7 @@ suspend fun MapState.getLayoutSize(): IntSize {
 
 /**
  * Get the layout dimensions in pixels, as a [Flow].
- * This api is useful to react on layout changes.
+ * This api is useful to observe layout changes.
  */
 suspend fun MapState.getLayoutSizeFlow(): Flow<IntSize> {
     return with(zoomPanRotateState) {
@@ -395,8 +395,8 @@ private fun ZoomPanRotateState.calculateScrollTo(
 }
 
 /**
- * The [centroidX] is the x coordinate of the center of the map (which is also the origin of
- * rotation transformation). It changes with the scroll and the scale.
+ * The [centroidX] is the x coordinate of the center of the current viewport (which is also the
+ * origin of rotation transformation). It changes with the scroll and the scale.
  * This is a low-level concept, and is only useful when defining custom views.
  * The value is a relative coordinate (in [0.0 .. 1.0] range).
  */
@@ -404,8 +404,8 @@ val MapState.centroidX: Double
     get() = zoomPanRotateState.centroidX
 
 /**
- * The [centroidY] is the y coordinate of the center of the map (which is also the origin of
- * rotation transformation). It changes with the scroll and the scale.
+ * The [centroidY] is the y coordinate of the center of the current viewport (which is also the
+ * origin of rotation transformation). It changes with the scroll and the scale.
  * This is a low-level concept, and is only useful when defining custom views.
  * The value is a relative coordinate (in [0.0 .. 1.0] range).
  */
@@ -468,16 +468,17 @@ suspend fun MapState.visibleBoundingBox(): BoundingBox {
 data class BoundingBox(val xLeft: Double, val yTop: Double, val xRight: Double, val yBottom: Double)
 
 /**
- * Returns the visible area expressed in normalized coordinates. This *does* account for rotation.
+ * Returns the visible area expressed in normalized coordinates. This **does** account for rotation.
  *
  * @return The [VisibleArea], as follows:
+ * ```
  *    p1         p2
  *      ---------
  *      |       |
  *      |       |
- *      |       |
  *      ---------
  *    p4         p3
+ * ```
  */
 suspend fun MapState.visibleArea(padding: IntOffset = IntOffset.Zero): VisibleArea {
     return with(zoomPanRotateState) {
@@ -553,13 +554,14 @@ suspend fun MapState.visibleAreaFlow(
 }
 
 /**
+ * ```
  *    p1         p2
  *      ---------
  *      |       |
  *      |       |
- *      |       |
  *      ---------
  *    p4         p3
+ * ```
  */
 data class VisibleArea(
     internal var _p1x: Double,

@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addClusterer
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -33,7 +32,6 @@ import kotlin.random.Random.Default.nextDouble
  * The lazy loading technique (removing a marker/cluster when it's not visible) is also used for
  * performance reasons.
  */
-@OptIn(ExperimentalClusteringApi::class)
 class MarkersClusteringViewModel(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
