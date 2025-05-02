@@ -167,7 +167,8 @@ fun interface DragInterceptor {
      * @param x, y: The current normalized coordinates of the marker
      * @param dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
      * have been applied if there were no drag interceptor
-     * @param px, py: The current normalized coordinates of the pointer
+     * @param px, py: The current normalized coordinates of the pointer. If the marker's
+     * "isConstrainedInBounds" property is set to true, these coordinates are coerced in 0.0..1.0
      */
     fun onMove(
         id: String,
