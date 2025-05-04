@@ -16,4 +16,4 @@ data object Fill : MinimumScaleMode()
 /**
  * Force a specific minimum scale.
  */
-data class Forced(val scale: Float) : MinimumScaleMode()
+data class Forced(val scale: Double) : MinimumScaleMode()

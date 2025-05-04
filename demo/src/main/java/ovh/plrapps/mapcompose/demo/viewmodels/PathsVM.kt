@@ -4,8 +4,9 @@ import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -24,7 +25,6 @@ import ovh.plrapps.mapcompose.ui.paths.model.PatternItem
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem.Dash
 import ovh.plrapps.mapcompose.ui.paths.model.PatternItem.Gap
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.dpToPx
 
 /**
  * In this sample, we add "tracks" to the map. The tracks are rendered as paths using MapCompose.
@@ -44,7 +44,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             var shouldAnimate by mutableStateOf(true)
             addCallout(
                 id, x, y,
-                absoluteOffset = Offset(0f, -20f),
+                absoluteOffset = DpOffset(0.dp, (-10).dp),
             ) {
                 Callout(x, y, title = "Click on $id", shouldAnimate) {
                     shouldAnimate = false
@@ -59,7 +59,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
             var shouldAnimate by mutableStateOf(true)
             addCallout(
                 id, x, y,
-                absoluteOffset = Offset(0f, -20f),
+                absoluteOffset = DpOffset(0.dp, (-10).dp),
             ) {
                 Callout(x, y, title = "Long-press on $id", shouldAnimate) {
                     shouldAnimate = false
@@ -77,7 +77,7 @@ class PathsVM(application: Application) : AndroidViewModel(application) {
         /* Add tracks */
         addTrack("track1", Color(0xFF448AFF))
         addTrack("track2", Color(0xFFFFFF00))
-        addTrack("track3", pattern = listOf(Dash(dpToPx(8f)), Gap(dpToPx(4f))))
+        addTrack("track3", pattern = listOf(Dash(8.dp), Gap(4.dp)))
 
         // filled polygon
         with(state) {

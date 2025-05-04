@@ -1,10 +1,10 @@
 package ovh.plrapps.mapcompose.ui.paths
 
-import androidx.compose.ui.geometry.Offset
+import ovh.plrapps.mapcompose.utils.Point
 import kotlin.math.hypot
 
 
-internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Float, out: MutableList<Offset>) {
+internal fun ramerDouglasPeucker(pointList: List<Point>, epsilon: Double, out: MutableList<Point>) {
     if (pointList.size < 2) throw IllegalArgumentException("Not enough points to simplify")
 
     // Find the point with the maximum distance from line between start and end
@@ -18,8 +18,8 @@ internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Float, out: M
 
     // If max distance is greater than epsilon, recursively simplify
     if (dmax > epsilon) {
-        val recResults1 = mutableListOf<Offset>()
-        val recResults2 = mutableListOf<Offset>()
+        val recResults1 = mutableListOf<Point>()
+        val recResults2 = mutableListOf<Point>()
         val firstLine = pointList.take(index + 1)
         val lastLine  = pointList.drop(index)
         ramerDouglasPeucker(firstLine, epsilon, recResults1)
@@ -38,7 +38,7 @@ internal fun ramerDouglasPeucker(pointList: List<Offset>, epsilon: Float, out: M
     }
 }
 
-private fun perpendicularDistance(pt: Offset, lineStart: Offset, lineEnd: Offset): Double {
+private fun perpendicularDistance(pt: Point, lineStart: Point, lineEnd: Point): Double {
     var dx = lineEnd.x - lineStart.x
     var dy = lineEnd.y - lineStart.y
 
@@ -55,5 +55,5 @@ private fun perpendicularDistance(pt: Offset, lineStart: Offset, lineEnd: Offset
     val ax = pvx - pvdot * dx
     val ay = pvy - pvdot * dy
 
-    return hypot(ax.toDouble(), ay.toDouble())
+    return hypot(ax, ay)
 }

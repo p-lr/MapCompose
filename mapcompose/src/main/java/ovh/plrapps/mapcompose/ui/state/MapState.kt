@@ -182,8 +182,8 @@ class MapState(
             val offsetX = initialValues.screenOffset.x * layoutSize.width
             val offsetY = initialValues.screenOffset.y * layoutSize.height
 
-            val destScrollX = (initialValues.x * fullWidth * scale + offsetX).toFloat()
-            val destScrollY = (initialValues.y * fullHeight * scale + offsetY).toFloat()
+            val destScrollX = initialValues.x * fullWidth * scale + offsetX
+            val destScrollY = initialValues.y * fullHeight * scale + offsetY
 
             setScroll(destScrollX, destScrollY)
         }
@@ -193,14 +193,14 @@ class MapState(
 /**
  * Builder for initial values.
  * Changes made after the `MapState` instance creation take precedence over initial values.
- * In the following example, the init scale will be 4f since the max scale is later set to 4f.
+ * In the following example, the init scale will be 4.0 since the max scale is later set to 4.0.
  *
  * ```
  * MapState(4, 4096, 4096,
- *   initialValues = InitialValues().scale(8f)
+ *   initialValues = InitialValues().scale(8.0)
  * ).apply {
  *   addLayer(tileStreamProvider)
- *   maxScale = 4f
+ *   maxScale = 4.0
  * }
  * ```
  */
@@ -209,9 +209,9 @@ class InitialValues internal constructor() {
     internal var x = 0.5
     internal var y = 0.5
     internal var screenOffset: Offset = Offset(-0.5f, -0.5f)
-    internal var scale: Float = 1f
+    internal var scale: Double = 1.0
     internal var minimumScaleMode: MinimumScaleMode = Fit
-    internal var maxScale: Float = 2f
+    internal var maxScale: Double = 2.0
     internal var rotation: AngleDegree = 0f
     internal var magnifyingFactor = 0
     internal var highFidelityColors: Boolean = true
@@ -235,9 +235,9 @@ class InitialValues internal constructor() {
     }
 
     /**
-     * Set the initial scale. Defaults to 1f.
+     * Set the initial scale. Defaults to 1.0.
      */
-    fun scale(scale: Float) = apply {
+    fun scale(scale: Double) = apply {
         this.scale = scale
     }
 
@@ -249,9 +249,9 @@ class InitialValues internal constructor() {
     }
 
     /**
-     * Set the maximum allowed scale. Defaults to 2f.
+     * Set the maximum allowed scale. Defaults to 2.0.
      */
-    fun maxScale(maxScale: Float) = apply {
+    fun maxScale(maxScale: Double) = apply {
         this.maxScale = maxScale
     }
 

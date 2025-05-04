@@ -7,16 +7,18 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.DpOffset
 import ovh.plrapps.mapcompose.ui.state.markers.DragEndListener
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.DragStartListener
+import ovh.plrapps.mapcompose.utils.Point
 import java.util.*
 
 internal class MarkerData(
     val id: String,
     x: Double, y: Double,
     relativeOffset: Offset,
-    absoluteOffset: Offset,
+    absoluteOffset: DpOffset,
     zIndex: Float,
     clickable: Boolean,
     isConstrainedInBounds: Boolean,
@@ -42,8 +44,8 @@ internal class MarkerData(
 
     var measuredWidth = 0
     var measuredHeight = 0
-    var xPlacement: Int? = null
-    var yPlacement: Int? = null
+    var xPlacement: Double? = null
+    var yPlacement: Double? = null
     val uuid: UUID = UUID.randomUUID()
 
     fun contains(x: Int, y: Int): Boolean {
@@ -56,13 +58,13 @@ internal class MarkerData(
                 && y >= centerY - deltaY && y <= centerY + deltaY)
     }
 
-    fun getCenter(): Offset? {
+    fun getCenter(): Point? {
         val xPos = xPlacement ?: return null
         val yPos = yPlacement ?: return null
 
         val centerX = xPos + measuredWidth / 2 + measuredWidth * clickableAreaCenterOffset.x
         val centerY = yPos + measuredHeight / 2 + measuredHeight * clickableAreaCenterOffset.y
-        return Offset(centerX, centerY)
+        return Point(centerX, centerY)
     }
 
     override fun equals(other: Any?): Boolean {

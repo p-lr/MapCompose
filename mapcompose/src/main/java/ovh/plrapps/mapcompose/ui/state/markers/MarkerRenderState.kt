@@ -5,6 +5,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.DpOffset
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerType
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
@@ -80,7 +81,7 @@ internal class MarkerRenderState {
     }
 
     fun addCallout(
-        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: Offset,
+        id: String, x: Double, y: Double, relativeOffset: Offset, absoluteOffset: DpOffset,
         zIndex: Float, autoDismiss: Boolean, clickable: Boolean, isConstrainedInBounds: Boolean,
         c: @Composable () -> Unit
     ) {
@@ -141,8 +142,8 @@ internal class MarkerRenderState {
         }
     }
 
-    private fun squareDistance(markerData: MarkerData, x: Int, y: Int): Float {
-        val (cx, cy) = markerData.getCenter() ?: return Float.MAX_VALUE
+    private fun squareDistance(markerData: MarkerData, x: Int, y: Int): Double {
+        val (cx, cy) = markerData.getCenter() ?: return Double.MAX_VALUE
         return (cx - x).pow(2) + (cy - y).pow(2)
     }
 
@@ -166,7 +167,8 @@ fun interface DragInterceptor {
      * @param x, y: The current normalized coordinates of the marker
      * @param dx, dy: The virtual displacement expressed in relative coordinates (not in pixels) that would
      * have been applied if there were no drag interceptor
-     * @param px, py: The current normalized coordinates of the pointer
+     * @param px, py: The current normalized coordinates of the pointer. If the marker's
+     * "isConstrainedInBounds" property is set to true, these coordinates are coerced in 0.0..1.0
      */
     fun onMove(
         id: String,

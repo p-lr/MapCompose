@@ -21,7 +21,7 @@ class AddingMarkerVM(application: Application) : AndroidViewModel(application) {
     private var markerCount = 0
 
     val state = MapState(4, 8448, 8448) {
-        scale(0f) // zoom-out to minimum scale
+        scale(0.0) // zoom-out to minimum scale
     }.apply {
         addLayer(tileStreamProvider)
         onMarkerMove { id, x, y, _, _ ->

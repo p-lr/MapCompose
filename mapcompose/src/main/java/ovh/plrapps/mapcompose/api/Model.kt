@@ -8,6 +8,7 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.Custom as CustomInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.Default as DefaultInternal
 import ovh.plrapps.mapcompose.ui.state.markers.model.None as NoneInternal
 
+data class Scroll(val x: Double, val y: Double)
 
 sealed interface ClusterClickBehavior
 
@@ -61,7 +62,7 @@ internal fun ClusterClickBehavior.toInternal(): ClusterClickBehaviorInternal {
 
 sealed interface ClusterScaleThreshold {
     data object MaxScale : ClusterScaleThreshold
-    data class FixedScale(val scale: Float) : ClusterScaleThreshold
+    data class FixedScale(val scale: Double) : ClusterScaleThreshold
 }
 
 internal class LayersBuilderInternal : LayersBuilder {

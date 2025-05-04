@@ -5,8 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addClusterer
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -27,13 +26,12 @@ import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 /**
  * Shows how to define and use a marker clusterer.
  */
-@OptIn(ExperimentalClusteringApi::class)
 class MarkersClusteringVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     val state = MapState(4, 8448, 8448) {
-        scale(0.2f)
-        maxScale(8f)
+        scale(0.2)
+        maxScale(8.0)
         scroll(0.5, 0.5)
     }.apply {
         addLayer(tileStreamProvider)

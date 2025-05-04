@@ -34,7 +34,7 @@ internal fun ZoomPanRotate(
                 detectTransformGestures(
                     onGesture = { centroid, pan, gestureZoom, gestureRotate ->
                         gestureListener.onRotationDelta(gestureRotate)
-                        gestureListener.onScaleRatio(gestureZoom, centroid)
+                        gestureListener.onScaleRatio(gestureZoom.toDouble(), centroid)
                         gestureListener.onScrollDelta(pan)
                     },
                     onTouchDown = gestureListener::onTouchDown,
@@ -50,14 +50,18 @@ internal fun ZoomPanRotate(
                 detectTapGestures(
                     onTap = { offset -> gestureListener.onTap(offset) },
                     onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
-                    onDoubleTapZoom = { centroid, zoom -> gestureListener.onScaleRatio(zoom, centroid)},
+                    onDoubleTapZoom = { centroid, zoom ->
+                        gestureListener.onScaleRatio(zoom.toDouble(), centroid)
+                    },
                     onDoubleTapZoomFling = { centroid, velocity ->
                         gestureListener.onFlingZoom(velocity, centroid)
                     },
                     onPress = { gestureListener.onPress() },
                     onLongPress = { offset -> gestureListener.onLongPress(offset) },
                     shouldConsumeTap = { offset -> gestureListener.shouldConsumeTapGesture(offset) },
-                    shouldConsumeLongPress = { offset -> gestureListener.shouldConsumeLongPress(offset) }
+                    shouldConsumeLongPress = { offset ->
+                        gestureListener.shouldConsumeLongPress(offset)
+                    }
                 )
             }
             .onSizeChanged {
@@ -81,7 +85,7 @@ internal fun ZoomPanRotate(
 }
 
 internal interface GestureListener {
-    fun onScaleRatio(scaleRatio: Float, centroid: Offset)
+    fun onScaleRatio(scaleRatio: Double, centroid: Offset)
     fun onRotationDelta(rotationDelta: Float)
     fun onScrollDelta(scrollDelta: Offset)
     fun onFling(flingSpec: DecayAnimationSpec<Offset>, velocity: Velocity)

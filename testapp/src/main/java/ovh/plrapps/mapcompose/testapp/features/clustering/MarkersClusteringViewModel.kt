@@ -6,15 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addClusterer
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
@@ -33,7 +32,6 @@ import kotlin.random.Random.Default.nextDouble
  * The lazy loading technique (removing a marker/cluster when it's not visible) is also used for
  * performance reasons.
  */
-@OptIn(ExperimentalClusteringApi::class)
 class MarkersClusteringViewModel(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
@@ -46,8 +44,8 @@ class MarkersClusteringViewModel(application: Application) : AndroidViewModel(ap
     }
 
     val state: MapState = MapState(4, 4096, 4096) {
-        scale(0.81f)
-        maxScale(8f)
+        scale(0.81)
+        maxScale(8.0)
     }.apply {
         addLayer(tileStreamProvider)
         enableRotation()

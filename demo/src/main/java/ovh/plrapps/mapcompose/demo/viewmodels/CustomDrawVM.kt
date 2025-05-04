@@ -48,7 +48,7 @@ class CustomDrawVM(application: Application) : AndroidViewModel(application) {
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {
-            scrollTo(0.5, 0.5, 1.1f)
+            scrollTo(0.5, 0.5, 1.1)
         }
     }
 

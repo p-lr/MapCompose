@@ -11,17 +11,21 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.lerp as lerpOffset
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.DragEndListener
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.DragStartListener
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
-import ovh.plrapps.mapcompose.utils.*
+import ovh.plrapps.mapcompose.utils.AngleDegree
+import ovh.plrapps.mapcompose.utils.rotateX
+import ovh.plrapps.mapcompose.utils.rotateY
+import ovh.plrapps.mapcompose.utils.toRad
 import ovh.plrapps.mapcompose.utils.withRetry
 
 /**
@@ -34,72 +38,34 @@ import ovh.plrapps.mapcompose.utils.withRetry
  * the width of the marker multiplied by the x value of the offset, and the height of the marker
  * multiplied by the y value of the offset.
  * @param absoluteOffset The x-axis and y-axis positions of a marker will be respectively offset by
- * the x and y values of the offset.
+ * the x and y [Dp] values of the offset.
  * @param zIndex A marker with larger zIndex will be drawn on top of all markers with smaller zIndex.
  * When markers have the same zIndex, the original order in which the parent placed the marker is used.
  * @param clickable Controls whether the marker is clickable. Default is true. If a click listener
  * is registered using [onMarkerClick], that listener will be invoked for that marker if [clickable]
  * is true.
- * @param clipShape Was originally introduced to clip the ripple effect when the library had a click
- * listener for each marker. However the library doesn't work like that anymore.
- * As of 2.4.1, this parameter is made no-op, and will be removed in a future major version.
  * @param isConstrainedInBounds By default, a marker cannot be positioned or moved outside of the
  * map bounds.
- * @param clickableAreaScale The clickable area, which defaults to the bounds of the
- * provided composable, can be expanded or shrinked. For example, using Offset(1.2f, 1f), the
- * clickable are will be expanded by 20% on the X axis relatively to the center.
- * @param clickableAreaCenterOffset The center of the clickable area will be offset by
- * the width of the marker multiplied by the x value of the offset, and the height of the marker
- * multiplied by the y value of the offset.
- */
-fun MapState.addMarker(
-    id: String,
-    x: Double,
-    y: Double,
-    relativeOffset: Offset = Offset(-0.5f, -1f),
-    absoluteOffset: Offset = Offset.Zero,
-    zIndex: Float = 0f,
-    clickable: Boolean = true,
-    clipShape: Shape? = null,
-    isConstrainedInBounds: Boolean = true,
-    clickableAreaScale: Offset = Offset(1f, 1f),
-    clickableAreaCenterOffset: Offset = Offset(0f, 0f),
-    c: @Composable () -> Unit
-) {
-    markerState.addMarker(
-        id,
-        x,
-        y,
-        relativeOffset,
-        absoluteOffset,
-        zIndex,
-        clickable,
-        isConstrainedInBounds,
-        clickableAreaScale,
-        clickableAreaCenterOffset,
-        RenderingStrategy.Default,
-        c
-    )
-}
-
-/**
- * @see [addMarker]
+ * @param clickableAreaScale The clickable area, which defaults to the bounds of the provided
+ * composable, can be expanded or shrunk. For example, using Offset(1.2f, 1f), the clickable area
+ * will be expanded by 20% on the X axis relatively to the center.
+ * @param clickableAreaCenterOffset The center of the clickable area will be offset by the width of
+ * the marker multiplied by the x value of the offset, and the height of the marker multiplied by
+ * the y value of the offset.
  * @param renderingStrategy By default, markers are eagerly laid-out, e.g they are laid-out
  * even when not visible. There are two alternative rendering strategies:
  * - [RenderingStrategy.LazyLoading]: removes all non-visible markers, dynamically.
  * - [RenderingStrategy.Clustering]: in addition to lazy loading, clusterize markers when they are
  * close to each other.
  */
-@ExperimentalClusteringApi
 fun MapState.addMarker(
     id: String,
     x: Double,
     y: Double,
     relativeOffset: Offset = Offset(-0.5f, -1f),
-    absoluteOffset: Offset = Offset.Zero,
+    absoluteOffset: DpOffset = DpOffset.Zero,
     zIndex: Float = 0f,
     clickable: Boolean = true,
-    clipShape: Shape? = null,
     isConstrainedInBounds: Boolean = true,
     clickableAreaScale: Offset = Offset(1f, 1f),
     clickableAreaCenterOffset: Offset = Offset(0f, 0f),
@@ -138,7 +104,6 @@ fun MapState.addMarker(
  * @param clusterFactory Compose code for a cluster. Receives the list of marker ids which are fused
  * to form the cluster.
  */
-@ExperimentalClusteringApi
 fun MapState.addClusterer(
     id: String,
     clusteringThreshold: Dp = 50.dp,
@@ -158,7 +123,7 @@ fun MapState.addClusterer(
 
 /**
  * Set a list of marker id to not clusterize by the clusterer which has the given [id].
- * This is useful to call this api right at the beginning of a marker drag. Otherwise, the cluster
+ * This is useful to call this api right at the beginning of a marker drag. Otherwise, the clusterer
  * might clusterize the marker during the drag gesture which would cause the gesture to be interrupted
  * and the `onDragEnd` callback (if set) wouldn't be invoked.
  * When this api is invoked, the relevant clusterer re-processes its managed markers.
@@ -180,7 +145,6 @@ fun MapState.setClustererExemptList(
  * @param id The id for the lazy loader
  * @param padding Padding added to the visible area, in dp. Defaults to 0.
  */
-@ExperimentalClusteringApi
 fun MapState.addLazyLoader(
     id: String,
     padding: Dp = 0.dp
@@ -192,7 +156,6 @@ fun MapState.addLazyLoader(
  * Remove a clusterer.
  * By default, also removes all markers managed by this clusterer.
  */
-@ExperimentalClusteringApi
 fun MapState.removeClusterer(
     id: String,
     removeManagedMarkers: Boolean = true
@@ -204,7 +167,6 @@ fun MapState.removeClusterer(
  * Remove a lazy loader.
  * By default, also removes all markers managed by this lazy loader.
  */
-@ExperimentalClusteringApi
 fun MapState.removeLazyLoader(
     id: String,
     removeManagedMarkers: Boolean = true
@@ -263,14 +225,14 @@ fun MapState.updateMarkerClickable(
  * the width of the marker multiplied by the x value of the offset, and the height of the marker
  * multiplied by the y value of the offset. If null, does not updates the current value.
  * @param absoluteOffset The x-axis and y-axis positions of a marker will be respectively offset by
- * the x and y values of the offset. If null, does not updates the current value.
+ * the x and y [Dp] values of the offset. If null, does not updates the current value.
  * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness. When null,
  * no animation is used.
  */
 suspend fun MapState.updateMarkerOffset(
     id: String,
     relativeOffset: Offset? = null,
-    absoluteOffset: Offset? = null,
+    absoluteOffset: DpOffset? = null,
     animationSpec: AnimationSpec<Float>? = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     markerState.getMarker(id)?.also {
@@ -280,14 +242,14 @@ suspend fun MapState.updateMarkerOffset(
                 invokeAndCheckSuccess {
                     Animatable(0f).animateTo(1f, animationSpec) {
                         if (relativeOffset != null) {
-                            it.relativeOffset = lerpOffset(
+                            it.relativeOffset = lerp(
                                 it.relativeOffset,
                                 relativeOffset,
                                 value
                             )
                         }
                         if (absoluteOffset != null) {
-                            it.absoluteOffset = lerpOffset(
+                            it.absoluteOffset = lerp(
                                 it.absoluteOffset,
                                 absoluteOffset,
                                 value
@@ -437,9 +399,9 @@ fun MapState.onMarkerLongPress(cb: (id: String, x: Double, y: Double) -> Unit) {
 }
 
 /**
- * Sometimes, some components need to react to marker position change. However, the [MapState] owns
+ * Sometimes, some components need to observe marker position changes. However, the [MapState] owns
  * the [State] of each marker position. To avoid duplicating state and have the [MapState] as single
- * source of truth, this API creates an "observer" [State] of marker positions.
+ * source of truth, this API creates an observable [State] of marker positions.
  * Note that this api only accounts for regular markers (e.g not managed by a clusterer).
  */
 fun MapState.markerDerivedState(): State<List<MarkerDataSnapshot>> {
@@ -507,8 +469,8 @@ suspend fun MapState.centerOnMarker(
         markerState.getMarker(id)?.also {
             awaitLayout()
             val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
-            val destScrollX = (it.x * fullWidth * scale - layoutSize.width / 2 - paddingOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * scale - layoutSize.height / 2 - paddingOffset.y).toFloat()
+            val destScrollX = it.x * fullWidth * scale - layoutSize.width / 2 - paddingOffset.x
+            val destScrollY = it.y * fullHeight * scale - layoutSize.height / 2 - paddingOffset.y
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollTo(destScrollX, destScrollY, animationSpec)
@@ -526,7 +488,7 @@ suspend fun MapState.centerOnMarker(
  */
 suspend fun MapState.centerOnMarker(
     id: String,
-    destScale: Float,
+    destScale: Double,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
     with(zoomPanRotateState) {
@@ -534,8 +496,8 @@ suspend fun MapState.centerOnMarker(
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
             val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y).toFloat()
+            val destScrollX = it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x
+            val destScrollY = it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollScaleRotate(
@@ -559,7 +521,7 @@ suspend fun MapState.centerOnMarker(
  */
 suspend fun MapState.centerOnMarker(
     id: String,
-    destScale: Float,
+    destScale: Double,
     destAngle: AngleDegree,
     animationSpec: AnimationSpec<Float> = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
@@ -568,8 +530,8 @@ suspend fun MapState.centerOnMarker(
             awaitLayout()
             val destScaleCst = constrainScale(destScale)
             val paddingOffset = visibleAreaPadding.getOffsetForScroll(rotation)
-            val destScrollX = (it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x).toFloat()
-            val destScrollY = (it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y).toFloat()
+            val destScrollX = it.x * fullWidth * destScaleCst - layoutSize.width / 2 - paddingOffset.x
+            val destScrollY = it.y * fullHeight * destScaleCst - layoutSize.height / 2 - paddingOffset.y
 
             withRetry(maxAnimationsRetries, animationsRetriesInterval) {
                 smoothScrollScaleRotate(
@@ -594,7 +556,7 @@ suspend fun MapState.centerOnMarker(
  * the width of the marker multiplied by the x value of the offset, and the height of the marker
  * multiplied by the y value of the offset.
  * @param absoluteOffset The x-axis and y-axis positions of a callout will be respectively offset by
- * the x and y values of the offset.
+ * the x and y [Dp] values of the offset.
  * @param zIndex A callout with larger zIndex will be drawn on top of all callouts with smaller zIndex.
  * When callouts have the same zIndex, the original order in which the parent placed the callout is used.
  * @param autoDismiss Whether the callout should be dismissed on touch down. Default is true. If set
@@ -610,7 +572,7 @@ fun MapState.addCallout(
     x: Double,
     y: Double,
     relativeOffset: Offset = Offset(-0.5f, -1f),
-    absoluteOffset: Offset = Offset.Zero,
+    absoluteOffset: DpOffset = DpOffset.Zero,
     zIndex: Float = 0f,
     autoDismiss: Boolean = true,
     clickable: Boolean = false,
@@ -678,6 +640,6 @@ data class MarkerInfo(
     val id: String, val x: Double,
     val y: Double,
     val relativeOffset: Offset,
-    val absoluteOffset: Offset,
+    val absoluteOffset: DpOffset,
     val zIndex: Float
 )

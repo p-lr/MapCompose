@@ -21,11 +21,11 @@ class OsmVM : ViewModel() {
     private val minLevel = 12
     private val mapSize = mapSizeAtLevel(maxLevel, tileSize = 256)
     val state = MapState(levelCount = maxLevel + 1, mapSize, mapSize, workerCount = 16) {
-        minimumScaleMode(Forced((1 / 2.0.pow(maxLevel - minLevel)).toFloat()))
+        minimumScaleMode(Forced(1 / 2.0.pow(maxLevel - minLevel)))
         scroll(0.5064745545387268, 0.3440358340740204)  // Paris
     }.apply {
         addLayer(tileStreamProvider)
-        scale = 0f  // to zoom out initially
+        scale = 0.0  // to zoom out initially
     }
 }
 

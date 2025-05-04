@@ -12,7 +12,7 @@ class SimpleDemoVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
     val state = MapState(4, 8448, 8448) {
-        scale(1.2f)
+        scale(1.2)
     }.apply {
         addLayer(tileStreamProvider)
         shouldLoopScale = true

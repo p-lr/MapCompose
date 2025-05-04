@@ -3,6 +3,7 @@ package ovh.plrapps.mapcompose.ui.state.markers
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ internal class MarkerState(
     fun addMarker(
         id: String, x: Double, y: Double,
         relativeOffset: Offset,
-        absoluteOffset: Offset,
+        absoluteOffset: DpOffset,
         zIndex: Float,
         clickable: Boolean,
         isConstrainedInBounds: Boolean,

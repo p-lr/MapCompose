@@ -102,18 +102,16 @@ internal class TileCollector(
         val canUseHardwareBitmaps = canUseHardwareBitmaps()
 
         /**
-         * If hardware bitmaps are available, or when there's more than one layer use [Config.ARGB_8888].
-         * Otherwise, use [Config.RGB_565] when not optimizing for low-end devices.
          * This config is for the software canvas, which is used in two situations:
-         * 1. We can use hardware bitmaps but there's more than one layer. We use a software canvas
-         *    before copying the result on a hardware bitmap
-         * 2. We can't use hardware bitmaps. Then, [Config.RGB_565] is suitable when there's only
-         *    one layer.
+         * 1. There's more than one layer. We use a software canvas before copying the result either
+         *    on a hardware bitmap (if we can use hardware bitmaps), or to another software bitmap.
+         * 2. There's exactly one layer. Then, [Config.RGB_565] is suitable when we're optimizing
+         *    for low-end devices. This config won't be used if we can use hardware bitmaps.
          */
-        val config = if (canUseHardwareBitmaps || layers.size > 1 || !optimizeForLowEndDevices) {
-            Config.ARGB_8888
-        } else {
+        val config = if (layers.size == 1 && optimizeForLowEndDevices) {
             Config.RGB_565
+        } else {
+            Config.ARGB_8888
         }
 
         val bitmapLoadingOptionsForLayer = layerIds.associateWith {

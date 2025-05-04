@@ -60,8 +60,8 @@ fun CustomDrawDemo(viewModel: CustomDrawVM = viewModel()) {
 private fun CustomDraw(
     modifier: Modifier = Modifier, viewModel: CustomDrawVM
 ) {
-    Box {
-        MapUI(modifier, state = viewModel.state) {
+    Box(modifier) {
+        MapUI(state = viewModel.state) {
             Square(
                 modifier = Modifier,
                 mapState = viewModel.state,
@@ -148,19 +148,19 @@ fun ScaleIndicator(
     }
 }
 
-class ScaleIndicatorController(val widthPx: Int, initScale: Float) {
+class ScaleIndicatorController(val widthPx: Int, initScale: Double) {
     var widthRatio by mutableFloatStateOf(0f)
     var scaleText by mutableStateOf("")
 
-    private var snapScale: Float = initScale
+    private var snapScale: Double = initScale
     private var snapWidthRatio = 0f
 
     init {
         snapToNewValue(initScale)
     }
 
-    fun onScaleChanged(scale: Float) {
-        val ratio = scale / snapScale
+    fun onScaleChanged(scale: Double) {
+        val ratio = (scale / snapScale).toFloat()
         if (widthRatio * ratio in 0.5f..1f) {
             widthRatio = snapWidthRatio * ratio
         } else {
@@ -168,7 +168,7 @@ class ScaleIndicatorController(val widthPx: Int, initScale: Float) {
         }
     }
 
-    private fun snapToNewValue(scale: Float) {
+    private fun snapToNewValue(scale: Double) {
         val distance = distanceForPx(widthPx, scale)
         val snap = computeSnapValue(distance) ?: return
         snapScale = scale
@@ -180,7 +180,7 @@ class ScaleIndicatorController(val widthPx: Int, initScale: Float) {
     /**
      * Computes the distance in meters, given a size in pixels.
      */
-    private fun distanceForPx(nPx: Int, scale: Float): Int {
+    private fun distanceForPx(nPx: Int, scale: Double): Int {
         // TODO: This a simplified calculation
         return (widthPx * 5 / scale).toInt()
     }
@@ -231,7 +231,7 @@ fun Square(
         modifier = modifier,
         mapState = mapState
     ) {
-        val side = if (isScaling) 300f else 300f / mapState.scale
+        val side = if (isScaling) 300f else (300f / mapState.scale).toFloat()
         drawRect(
             color,
             topLeft = position,
@@ -252,6 +252,6 @@ fun Line(
         modifier = modifier,
         mapState = mapState
     ) {
-        drawLine(color, start = p1, end = p2, strokeWidth = 8f / mapState.scale)
+        drawLine(color, start = p1, end = p2, strokeWidth = (8.0 / mapState.scale).toFloat())
     }
 }

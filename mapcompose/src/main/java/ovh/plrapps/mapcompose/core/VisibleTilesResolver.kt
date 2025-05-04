@@ -10,8 +10,8 @@ import kotlin.math.*
  * consistency.
  *
  * @param levelCount Number of levels
- * @param fullWidth Width of the map at scale 1.0f
- * @param fullHeight Height of the map at scale 1.0f
+ * @param fullWidth Width of the map at scale 1.0
+ * @param fullHeight Height of the map at scale 1.0
  * @param magnifyingFactor Alters the level at which tiles are picked for a given scale. By default,
  * the level immediately higher (in index) is picked, to avoid sub-sampling. This corresponds to a
  * [magnifyingFactor] of 0. The value 1 will result in picking the current level at a given scale,
@@ -29,7 +29,7 @@ internal class VisibleTilesResolver(
 ) {
 
     /**
-     * Last level is at scale 1.0f, others are at scale 1.0 / power_of_2
+     * Last level is at scale 1.0, others are at scale 1.0 / power_of_2
      */
     private val scaleForLevel: Map<Int, Double> = (0 until levelCount).associateWith {
         (1.0 / 2.0.pow((levelCount - it - 1)))
@@ -39,18 +39,18 @@ internal class VisibleTilesResolver(
      * Get the scale for a given [level] (also called zoom).
      * @return the scale or null if no such level was configured.
      */
-    fun getScaleForLevel(level: Int): Float? {
-        return scaleForLevel[level]?.toFloat()
+    fun getScaleForLevel(level: Int): Double? {
+        return scaleForLevel[level]
     }
 
     /**
      * Returns the level, an entire value belonging to [0 ; [levelCount] - 1]
      * Internal for test purposes.
      */
-    internal fun getLevel(scale: Float, magnifyingFactor: Int = 0): Int {
+    internal fun getLevel(scale: Double, magnifyingFactor: Int = 0): Int {
         /* This value can be negative */
         val partialLevel = levelCount - 1 - magnifyingFactor +
-                ln(scale.toDouble()) / ln(2.0)
+                ln(scale) / ln(2.0)
 
         /* The level can't be greater than levelCount - 1.0 */
         val capedLevel = min(partialLevel, levelCount - 1.0)
@@ -158,8 +158,8 @@ internal class VisibleTilesResolver(
     }
 
     // internal for test purposes
-    internal fun getSubSample(scale: Float): Int {
-        return if (scale < (scaleForLevel[0]?.toFloat() ?: Float.MIN_VALUE)) {
+    internal fun getSubSample(scale: Double): Int {
+        return if (scale < (scaleForLevel[0] ?: Double.MIN_VALUE)) {
             ceil(ln((scaleForLevel[0] ?: error("")).toDouble() / scale) / ln(2.0)).toInt()
         } else {
             0
@@ -167,7 +167,7 @@ internal class VisibleTilesResolver(
     }
 
     fun interface ScaleProvider {
-        fun getScale(): Float
+        fun getScale(): Double
     }
 }
 

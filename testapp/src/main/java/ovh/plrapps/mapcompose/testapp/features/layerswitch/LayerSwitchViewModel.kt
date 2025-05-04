@@ -27,7 +27,7 @@ class LayerSwitchViewModel(application: Application) : AndroidViewModel(applicat
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {
-            scrollTo(0.5, 0.5, 1f)
+            scrollTo(0.5, 0.5, 1.0)
         }
         currentLayerId = addLayer(tileStreamProvider)
     }
