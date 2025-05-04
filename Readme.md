@@ -3,13 +3,11 @@
 [![](https://img.shields.io/badge/ComposeBOM-2025.04.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- `3.0.0` is released. The library is now capable of handling much bigger maps, such as world-wide
+OpenStreetMap at zoom level 17 with a maximum scale of 8. See [Migrate from 2.x.x](#migrate-from-2xx).
 - Memory footprint has been dramatically reduced on Android 10 and above, by leveraging [Hardware Bitmaps](https://bumptech.github.io/glide/doc/hardwarebitmaps.html).
-  Software rendering is however still required when there's more than one layer.
 - MapCompose Multiplatform is officially released: https://github.com/p-lr/MapComposeMP \
   Works on iOS, MacOS, Windows, Linux, and Android.
-- New path dash pattern api: ability to define a sequence made of dash, dot, and gap.
-- Paths rendering has been improved, and paths are automatically simplified depending on the scale to improve performance
-
 
 # MapCompose
 
@@ -75,7 +73,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:2.16.2'
+implementation 'ovh.plrapps:mapcompose:3.0.0'
 ```
 
 Starting with v.2.4.1, the library is using the 
@@ -100,13 +98,6 @@ MapCompose can also be used with single level maps.
 
 ### Usage
 
-With Jetpack Compose, we have to change the way we think about views. In the previous `View`
-system, we had references on views and mutated their state directly. While that could be done right,
-the state often ended-up scattered between views own state and application state. Sometimes, it was
-difficult to predict how views were rendered because there were so many things to take into account.
-
-Now, the rendering is a function of a state. If that state changes, the "view" updates accordingly.
-
 In a typical application, you create a `MapState` instance inside a `ViewModel` (or whatever
 component which survives device rotation). Your `MapState` should then be passed to the `MapUI`
 composable. The code sample at the top of this readme shows an example. Then, whenever you need to
@@ -116,7 +107,9 @@ render consistently - even after a device rotation.
 
 All public APIs are located under the [api](mapcompose/src/main/java/ovh/plrapps/mapcompose/api) 
 package. The following sections provide details on the `MapState` class, and give examples of how to
-add markers, callouts, and paths. All apis should be called from the main thread.
+add markers, callouts, and paths. 
+
+All apis should be invoked from the main thread.
 
 ### MapState
 
@@ -265,20 +258,13 @@ parameters.
 in MapCompose. For example, the `zIndex` of a marker, or the minimum scale mode can be changed at
 runtime.
 
-## Difference with `1.x` version
+## Migrate from `2.x.x`
 
-* There's now a way to set initial values for various properties such as scroll, scale, etc using
-the `InitialValuesBuilder` in the `MapState` constructor. To produce similar behavior in 1.x, one
-had to launch a coroutine right after `MapState` creation - which wasn't perfect since some
-undesired tile loading could happen between the initialization and the destination state.
+* All apis taking the scale as parameter now require `Double` values instead of `Float`.
 
-* Having a `TileStreamProvider` at `MapState` construction is no longer mandatory.
-`TileStreamProvider`s are now added using the `addLayer` api, which is completely dynamic.
+* A few low-level apis taking the scroll in pixels now require `Double` values instead of `Float`.
 
-* While 1.x version had a non-suspending `TileStreamProvider`, 2.x greatly benefits from the new
-suspend version. If you're using a library like Retrofit to perform remote http fetch (and suspend
-calls), tile loading will be optimal since all layers are fetched concurrently. That was already the
-case in 1.x, but not thanks to suspending calls.
+* The `addMarker` api now longer has the parameter `clipShape`.
 
 ## Contributors
 
