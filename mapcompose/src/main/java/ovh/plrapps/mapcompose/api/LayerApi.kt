@@ -115,6 +115,25 @@ fun MapState.moveLayerDown(layerId: String) {
 }
 
 /**
+ * Remove the top layer from the stack.
+ */
+fun MapState.removeLastLayer() {
+    val layers = tileCanvasState.layerFlow.value.toMutableList()
+    val remainingLayers = layers.subList(0, layers.size - 1)
+    setLayers(remainingLayers)
+}
+
+/**
+ * Remove the top [n] layers from the stack.
+ * @param n The number of layers to remove.
+ */
+fun MapState.removeLastLayers(n: Int) {
+    val layers = tileCanvasState.layerFlow.value.toMutableList()
+    val remainingLayers = layers.subList(0, (layers.size - n).coerceAtLeast(0))
+    setLayers(remainingLayers)
+}
+
+/**
  * Reorder layers in the order of the provided list of ids. Layers listed first will be drawn before
  * subsequent layers (so the later will be above).
  * Existing layers not included in the provided list will be removed
