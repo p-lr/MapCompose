@@ -34,10 +34,8 @@ internal data class Tile(
 
 internal data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
-internal fun Tile.spaceHash(): Int {
-    return row + p1 * col + p1 * p2 * subSample + p1 * p2 * p3 * zoom
+internal fun Tile.spaceKey(): SpaceKey {
+    return "row=$row,col=$col,zoom=$zoom"
 }
 
-private const val p1 = 31
-private const val p2 = 73
-private const val p3 = 107
+internal typealias SpaceKey = String
