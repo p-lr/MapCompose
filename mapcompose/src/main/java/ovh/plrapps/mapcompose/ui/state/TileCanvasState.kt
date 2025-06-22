@@ -35,7 +35,7 @@ internal class TileCanvasState(
         parentScope.coroutineContext + singleThreadDispatcher
     )
     internal var tilesToRender: List<Tile> by mutableStateOf(listOf())
-    private var tilesCollectedBySpace: Map<Int, Tile> = mapOf()
+    private var tilesCollectedBySpace: Map<SpaceKey, Tile> = mapOf()
 
     private val _layerFlow = MutableStateFlow<List<Layer>>(listOf())
     internal val layerFlow = _layerFlow.asStateFlow()
@@ -228,7 +228,7 @@ internal class TileCanvasState(
                 && tile.layerIds == layerIds
                 && tile.opacities == opacities
             ) {
-                val tileWithSameSpace = tilesCollectedBySpace[tile.spaceHash()]
+                val tileWithSameSpace = tilesCollectedBySpace[tile.spaceKey()]
                 if (tileWithSameSpace != null && (tileWithSameSpace.layerIds != tile.layerIds || tileWithSameSpace.opacities != tile.opacities)) {
                     tile.overlaps = tileWithSameSpace
                     /* A tile already occupies the same space, so we don't need any fade-in */
@@ -296,7 +296,7 @@ internal class TileCanvasState(
 
     private fun updateTileCollectedBySpace() {
         tilesCollectedBySpace = tilesCollected.associateBy {
-            it.spaceHash()
+            it.spaceKey()
         }
     }
 
@@ -338,14 +338,14 @@ internal class TileCanvasState(
     ) {
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
-        val addedSet = mutableSetOf<Int>()
+        val addedSet = mutableSetOf<SpaceKey>()
 
         val iterator = tilesCollected.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
 
             if (layerIds == tile.layerIds && opacities == tile.opacities) {
-                val spaceHash = tile.spaceHash()
+                val spaceHash = tile.spaceKey()
                 addedSet.add(spaceHash)
             }
 
@@ -373,7 +373,7 @@ internal class TileCanvasState(
         while (secondPass.hasNext()) {
             val tile = secondPass.next()
             if (layerIds != tile.layerIds || opacities != tile.opacities) {
-                val spaceHash = tile.spaceHash()
+                val spaceHash = tile.spaceKey()
                 if (addedSet.contains(spaceHash)) {
                     secondPass.remove()
                 }
