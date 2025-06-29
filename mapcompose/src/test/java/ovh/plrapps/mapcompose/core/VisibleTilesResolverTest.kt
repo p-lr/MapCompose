@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import ovh.plrapps.mapcompose.core.VisibleTilesResolver.*
 import kotlin.math.pow
@@ -12,7 +13,15 @@ class VisibleTilesResolverTest {
 
     @Test
     fun levelTest() {
-        val resolver = VisibleTilesResolver(8, 1000, 800, 256, 0, scaleProvider)
+        val resolver = VisibleTilesResolver(
+            levelCount = 8,
+            fullWidth = 1000,
+            fullHeight = 800,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
 
         assertEquals(7, resolver.getLevel(1.0))
         assertEquals(7, resolver.getLevel(0.7))
@@ -29,7 +38,15 @@ class VisibleTilesResolverTest {
 
     @Test
     fun subSampleTest() {
-        val resolver = VisibleTilesResolver(8, 1000, 800, 256, 0, scaleProvider)
+        val resolver = VisibleTilesResolver(
+            levelCount = 8,
+            fullWidth = 1000,
+            fullHeight = 800,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
 
         assertEquals(0, resolver.getSubSample(0.008))
         assertEquals(1, resolver.getSubSample(0.0078)) // 0.0078 is the scale of level 0
@@ -41,12 +58,207 @@ class VisibleTilesResolverTest {
     }
 
     @Test
+    fun infiniteScrollXTest() {
+        val resolver = VisibleTilesResolver(
+            levelCount = 3,
+            fullWidth = 1024,
+            fullHeight = 800,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = true,
+            scaleProvider = scaleProvider
+        )
+        scale = 1.0
+        var viewport = Viewport(-256, 0, 512, 768)
+
+        var visibleTiles = resolver.getVisibleTiles(viewport)
+        var visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        val tileMatrix = visibleWindow.tileMatrix
+        with(tileMatrix.toTileRange()) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(1, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        var overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(3, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        var phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(3 to -1), phaseLeft)
+
+        var overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(-513, 0, 512, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(1, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(3 to -1, 2 to -1, 1 to -1), phaseLeft)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(-1024, 0, 512, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(3 to -1, 2 to -1, 1 to -1, 0 to -1), phaseLeft)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(-1792, 0, 512, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(3 to -2, 2 to -2, 1 to -2, 0 to -1), phaseLeft)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(-2049, 0, 512, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(3 to -3, 2 to -2, 1 to -2, 0 to -2), phaseLeft)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(0, 0, 1024 + 512, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        assertTrue(visibleWindow.leftOverflow == null)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        with(overflowRight!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(1, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        var phaseRight = visibleWindow.rightOverflow?.phase
+        assertEquals(mapOf(0 to 1, 1 to 1), phaseRight)
+
+        /* ------------------------------------------------------------------ */
+
+        viewport = Viewport(0, 0, 1024 + 1025, 768)
+
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        assertTrue(visibleWindow.leftOverflow == null)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        with(overflowRight!!) {
+            assertEquals(2, visibleTiles.level)
+            assertEquals(0, colLeft)
+            assertEquals(3, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(2, rowBottom)
+        }
+
+        phaseRight = visibleWindow.rightOverflow?.phase
+        assertEquals(mapOf(0 to 2, 1 to 1, 2 to 1, 3 to 1), phaseRight)
+
+        /* ------------------------------------------------------------------ */
+
+        scale = 0.5
+        viewport = Viewport(-256, 0, 512, 768)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        visibleWindow = visibleTiles.visibleWindow as VisibleWindow.InfiniteScrollX
+        overflowLeft = visibleWindow.leftOverflow?.tileMatrix?.toTileRange()
+        with(overflowLeft!!) {
+            assertEquals(1, visibleTiles.level)
+            assertEquals(1, colLeft)
+            assertEquals(1, colRight)
+            assertEquals(0, rowTop)
+            assertEquals(1, rowBottom)
+        }
+
+        phaseLeft = visibleWindow.leftOverflow?.phase
+        assertEquals(mapOf(1 to -1), phaseLeft)
+
+        overflowRight = visibleWindow.rightOverflow?.tileMatrix?.toTileRange()
+        assertTrue(overflowRight == null)
+    }
+
+    @Test
     fun viewportTestSimple() {
-        val resolver = VisibleTilesResolver(3, 1000, 800, 256, 0, scaleProvider)
+        val resolver = VisibleTilesResolver(
+            levelCount = 3,
+            fullWidth = 1000,
+            fullHeight = 800,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         var viewport = Viewport(0, 0, 700, 512)
 
         var visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        var tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(2, visibleTiles.level)
             assertEquals(0, colLeft)
             assertEquals(0, rowTop)
@@ -58,7 +270,8 @@ class VisibleTilesResolverTest {
         scale = 0.5
         viewport = Viewport(0, 0, 512, 512)
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(1, visibleTiles.level)
             assertEquals(0, colLeft)
             assertEquals(0, rowTop)
@@ -68,10 +281,19 @@ class VisibleTilesResolverTest {
 
 
         scale = 1.0
-        val resolver2 = VisibleTilesResolver(5, 8192, 8192, 256, 0, scaleProvider)
+        val resolver2 = VisibleTilesResolver(
+            levelCount = 5,
+            fullWidth = 8192,
+            fullHeight = 8192,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         val viewport2 = Viewport(0, 0, 8192, 8192)
         visibleTiles = resolver2.getVisibleTiles(viewport2)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(4, visibleTiles.level)
             assertEquals(0, colLeft)
             assertEquals(0, rowTop)
@@ -85,10 +307,19 @@ class VisibleTilesResolverTest {
         // 6-level map.
         // 256 * 2⁶ = 16384
         scale = 1.0
-        val resolver = VisibleTilesResolver(6, 16400, 8000, 256, 0, scaleProvider)
+        val resolver = VisibleTilesResolver(
+            levelCount = 6,
+            fullWidth = 16400,
+            fullHeight = 8000,
+            tileSize = 256,
+            magnifyingFactor = 0,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         var viewport = Viewport(0, 0, 1080, 1380)
         var visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        var tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
             assertEquals(0, colLeft)
             assertEquals(0, rowTop)
@@ -98,7 +329,8 @@ class VisibleTilesResolverTest {
 
         viewport = Viewport(4753, 6222, 4753 + 1080, 6222 + 1380)
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
             assertEquals(18, colLeft)
             assertEquals(24, rowTop)
@@ -109,7 +341,8 @@ class VisibleTilesResolverTest {
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         scale = 0.5
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(4, visibleTiles.level)
             assertEquals(14, colLeft)
             assertEquals(6, rowTop)
@@ -120,7 +353,8 @@ class VisibleTilesResolverTest {
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         scale = 0.71
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
             assertEquals(20, colLeft)
             assertEquals(8, rowTop)
@@ -131,7 +365,8 @@ class VisibleTilesResolverTest {
         viewport = Viewport(1643, 427, 1643 + 1080, 427 + 1380)
         scale = 0.43
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(4, visibleTiles.level)
             assertEquals(7, colLeft)
             assertEquals(1, rowTop)
@@ -144,11 +379,19 @@ class VisibleTilesResolverTest {
     fun viewportMagnifyingTest() {
         // 6-level map.
         // 256 * 2⁶ = 16384
-        var resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = 1, scaleProvider)
+        var resolver = VisibleTilesResolver(
+            levelCount = 6,
+            fullWidth = 16400,
+            fullHeight = 8000,
+            tileSize = 256, magnifyingFactor = 1,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         scale = 0.37
         var viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         var visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        var tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(3, visibleTiles.level)
             assertEquals(9, colLeft)
             assertEquals(4, rowTop)
@@ -157,11 +400,19 @@ class VisibleTilesResolverTest {
         }
 
         // magnify even further, with an abnormally big viewport
-        resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = 2, scaleProvider)
+        resolver = VisibleTilesResolver(
+            levelCount = 6,
+            fullWidth = 16400,
+            fullHeight = 8000,
+            tileSize = 256, magnifyingFactor = 2,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         viewport = Viewport(250, 123, 250 + 1080, 123 + 1380)
         scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(2, visibleTiles.level)
             assertEquals(0, colLeft)
             assertEquals(0, rowTop)
@@ -170,11 +421,19 @@ class VisibleTilesResolverTest {
         }
 
         // (un)magnify
-        resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = -1, scaleProvider)
+        resolver = VisibleTilesResolver(
+            levelCount = 6,
+            fullWidth = 16400,
+            fullHeight = 8000,
+            tileSize = 256, magnifyingFactor = -1,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
             assertEquals(39, colLeft)
             assertEquals(16, rowTop)
@@ -183,11 +442,19 @@ class VisibleTilesResolverTest {
         }
 
         // Try to (un)magnify beyond available level: this shouldn't change anything
-        resolver = VisibleTilesResolver(6, 16400, 8000, 256, magnifyingFactor = -2, scaleProvider)
+        resolver = VisibleTilesResolver(
+            levelCount = 6,
+            fullWidth = 16400,
+            fullHeight = 8000,
+            tileSize = 256, magnifyingFactor = -2,
+            infiniteScrollX = false,
+            scaleProvider = scaleProvider
+        )
         viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         scale = 0.37
         visibleTiles = resolver.getVisibleTiles(viewport)
-        with(visibleTiles.tileMatrix.toTileRange()) {
+        tileMatrix = (visibleTiles.visibleWindow as VisibleWindow.BoundsConstrained).tileMatrix
+        with(tileMatrix.toTileRange()) {
             assertEquals(5, visibleTiles.level)
             assertEquals(39, colLeft)
             assertEquals(16, rowTop)

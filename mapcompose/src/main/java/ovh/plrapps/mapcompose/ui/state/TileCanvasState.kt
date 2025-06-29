@@ -67,11 +67,16 @@ internal class TileCanvasState(
         renderTiles(lastVisible, ids, opacities)
     }
 
-    private fun renderTiles(visibleTiles: VisibleTiles, layerIds: List<String>, opacities: List<Float>) {
+    private fun renderTiles(
+        visibleTiles: VisibleTiles,
+        layerIds: List<String>,
+        opacities: List<Float>
+    ) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others. */
         val tilesToRenderCopy = tilesCollected.sortedBy {
-            val priority = if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
+            val priority =
+                if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
             priority + if (layerIds == it.layerIds && opacities == it.opacities) 1 else 0
         }
 
@@ -179,36 +184,71 @@ internal class TileCanvasState(
      */
     private suspend fun collectNewTiles() {
         visibleStateFlow.collectLatest { visibleState ->
-            val visibleTiles = visibleState?.visibleTiles
-            if (visibleTiles != null) {
-                for (e in visibleTiles.tileMatrix) {
-                    val row = e.key
-                    val colRange = e.value
-                    for (col in colRange) {
-                        val tile = Tile(
-                            zoom = visibleTiles.level,
-                            row = row,
-                            col = col,
-                            subSample = visibleTiles.subSample,
-                            layerIds = visibleState.layerIds,
-                            opacities = visibleState.opacities
+            if (visibleState != null) {
+                when (visibleState.visibleTiles.visibleWindow) {
+                    is VisibleWindow.BoundsConstrained -> {
+                        sendSpecsForTileMatrix(
+                            visibleState,
+                            visibleState.visibleTiles.visibleWindow.tileMatrix
                         )
-                        val alreadyProcessed = tilesCollected.contains(tile)
+                    }
 
-                        /* Only emit specs which haven't already been processed by the collector
-                         * Doing this now results in less object allocations than filtering the flow
-                         * afterwards */
-                        if (!alreadyProcessed) {
-                            visibleTileLocationsChannel.send(
-                                TileSpec(
-                                    visibleTiles.level,
-                                    row,
-                                    col,
-                                    visibleTiles.subSample
-                                )
+                    is VisibleWindow.InfiniteScrollX -> {
+                        sendSpecsForTileMatrix(
+                            visibleState,
+                            visibleState.visibleTiles.visibleWindow.tileMatrix
+                        )
+                        val leftMatrix = visibleState.visibleTiles.visibleWindow.leftOverflow?.tileMatrix
+                        if (leftMatrix != null) {
+                            sendSpecsForTileMatrix(
+                                visibleState,
+                                leftMatrix
+                            )
+                        }
+                        val rightMatrix = visibleState.visibleTiles.visibleWindow.rightOverflow?.tileMatrix
+                        if (rightMatrix != null) {
+                            sendSpecsForTileMatrix(
+                                visibleState,
+                                rightMatrix
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private suspend fun sendSpecsForTileMatrix(
+        visibleState: VisibleState,
+        tileMatrix: TileMatrix
+    ) {
+        val visibleTiles = visibleState.visibleTiles
+        for (e in tileMatrix) {
+            val row = e.key
+            val colRange = e.value
+            for (col in colRange) {
+                val tile = Tile(
+                    zoom = visibleTiles.level,
+                    row = row,
+                    col = col,
+                    subSample = visibleTiles.subSample,
+                    layerIds = visibleState.layerIds,
+                    opacities = visibleState.opacities
+                )
+                val alreadyProcessed = tilesCollected.contains(tile)
+
+                /* Only emit specs which haven't already been processed by the collector
+                 * Doing this now results in less object allocations than filtering the flow
+                 * afterwards */
+                if (!alreadyProcessed) {
+                    visibleTileLocationsChannel.send(
+                        TileSpec(
+                            visibleTiles.level,
+                            row,
+                            col,
+                            visibleTiles.subSample
+                        )
+                    )
                 }
             }
         }
@@ -259,37 +299,69 @@ internal class TileCanvasState(
 
     private fun VisibleTiles.contains(tile: Tile): Boolean {
         if (level != tile.zoom) return false
-        val colRange = tileMatrix[tile.row] ?: return false
-        return subSample == tile.subSample && tile.col in colRange
+        return when (visibleWindow) {
+            is VisibleWindow.BoundsConstrained -> {
+                val colRange = visibleWindow.tileMatrix[tile.row] ?: return false
+                subSample == tile.subSample && tile.col in colRange
+            }
+
+            is VisibleWindow.InfiniteScrollX -> {
+                val colRange = visibleWindow.tileMatrix[tile.row] ?: return false
+                (subSample == tile.subSample && tile.col in colRange) ||
+                        visibleWindow.leftOverflow?.tileMatrix?.get(tile.row)?.let { range ->
+                            subSample == tile.subSample && tile.col in range
+                        } == true ||
+                        visibleWindow.rightOverflow?.tileMatrix?.get(tile.row)?.let { range ->
+                            subSample == tile.subSample && tile.col in range
+                        } == true
+            }
+        }
     }
 
     private fun VisibleTiles.intersects(tile: Tile): Boolean {
-        return if (level == tile.zoom) {
-            val colRange = tileMatrix[tile.row] ?: return false
-            tile.col in colRange
-        } else {
-            val curMinRow = tileMatrix.keys.minOrNull() ?: return false
-            val curMaxRow = tileMatrix.keys.maxOrNull() ?: return false
-            val curMinCol = tileMatrix.entries.firstOrNull()?.value?.first ?: return false
-            val curMaxCol = tileMatrix.entries.firstOrNull()?.value?.last ?: return false
+        fun checkIntersection(tileMatrix: TileMatrix, tile: Tile): Boolean {
+            return if (level == tile.zoom) {
+                val colRange = tileMatrix[tile.row] ?: return false
+                tile.col in colRange
+            } else {
+                val curMinRow = tileMatrix.keys.minOrNull() ?: return false
+                val curMaxRow = tileMatrix.keys.maxOrNull() ?: return false
+                val curMinCol = tileMatrix.entries.firstOrNull()?.value?.first ?: return false
+                val curMaxCol = tileMatrix.entries.firstOrNull()?.value?.last ?: return false
 
-            if (tile.zoom > level) { // User is zooming out
-                val dLevel = tile.zoom - level
-                val minRowAtLvl = curMinRow.minAtGreaterLevel(dLevel)
-                val maxRowAtLvl = curMaxRow.maxAtGreaterLevel(dLevel)
+                if (tile.zoom > level) { // User is zooming out
+                    val dLevel = tile.zoom - level
+                    val minRowAtLvl = curMinRow.minAtGreaterLevel(dLevel)
+                    val maxRowAtLvl = curMaxRow.maxAtGreaterLevel(dLevel)
 
-                val minColAtLvl = curMinCol.minAtGreaterLevel(dLevel)
-                val maxColAtLvl = curMaxCol.maxAtGreaterLevel(dLevel)
-                return tile.row in minRowAtLvl..maxRowAtLvl && tile.col in minColAtLvl..maxColAtLvl
-            } else { // User is zooming in
-                val dLevel = level - tile.zoom
-                val minRowAtLvl = tile.row.minAtGreaterLevel(dLevel)
-                val maxRowAtLvl = tile.row.maxAtGreaterLevel(dLevel)
+                    val minColAtLvl = curMinCol.minAtGreaterLevel(dLevel)
+                    val maxColAtLvl = curMaxCol.maxAtGreaterLevel(dLevel)
+                    return tile.row in minRowAtLvl..maxRowAtLvl && tile.col in minColAtLvl..maxColAtLvl
+                } else { // User is zooming in
+                    val dLevel = level - tile.zoom
+                    val minRowAtLvl = tile.row.minAtGreaterLevel(dLevel)
+                    val maxRowAtLvl = tile.row.maxAtGreaterLevel(dLevel)
 
-                val minColAtLvl = tile.col.minAtGreaterLevel(dLevel)
-                val maxColAtLvl = tile.col.maxAtGreaterLevel(dLevel)
-                return curMinCol <= maxColAtLvl && minColAtLvl <= curMaxCol && curMinRow <= maxRowAtLvl &&
-                        minRowAtLvl <= curMaxRow
+                    val minColAtLvl = tile.col.minAtGreaterLevel(dLevel)
+                    val maxColAtLvl = tile.col.maxAtGreaterLevel(dLevel)
+                    return curMinCol <= maxColAtLvl && minColAtLvl <= curMaxCol && curMinRow <= maxRowAtLvl &&
+                            minRowAtLvl <= curMaxRow
+                }
+            }
+        }
+
+        return when (visibleWindow) {
+            is VisibleWindow.BoundsConstrained -> checkIntersection(visibleWindow.tileMatrix, tile)
+            is VisibleWindow.InfiniteScrollX -> {
+                val mainIntersect = checkIntersection(visibleWindow.tileMatrix, tile)
+
+                mainIntersect || (visibleWindow.leftOverflow != null && checkIntersection(
+                    visibleWindow.leftOverflow.tileMatrix,
+                    tile
+                )) || (visibleWindow.rightOverflow != null && checkIntersection(
+                    visibleWindow.rightOverflow.tileMatrix,
+                    tile
+                ))
             }
         }
     }

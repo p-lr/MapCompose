@@ -22,10 +22,13 @@ import kotlin.math.*
  * @author p-lr on 25/05/2019
  */
 internal class VisibleTilesResolver(
-    private val levelCount: Int, private val fullWidth: Int,
-    private val fullHeight: Int, private val tileSize: Int = 256,
+    private val levelCount: Int,
+    private val fullWidth: Int,
+    private val fullHeight: Int,
+    private val tileSize: Int = 256,
     var magnifyingFactor: Int = 0,
-    private val scaleProvider: ScaleProvider
+    private val infiniteScrollX: Boolean = false,
+    private val scaleProvider: ScaleProvider,
 ) {
 
     /**
@@ -90,8 +93,64 @@ internal class VisibleTilesResolver(
             val tileMatrix = (rowTop..rowBottom).associateWith {
                 colLeft..colRight
             }
-            val count = (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
-            return VisibleTiles(level, tileMatrix, count, getSubSample(scale))
+
+            val visibleWindow = if (infiniteScrollX) {
+                val colCnt = maxCol + 1
+
+                val overflowLeft = if (left < 0) {
+                    val leftOverflow = floor(left / scaledTileSize)
+
+                    val phaseForColLeft = buildMap {
+                        for (c in leftOverflow.toInt()..<0) {
+                            val remainder = c + (abs(c) / colCnt) * colCnt
+                            val col = if (remainder < 0) {
+                                colCnt + remainder
+                            } else 0
+                            val phase = floor(c.toDouble() / colCnt).toInt()
+                            if (phase < 0 && phase < (get(col) ?: 0)) {
+                                put(col, phase)
+                            }
+                        }
+                    }
+
+                    val c = (abs(leftOverflow) - 1).toInt()
+                    val colLeftL = (maxCol - c).coerceAtLeast(0)
+
+                    val tileMatrixL = (rowTop..rowBottom).associateWith {
+                        colLeftL..maxCol
+                    }
+
+                    Overflow(tileMatrixL, phaseForColLeft)
+                } else null
+
+                val rightOverflow = ceil(right / scaledTileSize) - 1
+                val overflowRight = if (rightOverflow > maxCol) {
+                    val phaseForColRight = buildMap {
+                        for (c in 0..<(rightOverflow - maxCol).toInt()) {
+                            val col = c - (c / colCnt) * colCnt
+                            val phase = floor(c.toDouble() / colCnt).toInt() + 1
+                            if (phase > 0 && phase > (get(col) ?: 0)) {
+                                put(col, phase)
+                            }
+                        }
+                    }
+
+                    val c = ((rightOverflow - maxCol).toInt() - 1).coerceAtLeast(0)
+                    val colRightR = c.coerceAtMost(maxCol)
+
+                    val tileMatrixR = (rowTop..rowBottom).associateWith {
+                        0..colRightR
+                    }
+
+                    Overflow(tileMatrixR, phaseForColRight)
+                } else null
+
+                VisibleWindow.InfiniteScrollX(tileMatrix, overflowLeft, overflowRight)
+            } else {
+                VisibleWindow.BoundsConstrained(tileMatrix)
+            }
+
+            return VisibleTiles(level, visibleWindow, getSubSample(scale))
         }
 
         return if (viewport.angleRad == 0f) {
@@ -174,19 +233,31 @@ internal class VisibleTilesResolver(
 /**
  * Properties container for the computed visible tiles.
  * @param level 0-based level index
- * @param tileMatrix contains all (row, col) indexes, grouped by rows
- * @param count the precomputed total count
+ * @param visibleWindow contains information about which tiles are currently visible
  * @param subSample the current sub-sample factor. If the current scale of the [VisibleTilesResolver]
  * is lower than the scale of the minimum level, [subSample] is greater than 0. Otherwise, [subSample]
  * equals 0.
  */
 internal data class VisibleTiles(
     val level: Int,
-    val tileMatrix: TileMatrix,
-    val count: Int,
+    val visibleWindow: VisibleWindow,
     val subSample: Int = 0
 )
 
 internal typealias Row = Int
+internal typealias Col = Int
 internal typealias ColRange = IntRange
+
+/* Contains all (row, col) indexes, grouped by rows*/
 internal typealias TileMatrix = Map<Row, ColRange>
+
+internal sealed interface VisibleWindow {
+    data class BoundsConstrained(val tileMatrix: TileMatrix): VisibleWindow
+    data class InfiniteScrollX(
+        val tileMatrix: TileMatrix,
+        val leftOverflow: Overflow?,
+        val rightOverflow: Overflow?
+    ): VisibleWindow
+}
+
+internal data class Overflow(val tileMatrix: TileMatrix, val phase: Map<Col, Int>)
