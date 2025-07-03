@@ -29,7 +29,7 @@ class AnimationDemoVM(application: Application) : AndroidViewModel(application) 
     private var job: Job? = null
     private val spec = TweenSpec<Float>(2000, easing = FastOutSlowInEasing)
 
-    val state = MapState(4, 8448, 8448).apply {
+    val state = MapState(4, 8192, 8192).apply {
         addLayer(tileStreamProvider)
         shouldLoopScale = true
         enableRotation()

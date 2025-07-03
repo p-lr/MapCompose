@@ -13,6 +13,7 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.*
+import kotlin.time.TimeSource
 
 internal class ZoomPanRotateState(
     val fullWidth: Int,
@@ -22,7 +23,8 @@ internal class ZoomPanRotateState(
     maxScale: Double,
     scale: Double,
     rotation: AngleDegree,
-    gestureConfiguration: GestureConfiguration
+    gestureConfiguration: GestureConfiguration,
+    val infiniteScrollX: Boolean,
 ) : GestureListener, LayoutSizeChangeListener {
     private var scope: CoroutineScope? = null
     private var onLayoutContinuations = mutableListOf<Continuation<Unit>>()
@@ -90,6 +92,8 @@ internal class ZoomPanRotateState(
                 )
             } else throw IllegalArgumentException("The offset ratio should have values in 0f..1f range")
         }
+
+    internal val rolloverX = mutableStateOf<RolloverData?>(null)
 
     // For user gestures animations
     private val userFloatAnimatable = Animatable(0f)
@@ -569,15 +573,74 @@ internal class ZoomPanRotateState(
             polarRadius(layoutSize.width.toFloat(), layoutSize.height.toFloat(), angle)
         val bias = (layoutDimension - layoutSize.width) / 2
 
-        return if (fullWidth * scale < layoutDimension) {
-            val offset = scrollOffsetRatio.x * fullWidth * scale
-            scrollX.coerceIn(fullWidth * scale - layoutDimension - offset + bias, offset + bias)
+        return if (infiniteScrollX) {
+            val left = bias
+            val right = bias + fullWidth * scale - layoutDimension
+            val constrained = when {
+                scrollX < (left - layoutDimension) -> {
+                    val delta = left - layoutDimension - scrollX
+                    val window = right - left + layoutDimension
+                    val ratio = (delta / window).toInt()
+                    right - (delta - ratio * window)
+                }
+                scrollX > (right + layoutDimension) -> {
+                    val delta = scrollX - right - layoutDimension
+                    val window = right - left + layoutDimension
+                    val ratio = (delta / window).toInt()
+                    left + (delta - ratio * window)
+                }
+                else -> scrollX
+            }
+
+            /* Also update the rollover */
+            val newRollover = when {
+                abs(left - layoutDimension - constrained) < 200.0 -> Rollover.Backward
+                abs(right + layoutDimension - constrained) < 200.0 -> Rollover.Forward
+                else -> null
+            }
+            val current = rolloverX.value
+
+            rolloverX.value = if (current == null) {
+                RolloverData(
+                    current = newRollover ?: Rollover.None(TimeSource.Monotonic.markNow())
+                )
+            } else {
+                when (current.current) {
+                    Rollover.Backward, Rollover.Forward -> {
+                        if (newRollover == null) {
+                            current.copy(
+                                current = Rollover.None(TimeSource.Monotonic.markNow()),
+                                previous = current.current
+                            )
+                        } else current
+                    }
+                    is Rollover.None -> {
+                        if (newRollover == null) {
+                            current
+                        } else {
+                            current.copy(
+                                current = newRollover,
+                                previous = current.current
+                            )
+                        }
+                    }
+                }
+            }.also {
+                println("xxxxx rollover $it")
+            }
+
+            constrained
         } else {
-            val offset = scrollOffsetRatio.x * layoutDimension
-            scrollX.coerceIn(
-                (-offset + bias).toDouble(),
-                offset + bias + fullWidth * scale - layoutDimension
-            )
+            if (fullWidth * scale < layoutDimension) {
+                val offset = scrollOffsetRatio.x * fullWidth * scale
+                scrollX.coerceIn(fullWidth * scale - layoutDimension - offset + bias, offset + bias)
+            } else {
+                val offset = scrollOffsetRatio.x * layoutDimension
+                scrollX.coerceIn(
+                    (-offset + bias).toDouble(),
+                    offset + bias + fullWidth * scale - layoutDimension
+                )
+            }
         }
     }
 
@@ -634,6 +697,14 @@ internal class ZoomPanRotateState(
         return a * b / sqrt((a * sin(angle)).pow(2) + (b * cos(angle)).pow(2))
     }
 }
+
+internal sealed interface Rollover {
+    data object Forward : Rollover
+    data object Backward : Rollover
+    data class None(val timeMark: TimeSource.Monotonic.ValueTimeMark) : Rollover
+}
+
+internal data class RolloverData(val current: Rollover, val previous: Rollover? = null)
 
 /**
  * The padding to apply when some UI is obscuring the map on it's borders.

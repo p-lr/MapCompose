@@ -18,7 +18,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class RotationVM(application: Application) : AndroidViewModel(application) {
     private val tileStreamProvider = makeTileStreamProvider(application.applicationContext)
 
-    val state = MapState(4, 8448, 8448).apply {
+    val state = MapState(4, 8192, 8192).apply {
         addLayer(tileStreamProvider)
         enableRotation()
         setScrollOffsetRatio(0.3f, 0.3f)

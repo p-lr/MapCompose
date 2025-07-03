@@ -24,7 +24,7 @@ class LayersVM(application: Application) : AndroidViewModel(application) {
     private var slopesId: String? = null
     private var roadId: String? = null
 
-    val state = MapState(4, 8448, 8448).apply {
+    val state = MapState(4, 8192, 8192).apply {
         shouldLoopScale = true
         enableRotation()
         viewModelScope.launch {

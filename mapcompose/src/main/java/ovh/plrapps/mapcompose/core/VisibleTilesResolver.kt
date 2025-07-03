@@ -3,6 +3,7 @@ package ovh.plrapps.mapcompose.core
 import ovh.plrapps.mapcompose.utils.rotateX
 import ovh.plrapps.mapcompose.utils.rotateY
 import kotlin.math.*
+import kotlin.time.TimeSource
 
 /**
  * Resolves the visible tiles.
@@ -44,6 +45,11 @@ internal class VisibleTilesResolver(
      */
     fun getScaleForLevel(level: Int): Double? {
         return scaleForLevel[level]
+    }
+
+    fun getColCountForLevel(level: Int): Int? {
+        val scale = scaleForLevel[level] ?: return null
+        return max(0.0, ceil(fullWidth * scale / tileSize) - 1).toInt() + 1
     }
 
     /**
@@ -145,7 +151,7 @@ internal class VisibleTilesResolver(
                     Overflow(tileMatrixR, phaseForColRight)
                 } else null
 
-                VisibleWindow.InfiniteScrollX(tileMatrix, overflowLeft, overflowRight)
+                VisibleWindow.InfiniteScrollX(tileMatrix, overflowLeft, overflowRight, TimeSource.Monotonic.markNow())
             } else {
                 VisibleWindow.BoundsConstrained(tileMatrix)
             }
@@ -256,8 +262,16 @@ internal sealed interface VisibleWindow {
     data class InfiniteScrollX(
         val tileMatrix: TileMatrix,
         val leftOverflow: Overflow?,
-        val rightOverflow: Overflow?
+        val rightOverflow: Overflow?,
+        val timeMark: TimeSource.Monotonic.ValueTimeMark
     ): VisibleWindow
 }
 
+/**
+ * Contains information about which tiles should be repeated on one side and how.
+ * For example, if `phase[3]` returns -2, it means the tile of column index 3 should be repeated 2
+ * times on the left. If `phase[0]` returns 1, it means the tile of column index 0 should be drawn a
+ * single time on the right.
+ * A phase should always be different than 0.
+ */
 internal data class Overflow(val tileMatrix: TileMatrix, val phase: Map<Col, Int>)

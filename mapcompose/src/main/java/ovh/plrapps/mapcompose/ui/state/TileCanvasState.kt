@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.core.*
 import java.util.concurrent.Executors
 import kotlin.math.pow
+import kotlin.time.TimeSource
 
 /**
  * This class contains all the logic related to [Tile] management.
@@ -75,6 +76,11 @@ internal class TileCanvasState(
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
          * above others. */
         val tilesToRenderCopy = tilesCollected.sortedBy {
+            /* As a side effect of sorting tiles, also set tile phases */
+            if (visibleTiles.visibleWindow is VisibleWindow.InfiniteScrollX) {
+                setTilePhases(it, visibleTiles.visibleWindow, visibleTiles.level, visibleTiles.visibleWindow.timeMark)
+            }
+
             val priority =
                 if (it.zoom == visibleTiles.level && it.subSample == visibleTiles.subSample) 100 else 0
             priority + if (layerIds == it.layerIds && opacities == it.opacities) 1 else 0
@@ -306,13 +312,15 @@ internal class TileCanvasState(
             }
 
             is VisibleWindow.InfiniteScrollX -> {
-                val colRange = visibleWindow.tileMatrix[tile.row] ?: return false
-                (subSample == tile.subSample && tile.col in colRange) ||
+                if (subSample != tile.subSample) return false
+                visibleWindow.tileMatrix[tile.row]?.let { range ->
+                    tile.col in range
+                } == true ||
                         visibleWindow.leftOverflow?.tileMatrix?.get(tile.row)?.let { range ->
-                            subSample == tile.subSample && tile.col in range
+                            tile.col in range
                         } == true ||
                         visibleWindow.rightOverflow?.tileMatrix?.get(tile.row)?.let { range ->
-                            subSample == tile.subSample && tile.col in range
+                            tile.col in range
                         } == true
             }
         }
@@ -518,6 +526,21 @@ internal class TileCanvasState(
 
     private fun Int.maxAtGreaterLevel(n: Int): Int {
         return (this + 1) * 2.0.pow(n).toInt() - 1
+    }
+
+    private fun setTilePhases(tile: Tile, visibleWindow: VisibleWindow.InfiniteScrollX, level: Int, timeMark: TimeSource.Monotonic.ValueTimeMark) {
+        if (tile.zoom != level) return
+
+        val left = visibleWindow.leftOverflow?.phase?.get(tile.col)
+        val right = visibleWindow.rightOverflow?.phase?.get(tile.col)
+        val inCenter = tile.col in (visibleWindow.tileMatrix[tile.row] ?: IntRange.EMPTY)
+        tile.phases = if (left != null || right != null) {
+             IntRange(
+                start = left ?: (if (inCenter) 0 else 1),
+                endInclusive = right ?: (if (inCenter) 0 else -1)
+            )
+        } else null
+        tile.timeMark = timeMark
     }
 
     private data class VisibleState(
