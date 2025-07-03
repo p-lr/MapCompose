@@ -3,7 +3,9 @@ package ovh.plrapps.mapcompose.core
 import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlin.time.TimeSource
 
 /**
  * A [Tile] is defined by its coordinates in the "pyramid". A [Tile] is sub-sampled when the
@@ -30,6 +32,11 @@ internal data class Tile(
 
     @Volatile
     var markedForSweep = false   // write on main-thread only
+
+    var phases: IntRange? by mutableStateOf(null)
+
+    @Volatile
+    var timeMark: TimeSource.Monotonic.ValueTimeMark? = null
 }
 
 internal data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)

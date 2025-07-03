@@ -18,8 +18,8 @@ class HttpTilesVM : ViewModel() {
 
     val state = MapState(
         levelCount = 4,
-        fullWidth = 8448,
-        fullHeight = 8448,
+        fullWidth = 8192,
+        fullHeight = 8192,
         workerCount = 16  // Notice how we increase the worker count when performing HTTP requests
     ).apply {
         addLayer(tileStreamProvider)
