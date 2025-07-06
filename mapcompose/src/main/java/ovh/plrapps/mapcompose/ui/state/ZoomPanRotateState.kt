@@ -594,8 +594,8 @@ internal class ZoomPanRotateState(
 
             /* Also update the rollover */
             val newRollover = when {
-                abs(left - layoutDimension - constrained) < 200.0 -> Rollover.Backward
-                abs(right + layoutDimension - constrained) < 200.0 -> Rollover.Forward
+                abs(left - layoutDimension - constrained) < rolloverThreshold -> Rollover.Backward
+                abs(right + layoutDimension - constrained) < rolloverThreshold -> Rollover.Forward
                 else -> null
             }
             val current = rolloverX.value
@@ -696,6 +696,8 @@ internal class ZoomPanRotateState(
     private fun polarRadius(a: Float, b: Float, angle: AngleRad): Float {
         return a * b / sqrt((a * sin(angle)).pow(2) + (b * cos(angle)).pow(2))
     }
+
+    private val rolloverThreshold = 200.0
 }
 
 internal sealed interface Rollover {

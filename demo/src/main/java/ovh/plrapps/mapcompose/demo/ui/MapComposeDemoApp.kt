@@ -12,6 +12,7 @@ import ovh.plrapps.mapcompose.demo.ui.screens.CenteringOnMarkerDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.CustomDrawDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.Home
 import ovh.plrapps.mapcompose.demo.ui.screens.HttpTilesDemo
+import ovh.plrapps.mapcompose.demo.ui.screens.InfiniteScrollDemo
 import ovh.plrapps.mapcompose.demo.ui.screens.LayersDemoSimple
 import ovh.plrapps.mapcompose.demo.ui.screens.MapDemoSimple
 import ovh.plrapps.mapcompose.demo.ui.screens.MarkersClusteringDemo
@@ -59,6 +60,9 @@ fun MapComposeDemoApp() {
             }
             composable(MainDestinations.ANIMATION_DEMO.name) {
                 AnimationDemo()
+            }
+            composable(MainDestinations.INFINITE_SCROLL.name) {
+                InfiniteScrollDemo()
             }
             composable(MainDestinations.OSM_DEMO.name) {
                 OsmDemo()
