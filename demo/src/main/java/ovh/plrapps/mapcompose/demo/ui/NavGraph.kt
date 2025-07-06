@@ -12,6 +12,7 @@ enum class MainDestinations(val title: String) {
     CUSTOM_DRAW("Map with custom drawings"),
     CALLOUT_DEMO("Callout (tap markers)"),
     ANIMATION_DEMO("Animation demo"),
+    INFINITE_SCROLL("Infinite scroll demo"),
     OSM_DEMO("Open Street Map demo"),
     HTTP_TILES_DEMO("Remote HTTP tiles"),
     VISIBLE_AREA_PADDING("Visible area padding"),
