@@ -1,8 +1,9 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://central.sonatype.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/ComposeBOM-2025.04.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
+[![](https://img.shields.io/badge/ComposeBOM-2025.06.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
+- `3.1.0` now supports infinite scroll (#119).
 - `3.0.0` is released. The library is now capable of handling much bigger maps, such as world-wide
 OpenStreetMap at zoom level 17 with a maximum scale of 8. See [Migrate from 2.x.x](#migrate-from-2xx).
 - Memory footprint has been dramatically reduced on Android 10 and above, by leveraging [Hardware Bitmaps](https://bumptech.github.io/glide/doc/hardwarebitmaps.html).
@@ -73,7 +74,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:3.0.0'
+implementation 'ovh.plrapps:mapcompose:3.1.0'
 ```
 
 Starting with v.2.4.1, the library is using the 
