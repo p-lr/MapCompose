@@ -625,8 +625,6 @@ internal class ZoomPanRotateState(
                         }
                     }
                 }
-            }.also {
-                println("xxxxx rollover $it")
             }
 
             constrained
