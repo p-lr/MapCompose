@@ -5,18 +5,18 @@ plugins {
 }
 
 android {
-    compileSdk 35
+    compileSdk = 35
 
     defaultConfig {
         applicationId "ovh.plrapps.mapcompose.testapp"
-        minSdk 21
-        targetSdk 35
+        minSdk = 21
+        targetSdk = 35
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
-            useSupportLibrary true
+            useSupportLibrary = true
         }
     }
 
@@ -27,21 +27,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17
     }
     buildFeatures {
-        compose true
+        compose = true
     }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    namespace 'ovh.plrapps.mapcompose.testapp'
+    namespace = 'ovh.plrapps.mapcompose.testapp'
 }
 
 dependencies {
