@@ -1,4 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 
 plugins {
@@ -37,6 +36,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
 
     namespace 'ovh.plrapps.mapcompose'
@@ -94,6 +94,6 @@ mavenPublishing {
         }
     }
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(false)
     signAllPublications()
 }

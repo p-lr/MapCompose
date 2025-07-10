@@ -324,7 +324,8 @@ class InitialValues internal constructor() {
     }
 
     /**
-     * Enable infinite scroll on x-axis.
+     * Enable infinite scroll on x-axis. When enabled, the scroll offset ratio in x dimension has
+     * no effect.
      */
     fun infiniteScrollX(enabled: Boolean) {
         infiniteScrollX = enabled

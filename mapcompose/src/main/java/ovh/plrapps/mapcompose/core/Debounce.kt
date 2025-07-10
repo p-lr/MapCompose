@@ -1,9 +1,9 @@
 package ovh.plrapps.mapcompose.core
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
  * executed until a time-span of [timeoutMillis] elapses.
  * When [block] is executed, it's provided with the last [T] value sent to the channel.
  */
+@OptIn(FlowPreview::class)
 fun <T> CoroutineScope.debounce(
     timeoutMillis: Long,
     block: suspend (T) -> Unit

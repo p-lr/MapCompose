@@ -207,6 +207,8 @@ var MapState.maxScale: Double
  * The recommended value to try it out is 0.5f
  * Values must be in [0f..1f] range, or an [IllegalArgumentException] is thrown.
  *
+ * This parameter has no effect in x dimension when infinite scroll is enabled.
+ *
  * @param xRatio The horizontal scroll offset ratio. The scroll offset will be equal to this ratio
  * multiplied by the layout width.
  * @param yRatio The vertical scroll offset ratio. The scroll offset will be equal to this ratio
