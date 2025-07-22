@@ -185,10 +185,10 @@ fun interface DragStartListener {
     /**
      * @param id: The id of the marker
      * @param x, y: The normalized coordinates of the marker, before the drag starts.
-     *
-     * This api may evolve to also include the pointer position when the drag starts.
+     * @param px, py: The current normalized coordinates of the pointer. If the marker's
+     * "isConstrainedInBounds" property is set to true, these coordinates are coerced in 0.0..1.0
      */
-    fun onDragStart(id: String, x: Double, y: Double)
+    fun onDragStart(id: String, x: Double, y: Double, px: Double, py: Double)
 }
 
 fun interface DragEndListener {
