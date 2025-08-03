@@ -39,6 +39,7 @@ internal class MarkerData(
     var isClickable: Boolean by mutableStateOf(clickable)
     var clickableAreaScale by mutableStateOf(clickableAreaScale)
     var clickableAreaCenterOffset by mutableStateOf(clickableAreaCenterOffset)
+    var isVisible: Boolean by mutableStateOf(true)
     var zIndex: Float by mutableFloatStateOf(zIndex)
     var isConstrainedInBounds by mutableStateOf(isConstrainedInBounds)
 

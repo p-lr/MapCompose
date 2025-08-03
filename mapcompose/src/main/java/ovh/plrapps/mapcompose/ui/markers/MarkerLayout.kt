@@ -72,7 +72,11 @@ internal fun MarkerLayout(
                     data.xPlacement = x
                     data.yPlacement = y
 
-                    placeable.place((x - origin.x).toInt(), (y - origin.y).toInt(), zIndex = data.zIndex)
+                    /* It's important to always update data even when visibility is set to false, so
+                     * click handling works on updated data. */
+                    if (data.isVisible) {
+                        placeable.place((x - origin.x).toInt(), (y - origin.y).toInt(), zIndex = data.zIndex)
+                    }
                 } else {
                     with(zoomPRState) {
                         val angleRad = rotation.toRad()
@@ -99,11 +103,16 @@ internal fun MarkerLayout(
 
                         data.xPlacement = x
                         data.yPlacement = y
-                        placeable.place(
-                            (x - origin.x).toInt(),
-                            (y - origin.y).toInt(),
-                            zIndex = data.zIndex
-                        )
+
+                        /* It's important to always update data even when visibility is set to false,
+                         * so click handling works on updated data. */
+                        if (data.isVisible) {
+                            placeable.place(
+                                (x - origin.x).toInt(),
+                                (y - origin.y).toInt(),
+                                zIndex = data.zIndex
+                            )
+                        }
                     }
                 }
             }

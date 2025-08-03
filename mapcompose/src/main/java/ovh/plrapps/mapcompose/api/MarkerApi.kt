@@ -306,6 +306,16 @@ fun MapState.updateClickableArea(
 }
 
 /**
+ * Update a marker visibility.
+ *
+ * @param id The id of the marker
+ */
+fun MapState.updateMarkerVisibility(id: String, visible: Boolean) {
+    val markerData = markerState.getMarker(id) ?: return
+    markerData.isVisible = visible
+}
+
+/**
  * Remove a marker.
  *
  * @param id The id of the marker
