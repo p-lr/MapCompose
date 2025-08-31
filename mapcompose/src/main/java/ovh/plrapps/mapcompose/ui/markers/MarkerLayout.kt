@@ -57,6 +57,11 @@ internal fun MarkerLayout(
         layout(constraints.maxWidth, constraints.maxHeight) {
             for (measurable in measurables) {
                 val data = measurable.layoutId as? MarkerData ?: continue
+
+                /* Don't layout markers which are way out of display bounds, as it can can cause
+                 * jitter in marker rendering. */
+                if (data.isOutOfDisplay()) continue
+
                 val placeable = measurable.measure(placeableCst)
                 data.measuredWidth = placeable.measuredWidth
                 data.measuredHeight = placeable.measuredHeight
@@ -119,3 +124,5 @@ internal fun MarkerLayout(
         }
     }
 }
+
+private fun MarkerData.isOutOfDisplay() = x < -1.0 || x > 2.0 || y < -1.0 || y > 2.0
