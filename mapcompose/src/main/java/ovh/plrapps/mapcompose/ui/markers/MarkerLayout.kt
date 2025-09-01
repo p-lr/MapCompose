@@ -74,11 +74,11 @@ internal fun MarkerLayout(
                 if (zoomPRState.rotation == 0f) {
                     val x = data.x * zoomPRState.fullWidth * zoomPRState.scale + widthOffset
                     val y = data.y * zoomPRState.fullHeight * zoomPRState.scale + heightOffset
+                    /* It's important to always update data even when visibility is set to false, so
+                     * click handling works on updated data (a non-visible marker might be clickable) */
                     data.xPlacement = x
                     data.yPlacement = y
 
-                    /* It's important to always update data even when visibility is set to false, so
-                     * click handling works on updated data. */
                     if (data.isVisible) {
                         placeable.place((x - origin.x).toInt(), (y - origin.y).toInt(), zIndex = data.zIndex)
                     }
@@ -106,11 +106,12 @@ internal fun MarkerLayout(
                             angleRad
                         ) + heightOffset
 
+                        /* It's important to always update data even when visibility is set to false,
+                         * so click handling works on updated data (a non-visible marker might be
+                         * clickable) */
                         data.xPlacement = x
                         data.yPlacement = y
 
-                        /* It's important to always update data even when visibility is set to false,
-                         * so click handling works on updated data. */
                         if (data.isVisible) {
                             placeable.place(
                                 (x - origin.x).toInt(),
