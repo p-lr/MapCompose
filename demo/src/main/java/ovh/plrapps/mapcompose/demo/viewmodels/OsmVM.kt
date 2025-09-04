@@ -11,7 +11,7 @@ import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.core.TileStreamProvider
 import ovh.plrapps.mapcompose.demo.R
-import ovh.plrapps.mapcompose.demo.utils.lonLatToNormalized
+import ovh.plrapps.mapcompose.demo.utils.latLonToNormalized
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.BufferedInputStream
@@ -28,7 +28,7 @@ class OsmVM : ViewModel() {
     private val maxLevel = 16
     private val minLevel = 12
     private val mapSize = mapSizeAtLevel(maxLevel, tileSize = 256)
-    private val paris = lonLatToNormalized(48.856667, 2.351667) // Paris
+    private val paris = latLonToNormalized(48.856667, 2.351667) // Paris
     private val x = paris.first
     private val y = paris.second
 
