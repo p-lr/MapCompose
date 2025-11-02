@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ovh.plrapps/mapcompose)](https://central.sonatype.com/artifact/ovh.plrapps/mapcompose)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![](https://img.shields.io/badge/ComposeBOM-2025.10.00-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
+[![](https://img.shields.io/badge/ComposeBOM-2025.10.01-brightgreen)](https://developer.android.com/jetpack/compose/bom/bom)
 
 🎉 News:
 - `3.1.0` now supports infinite scroll (#119).
@@ -74,7 +74,7 @@ There's an example in the demo app.
 
 Add this to your module's build.gradle
 ```groovy
-implementation 'ovh.plrapps:mapcompose:3.2.2'
+implementation 'ovh.plrapps:mapcompose:3.2.3'
 ```
 
 Starting with v.2.4.1, the library is using the 
