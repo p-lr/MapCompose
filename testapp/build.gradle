@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -30,9 +32,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17
-    }
     buildFeatures {
         compose = true
     }
@@ -44,22 +43,28 @@ android {
     namespace = 'ovh.plrapps.mapcompose.testapp'
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+    }
+}
+
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.17.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
 
     // Compose - See https://developer.android.com/jetpack/compose/setup#bom-version-mapping
-    implementation platform('androidx.compose:compose-bom:2025.10.01')
+    implementation platform('androidx.compose:compose-bom:2025.11.01')
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.material:material"
     implementation "androidx.compose.material3:material3"
     implementation "androidx.compose.ui:ui-tooling-preview"
     debugImplementation "androidx.compose.ui:ui-tooling"
 
-    implementation 'androidx.navigation:navigation-compose:2.9.5'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.4'
-    implementation 'androidx.activity:activity-compose:1.11.0'
+    implementation 'androidx.navigation:navigation-compose:2.9.6'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.10.0'
+    implementation 'androidx.activity:activity-compose:1.12.0'
     implementation project(':mapcompose')
     testImplementation 'junit:junit:4.13.2'
 }
