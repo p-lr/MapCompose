@@ -21,6 +21,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.DragEndListener
 import ovh.plrapps.mapcompose.ui.state.markers.DragInterceptor
 import ovh.plrapps.mapcompose.ui.state.markers.DragStartListener
+import ovh.plrapps.mapcompose.ui.state.markers.model.MarkerData
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
 import ovh.plrapps.mapcompose.utils.AngleDegree
 import ovh.plrapps.mapcompose.utils.rotateX
@@ -235,38 +236,12 @@ suspend fun MapState.updateMarkerOffset(
     absoluteOffset: DpOffset? = null,
     animationSpec: AnimationSpec<Float>? = SpringSpec(stiffness = Spring.StiffnessLow)
 ) {
-    markerState.getMarker(id)?.also {
-        if (animationSpec != null) {
-            with(zoomPanRotateState) {
-                awaitLayout()
-                invokeAndCheckSuccess {
-                    Animatable(0f).animateTo(1f, animationSpec) {
-                        if (relativeOffset != null) {
-                            it.relativeOffset = lerp(
-                                it.relativeOffset,
-                                relativeOffset,
-                                value
-                            )
-                        }
-                        if (absoluteOffset != null) {
-                            it.absoluteOffset = lerp(
-                                it.absoluteOffset,
-                                absoluteOffset,
-                                value
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            if (relativeOffset != null) {
-                it.relativeOffset = relativeOffset
-            }
-            if (absoluteOffset != null) {
-                it.absoluteOffset = absoluteOffset
-            }
-        }
-    }
+    updateOffset(
+        markerData = markerState.getMarker(id) ?: return,
+        relativeOffset = relativeOffset,
+        absoluteOffset = absoluteOffset,
+        animationSpec = animationSpec
+    )
 }
 
 /**
@@ -641,6 +616,68 @@ fun MapState.moveCallout(id: String, x: Double, y: Double) {
  */
 fun MapState.removeCallout(id: String): Boolean {
     return markerRenderState.removeCallout(id)
+}
+
+/**
+ * Updates the offsets of a callout.
+ * @param relativeOffset The x-axis and y-axis positions of the callout will be respectively offset by
+ * the width of the callout multiplied by the x value of the offset, and the height of the callout
+ * multiplied by the y value of the offset. If null, does not updates the current value.
+ * @param absoluteOffset The x-axis and y-axis positions of a callout will be respectively offset by
+ * the x and y [Dp] values of the offset. If null, does not updates the current value.
+ * @param animationSpec The [AnimationSpec]. Default is [SpringSpec] with low stiffness. When null,
+ * no animation is used.
+ */
+suspend fun MapState.updateCalloutOffset(
+    id: String,
+    relativeOffset: Offset? = null,
+    absoluteOffset: DpOffset? = null,
+    animationSpec: AnimationSpec<Float>? = SpringSpec(stiffness = Spring.StiffnessLow)
+) {
+    updateOffset(
+        markerData = markerRenderState.callouts[id]?.markerData ?: return,
+        relativeOffset = relativeOffset,
+        absoluteOffset = absoluteOffset,
+        animationSpec = animationSpec
+    )
+}
+
+private suspend fun MapState.updateOffset(
+    markerData: MarkerData,
+    relativeOffset: Offset?,
+    absoluteOffset: DpOffset?,
+    animationSpec: AnimationSpec<Float>?
+) {
+    if (animationSpec != null) {
+        with(zoomPanRotateState) {
+            awaitLayout()
+            invokeAndCheckSuccess {
+                Animatable(0f).animateTo(1f, animationSpec) {
+                    if (relativeOffset != null) {
+                        markerData.relativeOffset = lerp(
+                            markerData.relativeOffset,
+                            relativeOffset,
+                            value
+                        )
+                    }
+                    if (absoluteOffset != null) {
+                        markerData.absoluteOffset = lerp(
+                            markerData.absoluteOffset,
+                            absoluteOffset,
+                            value
+                        )
+                    }
+                }
+            }
+        }
+    } else {
+        if (relativeOffset != null) {
+            markerData.relativeOffset = relativeOffset
+        }
+        if (absoluteOffset != null) {
+            markerData.absoluteOffset = absoluteOffset
+        }
+    }
 }
 
 /**
