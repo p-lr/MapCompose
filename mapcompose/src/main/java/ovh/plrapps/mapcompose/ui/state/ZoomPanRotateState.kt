@@ -483,6 +483,11 @@ internal class ZoomPanRotateState(
     }
 
     override fun onDoubleTap(focalPt: Offset) {
+        val isHandled = offsetToRelative(focalPt) { x, y ->
+            stateChangeListener.onDoubleTap(x, y)
+        }
+        if (isHandled) return
+
         if (!isZoomingEnabled) return
 
         val destScale = (
@@ -717,6 +722,7 @@ interface ZoomPanRotateStateListener {
     fun onPress()
     fun onLongPress(x: Double, y: Double)
     fun onTap(x: Double, y: Double)
+    fun onDoubleTap(x: Double, y: Double): Boolean
     fun detectsTap(): Boolean
     fun detectsLongPress(): Boolean
     fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean

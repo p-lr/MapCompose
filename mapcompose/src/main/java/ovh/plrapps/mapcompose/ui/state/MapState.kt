@@ -88,6 +88,7 @@ class MapState(
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var tapCb: LayoutTapCb? = null
+    internal var doubleTapCb: LayoutTapCb? = null
     internal var longPressCb: LayoutTapCb? = null
     internal var mapBackground by mutableStateOf(Color.Transparent)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
@@ -131,6 +132,13 @@ class MapState(
 
     override fun onTap(x: Double, y: Double) {
         tapCb?.invoke(x, y)
+    }
+
+    override fun onDoubleTap(x: Double, y: Double): Boolean {
+        return doubleTapCb?.let {
+            it(x, y)
+            true
+        } ?: false
     }
 
     override fun detectsTap(): Boolean = tapCb != null

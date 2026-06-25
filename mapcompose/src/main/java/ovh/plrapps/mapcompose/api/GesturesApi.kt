@@ -86,6 +86,16 @@ fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
 }
 
 /**
+ * Registers a callback for double-tap gestures. The callback is invoked with the relative
+ * coordinates of the double-tapped point on the map.
+ *
+ * When a callback is registered, it overrides the default double-tap zoom behavior.
+ */
+fun MapState.onDoubleTap(doubleTapCb: (x: Double, y: Double) -> Unit) {
+    this.doubleTapCb = doubleTapCb
+}
+
+/**
  * Registers a callback for long press gestures. The callback is invoked with the relative coordinates
  * of the pressed point on the map.
  */
