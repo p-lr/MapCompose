@@ -483,16 +483,19 @@ internal class ZoomPanRotateState(
     }
 
     override fun onDoubleTap(focalPt: Offset) {
-        if (!isZoomingEnabled) return
-
-        val destScale = (
-                2.0.pow(floor(ln((scale * 2)) / ln(2.0)))
-                ).let {
-                if (shouldLoopScale && it > maxScale) minScale else it
-            }
-
         val angleRad = -rotation.toRad()
         val focalPtRotated = rotateFocalPoint(focalPt, angleRad)
+
+        if (stateChangeListener.detectsDoubleTap()) {
+            val x = (scrollX + focalPtRotated.x) / (scale * fullWidth)
+            val y = (scrollY + focalPtRotated.y) / (scale * fullHeight)
+            stateChangeListener.onDoubleTap(x, y)
+        }
+
+        if (stateChangeListener.interceptsDoubleTap() || !isZoomingEnabled) return
+        val destScale = (2.0.pow(floor(ln((scale * 2)) / ln(2.0)))).let {
+            if (shouldLoopScale && it > maxScale) minScale else it
+        }
 
         scope?.launch {
             smoothScaleWithFocalPoint(
@@ -717,8 +720,11 @@ interface ZoomPanRotateStateListener {
     fun onPress()
     fun onLongPress(x: Double, y: Double)
     fun onTap(x: Double, y: Double)
+    fun onDoubleTap(x: Double, y: Double)
     fun detectsTap(): Boolean
+    fun detectsDoubleTap(): Boolean
     fun detectsLongPress(): Boolean
+    fun interceptsDoubleTap(): Boolean
     fun interceptsTap(x: Double, y: Double, xPx: Int, yPx: Int): Boolean
     fun interceptsLongPress(x: Double, y: Double, xPx: Int, yPx: Int): Boolean
 }

@@ -3,6 +3,7 @@
 package ovh.plrapps.mapcompose.api
 
 import androidx.compose.ui.platform.ViewConfiguration
+import ovh.plrapps.mapcompose.ui.state.DoubleTapCbData
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 
@@ -83,6 +84,16 @@ fun MapState.disableFlingZoom() {
  */
 fun MapState.onTap(tapCb: (x: Double, y: Double) -> Unit) {
     this.tapCb = tapCb
+}
+
+/**
+ * Registers a double-tap callback. The callback is invoked with the relative coordinates
+ * of the tapped point on the map.
+ *
+ * The default behavior doubles the current scale, using an animation.
+ */
+fun MapState.onDoubleTap(withDefaultBehavior: Boolean, doubleTapCb: (x: Double, y: Double) -> Unit) {
+    this.doubleTapCbData = DoubleTapCbData(withDefaultBehavior, doubleTapCb)
 }
 
 /**

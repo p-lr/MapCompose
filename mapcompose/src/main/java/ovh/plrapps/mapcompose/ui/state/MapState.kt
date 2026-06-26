@@ -88,6 +88,7 @@ class MapState(
     internal var stateChangeListener: (MapState.() -> Unit)? = null
     internal var touchDownCb: (() -> Unit)? = null
     internal var tapCb: LayoutTapCb? = null
+    internal var doubleTapCbData: DoubleTapCbData? = null
     internal var longPressCb: LayoutTapCb? = null
     internal var mapBackground by mutableStateOf(Color.Transparent)
     internal var isFilteringBitmap: () -> Boolean by mutableStateOf(
@@ -133,7 +134,13 @@ class MapState(
         tapCb?.invoke(x, y)
     }
 
+    override fun onDoubleTap(x: Double, y: Double) {
+        doubleTapCbData?.cb?.invoke(x, y)
+    }
+
     override fun detectsTap(): Boolean = tapCb != null
+
+    override fun detectsDoubleTap(): Boolean = doubleTapCbData?.cb != null
 
     override fun detectsLongPress(): Boolean = longPressCb != null
 
@@ -144,6 +151,10 @@ class MapState(
         } else false
 
         return markerHandled || pathHandled
+    }
+
+    override fun interceptsDoubleTap(): Boolean {
+        return doubleTapCbData?.withDefaultBehavior == false
     }
 
     override fun interceptsLongPress(x: Double, y: Double, xPx: Int, yPx: Int): Boolean {
@@ -333,3 +344,4 @@ class InitialValues internal constructor() {
 }
 
 internal typealias LayoutTapCb = (x: Double, y: Double) -> Unit
+internal data class DoubleTapCbData(val withDefaultBehavior: Boolean, val cb: LayoutTapCb)
